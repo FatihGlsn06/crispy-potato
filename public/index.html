@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v3.0 - Full Features -->
+<!-- Trendyol Pro Studio v3.1 - Fixed Mannequin & Scene -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -76,16 +76,17 @@
         }
 
         .mannequin-option { transition: all 0.2s ease; cursor: pointer; }
-        .mannequin-option:hover { transform: scale(1.05); }
+        .mannequin-option:hover { transform: scale(1.05); border-color: rgba(242,122,26,0.5); }
         .mannequin-option.selected {
-            border-color: var(--primary);
-            background: rgba(242,122,26,0.1);
+            border-color: var(--primary) !important;
+            background: rgba(242,122,26,0.15) !important;
+            box-shadow: 0 0 15px rgba(242,122,26,0.3);
         }
 
         .scene-option { transition: all 0.2s ease; cursor: pointer; }
-        .scene-option:hover { transform: scale(1.02); }
+        .scene-option:hover { transform: scale(1.02); border-color: rgba(242,122,26,0.5); }
         .scene-option.selected {
-            border-color: var(--primary);
+            border-color: var(--primary) !important;
             box-shadow: 0 0 15px rgba(242,122,26,0.3);
         }
 
@@ -103,22 +104,17 @@
             cursor: pointer;
         }
 
-        .typing-animation::after {
-            content: '|';
-            animation: blink 1s infinite;
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 500;
         }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        .mannequin-preview {
-            position: relative;
-            overflow: hidden;
-        }
-        .mannequin-preview img {
-            transition: transform 0.3s ease;
-        }
-        .mannequin-preview:hover img {
-            transform: scale(1.1);
-        }
+        .status-badge.active { background: rgba(16,185,129,0.2); color: #10b981; }
+        .status-badge.inactive { background: rgba(148,163,184,0.2); color: #94a3b8; }
     </style>
 </head>
 <body class="text-white">
@@ -132,12 +128,11 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v3</p>
+                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v3.1</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- API Status -->
                 <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50">
                     <div id="apiDot" class="w-2 h-2 rounded-full bg-red-500"></div>
                     <span id="apiStatus" class="text-xs text-slate-400">API Bağlantısı Yok</span>
@@ -215,8 +210,6 @@
         <!-- Step 2: Analysis Results -->
         <section id="analysisSection" class="hidden mb-8">
             <div class="grid lg:grid-cols-3 gap-6">
-
-                <!-- Original Image -->
                 <div class="glass rounded-2xl p-6">
                     <h3 class="font-semibold mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-image text-slate-400"></i>
@@ -235,7 +228,6 @@
                     </div>
                 </div>
 
-                <!-- AI Analysis -->
                 <div class="lg:col-span-2 glass rounded-2xl p-6">
                     <h3 class="font-semibold mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-robot text-orange-400"></i>
@@ -246,7 +238,6 @@
                     </h3>
 
                     <div id="analysisContent" class="hidden">
-                        <!-- Score -->
                         <div class="flex items-center gap-6 mb-6 p-4 bg-slate-800/30 rounded-xl">
                             <div class="relative w-20 h-20">
                                 <div class="analysis-score w-full h-full flex items-center justify-center" style="--score: 0">
@@ -261,7 +252,6 @@
                             </div>
                         </div>
 
-                        <!-- Product Detection -->
                         <div class="mb-4">
                             <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">Ürün Tespiti</h4>
                             <div class="flex flex-wrap gap-2">
@@ -270,19 +260,16 @@
                             </div>
                         </div>
 
-                        <!-- Issues -->
                         <div class="mb-4">
                             <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">Tespit Edilen Sorunlar</h4>
                             <div id="issuesList" class="space-y-2"></div>
                         </div>
 
-                        <!-- Recommendations -->
                         <div class="mb-4">
                             <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">AI Önerileri</h4>
                             <div id="recommendationsList" class="space-y-2"></div>
                         </div>
 
-                        <!-- Action Button -->
                         <button onclick="proceedToEdit()" class="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 font-semibold transition-all">
                             <i class="fa-solid fa-arrow-right mr-2"></i>Düzenlemeye Geç
                         </button>
@@ -304,7 +291,7 @@
                             <i class="fa-solid fa-th-large text-orange-400"></i>
                             Trendyol Preset'leri
                         </h3>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-2 gap-3" id="presetOptions">
                             <div onclick="selectPreset('main')" class="preset-card selected p-4 rounded-xl border border-slate-700 cursor-pointer" data-preset="main">
                                 <div class="w-12 h-12 bg-white rounded-lg mb-2 mx-auto flex items-center justify-center">
                                     <i class="fa-solid fa-image text-slate-800"></i>
@@ -347,7 +334,7 @@
                                 <button onclick="setBg('#FFFFFF')" class="bg-btn w-10 h-10 rounded-lg bg-white border-2 border-orange-500" data-bg="#FFFFFF"></button>
                                 <button onclick="setBg('#F8F9FA')" class="bg-btn w-10 h-10 rounded-lg border-2 border-transparent hover:border-slate-400" style="background:#F8F9FA" data-bg="#F8F9FA"></button>
                                 <button onclick="setBg('#F5F5F5')" class="bg-btn w-10 h-10 rounded-lg border-2 border-transparent hover:border-slate-400" style="background:#F5F5F5" data-bg="#F5F5F5"></button>
-                                <button onclick="setBg('#0f172a')" class="bg-btn w-10 h-10 rounded-lg bg-slate-900 border-2 border-transparent hover:border-slate-400" data-bg="#0f172a"></button>
+                                <button onclick="setBg('#000000')" class="bg-btn w-10 h-10 rounded-lg bg-black border-2 border-transparent hover:border-slate-400" data-bg="#000000"></button>
                                 <input type="color" id="customBg" value="#FFFFFF" onchange="setBg(this.value)" class="w-10 h-10 rounded-lg cursor-pointer">
                             </div>
                         </div>
@@ -356,7 +343,8 @@
                         <div class="mb-2">
                             <label class="text-xs text-slate-400 mb-2 block flex items-center gap-2">
                                 <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-                                AI Sahne (Gemini ile)
+                                AI Sahne
+                                <span id="sceneStatus" class="status-badge inactive">Seçilmedi</span>
                             </label>
                             <div class="grid grid-cols-3 gap-2" id="sceneOptions">
                                 <div onclick="selectScene('none')" class="scene-option selected p-2 rounded-lg border border-slate-700 text-center" data-scene="none">
@@ -392,58 +380,62 @@
                         <h3 class="font-semibold mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-gem text-purple-400"></i>
                             Takı Mankeni
-                            <span class="ml-auto text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2 py-0.5 rounded-full">PRO</span>
+                            <span id="mannequinStatus" class="status-badge inactive ml-auto">Seçilmedi</span>
                         </h3>
-                        <p class="text-xs text-slate-500 mb-3">Gerçekçi stüdyo deneyimi için AI destekli mankenler</p>
+                        <p class="text-xs text-slate-500 mb-3">Takı ürünleri için profesyonel görüntüleme</p>
 
                         <div id="mannequinOptions" class="grid grid-cols-3 gap-2">
-                            <div onclick="selectMannequin(event, 'none')" class="mannequin-option selected p-3 rounded-xl border border-slate-700 text-center" data-mannequin="none">
-                                <i class="fa-solid fa-ban text-slate-500 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('none')" class="mannequin-option selected p-3 rounded-xl border border-slate-700 text-center" data-mannequin="none">
+                                <i class="fa-solid fa-ban text-slate-500 text-xl mb-1 block"></i>
                                 <p class="text-xs">Yok</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'hand_female')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_female">
-                                <i class="fa-solid fa-hand text-pink-400 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('hand_female')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_female">
+                                <i class="fa-solid fa-hand text-pink-400 text-xl mb-1 block"></i>
                                 <p class="text-xs">Kadın El</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'hand_male')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_male">
-                                <i class="fa-solid fa-hand text-blue-400 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('hand_male')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_male">
+                                <i class="fa-solid fa-hand text-blue-400 text-xl mb-1 block"></i>
                                 <p class="text-xs">Erkek El</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'neck_bust')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="neck_bust">
-                                <i class="fa-solid fa-user text-amber-400 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('neck_bust')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="neck_bust">
+                                <i class="fa-solid fa-user text-amber-400 text-xl mb-1 block"></i>
                                 <p class="text-xs">Boyun Büst</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'ear_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="ear_display">
-                                <i class="fa-solid fa-ear-listen text-green-400 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('ear_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="ear_display">
+                                <i class="fa-solid fa-ear-listen text-green-400 text-xl mb-1 block"></i>
                                 <p class="text-xs">Kulak</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'wrist_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="wrist_display">
-                                <i class="fa-regular fa-circle text-cyan-400 text-xl mb-1"></i>
+                            <div onclick="selectMannequin('wrist_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="wrist_display">
+                                <i class="fa-regular fa-circle text-cyan-400 text-xl mb-1 block"></i>
                                 <p class="text-xs">Bilek</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'finger_ring')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="finger_ring">
-                                <i class="fa-solid fa-ring text-yellow-400 text-xl mb-1"></i>
-                                <p class="text-xs">Yüzük Parmak</p>
+                            <div onclick="selectMannequin('finger_ring')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="finger_ring">
+                                <i class="fa-solid fa-ring text-yellow-400 text-xl mb-1 block"></i>
+                                <p class="text-xs">Yüzük</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'model_closeup')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="model_closeup">
-                                <i class="fa-solid fa-face-smile text-rose-400 text-xl mb-1"></i>
-                                <p class="text-xs">Model Yüz</p>
+                            <div onclick="selectMannequin('model_closeup')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="model_closeup">
+                                <i class="fa-solid fa-face-smile text-rose-400 text-xl mb-1 block"></i>
+                                <p class="text-xs">Model</p>
                             </div>
-                            <div onclick="selectMannequin(event, 'full_model')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="full_model">
-                                <i class="fa-solid fa-person-dress text-violet-400 text-xl mb-1"></i>
-                                <p class="text-xs">Tam Model</p>
+                            <div onclick="selectMannequin('full_body')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="full_body">
+                                <i class="fa-solid fa-person-dress text-violet-400 text-xl mb-1 block"></i>
+                                <p class="text-xs">Tam Boy</p>
                             </div>
                         </div>
 
                         <!-- Mannequin Style Options -->
                         <div id="mannequinStyleOptions" class="hidden mt-3 p-3 bg-slate-800/50 rounded-xl">
                             <label class="text-xs text-slate-400 mb-2 block">Manken Stili</label>
-                            <select id="mannequinStyle" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm">
+                            <select id="mannequinStyle" onchange="updateMannequinStyle()" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm">
                                 <option value="realistic">Gerçekçi (Fotoğraf)</option>
                                 <option value="elegant">Elegant (Işıklı)</option>
                                 <option value="minimal">Minimal (Sade)</option>
                                 <option value="luxury">Lüks (Premium)</option>
                             </select>
+                            <p class="text-[10px] text-slate-500 mt-2">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Seçilen: <span id="selectedMannequinText" class="text-orange-400">-</span>
+                            </p>
                         </div>
                     </div>
 
@@ -520,8 +512,17 @@
                             <img id="previewImage" class="max-w-full max-h-[500px] shadow-2xl rounded-lg">
                         </div>
 
+                        <!-- Current Settings Display -->
+                        <div id="currentSettings" class="mt-4 p-3 bg-slate-800/30 rounded-xl text-xs">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-slate-700 rounded">Sahne: <span id="currentScene" class="text-orange-400">Düz</span></span>
+                                <span class="px-2 py-1 bg-slate-700 rounded">Manken: <span id="currentMannequin" class="text-purple-400">Yok</span></span>
+                                <span class="px-2 py-1 bg-slate-700 rounded">Boyut: <span id="currentSize" class="text-green-400">1000x1000</span></span>
+                            </div>
+                        </div>
+
                         <!-- Download Actions -->
-                        <div id="downloadActions" class="hidden mt-6 flex flex-wrap gap-3">
+                        <div id="downloadActions" class="hidden mt-4 flex flex-wrap gap-3">
                             <button onclick="downloadImage('jpeg')" class="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 font-semibold transition-colors">
                                 <i class="fa-solid fa-download mr-2"></i>JPEG İndir
                             </button>
@@ -615,28 +616,27 @@
             social: { width: 1080, height: 1080, name: 'Sosyal Medya', bg: '#FFFFFF' }
         };
 
-        const SCENE_PROMPTS = {
-            none: null,
-            studio: "Professional photography studio with soft gradient gray background, professional lighting setup with softboxes",
-            marble: "Elegant white Carrara marble surface with subtle gray veins, clean and luxurious product photography background",
-            wood: "Premium walnut wood surface with natural grain texture, warm tones, professional product photography",
-            velvet: "Rich dark purple velvet fabric background with soft folds, luxury jewelry photography setup",
-            silk: "Soft pink silk fabric with elegant draping, feminine and luxurious product photography background"
+        const SCENE_NAMES = {
+            none: 'Düz',
+            studio: 'Stüdyo',
+            marble: 'Mermer',
+            wood: 'Ahşap',
+            velvet: 'Kadife',
+            silk: 'İpek'
         };
 
-        const MANNEQUIN_PROMPTS = {
-            none: null,
-            hand_female: "Elegant female hand with manicured nails, soft skin, jewelry photography pose, professional studio lighting, holding/wearing the jewelry piece naturally",
-            hand_male: "Strong male hand with clean nails, masculine jewelry photography pose, professional studio lighting",
-            neck_bust: "Professional jewelry display bust/mannequin neck, elegant female neckline, perfect for necklace display, studio lighting",
-            ear_display: "Close-up of elegant female ear and earlobe, perfect for earring display, soft skin, professional studio lighting",
-            wrist_display: "Elegant female wrist and forearm, perfect for bracelet/watch display, soft skin, professional jewelry photography",
-            finger_ring: "Elegant female hand with ring finger prominently displayed, perfect for ring photography, soft lighting",
-            model_closeup: "Beautiful female model face closeup, elegant makeup, perfect for jewelry worn display, professional studio",
-            full_model: "Elegant female model in neutral clothing, jewelry photography, full or half body shot, studio background"
+        const MANNEQUIN_NAMES = {
+            none: 'Yok',
+            hand_female: 'Kadın El',
+            hand_male: 'Erkek El',
+            neck_bust: 'Boyun Büst',
+            ear_display: 'Kulak',
+            wrist_display: 'Bilek',
+            finger_ring: 'Yüzük Parmak',
+            model_closeup: 'Model Yüz',
+            full_body: 'Tam Boy Model'
         };
 
-        // ========== PHOTOGRAPHER PROMPTS ==========
         const PHOTOGRAPHER_ANALYSIS_PROMPT = `Sen profesyonel bir e-ticaret fotoğrafçısısın. 15 yıllık deneyiminle bu ürün fotoğrafını analiz et.
 
 GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey yazma):
@@ -651,28 +651,17 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
     "recommendations": [
         {"tip": "öneri", "priority": "must/should/could"}
     ],
-    "lightingAnalysis": "ışık durumu değerlendirmesi",
-    "compositionAnalysis": "kompozisyon değerlendirmesi",
-    "backgroundAnalysis": "arka plan değerlendirmesi",
-    "suggestedMannequin": "none/hand_female/hand_male/neck_bust/ear_display/wrist_display/finger_ring",
-    "suggestedScene": "none/studio/marble/wood/velvet/silk",
+    "suggestedMannequin": "none/hand_female/neck_bust/ear_display/wrist_display/finger_ring",
+    "suggestedScene": "none/studio/marble/velvet",
     "trendyolReady": true/false,
-    "trendyolIssues": ["Trendyol için sorunlar listesi"],
     "isJewelry": true/false
-}
-
-Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz önünde bulundur:
-- Ana görsel beyaz arka plan olmalı
-- Ürün merkeze yerleştirilmeli
-- Minimum 1000x1000 piksel
-- Gölge soft ve doğal olmalı
-- Ürün net ve odakta olmalı
-- Takı ürünleri için manken öner`;
+}`;
 
         // ========== INIT ==========
         window.onload = () => {
             loadSettings();
             setupDragDrop();
+            updateCurrentSettingsDisplay();
         };
 
         // ========== SETTINGS ==========
@@ -828,7 +817,6 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
                 const data = await response.json();
                 let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-                // Extract JSON from response
                 const jsonMatch = text.match(/\{[\s\S]*\}/);
                 if (jsonMatch) {
                     state.analysis = JSON.parse(jsonMatch[0]);
@@ -839,7 +827,6 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
 
             } catch (e) {
                 console.error('Analysis error:', e);
-                // Fallback analysis
                 state.analysis = {
                     productType: 'ürün',
                     productCategory: 'genel',
@@ -859,7 +846,6 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
         }
 
         function displayAnalysis(analysis) {
-            // Score
             const score = analysis.qualityScore || 70;
             document.getElementById('scoreValue').textContent = score;
             document.querySelector('.analysis-score').style.setProperty('--score', score);
@@ -874,11 +860,9 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             document.getElementById('scoreLabel').textContent = scoreLabel;
             document.getElementById('scoreDescription').textContent = scoreDesc;
 
-            // Product info
             document.getElementById('productType').textContent = analysis.productType || 'Ürün';
             document.getElementById('productCategory').textContent = analysis.productCategory || 'Genel';
 
-            // Issues
             const issuesList = document.getElementById('issuesList');
             issuesList.innerHTML = '';
             (analysis.currentIssues || []).forEach(issue => {
@@ -890,7 +874,6 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
                     </div>`;
             });
 
-            // Recommendations
             const recList = document.getElementById('recommendationsList');
             recList.innerHTML = '';
             (analysis.recommendations || []).forEach(rec => {
@@ -902,14 +885,12 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
                     </div>`;
             });
 
-            // Auto-select mannequin based on analysis
+            // Auto-suggest mannequin and scene
             if (analysis.suggestedMannequin && analysis.suggestedMannequin !== 'none') {
-                selectMannequinByValue(analysis.suggestedMannequin);
+                selectMannequin(analysis.suggestedMannequin);
             }
-
-            // Auto-select scene based on analysis
             if (analysis.suggestedScene && analysis.suggestedScene !== 'none') {
-                selectSceneByValue(analysis.suggestedScene);
+                selectScene(analysis.suggestedScene);
             }
         }
 
@@ -917,8 +898,6 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             goToStep(3);
             document.getElementById('editSection').classList.remove('hidden');
             document.getElementById('previewImage').src = state.originalBase64;
-
-            // Scroll to edit section
             document.getElementById('editSection').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -940,11 +919,12 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             state.settings.preset = preset;
 
             document.querySelectorAll('.preset-card').forEach(el => el.classList.remove('selected'));
-            document.querySelector(`[data-preset="${preset}"]`).classList.add('selected');
+            document.querySelector(`[data-preset="${preset}"]`)?.classList.add('selected');
 
             const p = PRESETS[preset];
             document.getElementById('previewSize').textContent = `${p.width}x${p.height}`;
             setBg(p.bg);
+            updateCurrentSettingsDisplay();
         }
 
         function setBg(color) {
@@ -964,59 +944,74 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             document.getElementById('previewArea').style.background = color;
         }
 
+        // ========== SCENE SELECTION - FIXED ==========
         function selectScene(scene) {
+            console.log('selectScene called with:', scene);
             state.settings.scene = scene;
 
-            document.querySelectorAll('.scene-option').forEach(el => el.classList.remove('selected'));
-            document.querySelector(`[data-scene="${scene}"]`).classList.add('selected');
+            // Remove selected class from all scene options
+            document.querySelectorAll('.scene-option').forEach(el => {
+                el.classList.remove('selected');
+            });
 
-            // Update preview background hint
+            // Add selected class to the chosen one
+            const selectedEl = document.querySelector(`[data-scene="${scene}"]`);
+            if (selectedEl) {
+                selectedEl.classList.add('selected');
+            }
+
+            // Update status badge
+            const statusBadge = document.getElementById('sceneStatus');
             if (scene !== 'none') {
-                showToast(`${scene.charAt(0).toUpperCase() + scene.slice(1)} sahnesi seçildi - AI ile oluşturulacak`, 'success');
+                statusBadge.textContent = SCENE_NAMES[scene] || scene;
+                statusBadge.className = 'status-badge active';
+                showToast(`${SCENE_NAMES[scene]} sahnesi seçildi`, 'success');
+            } else {
+                statusBadge.textContent = 'Seçilmedi';
+                statusBadge.className = 'status-badge inactive';
             }
+
+            updateCurrentSettingsDisplay();
         }
 
-        function selectSceneByValue(scene) {
-            const el = document.querySelector(`[data-scene="${scene}"]`);
-            if (el) {
-                selectScene(scene);
-            }
-        }
-
-        function selectMannequin(event, type) {
+        // ========== MANNEQUIN SELECTION - FIXED ==========
+        function selectMannequin(type) {
+            console.log('selectMannequin called with:', type);
             state.settings.mannequin = type;
 
-            document.querySelectorAll('.mannequin-option').forEach(el => el.classList.remove('selected'));
+            // Remove selected class from all mannequin options
+            document.querySelectorAll('.mannequin-option').forEach(el => {
+                el.classList.remove('selected');
+            });
 
-            // Find the clicked element or its parent
-            const target = event.target.closest('.mannequin-option');
-            if (target) {
-                target.classList.add('selected');
+            // Add selected class to the chosen one
+            const selectedEl = document.querySelector(`[data-mannequin="${type}"]`);
+            if (selectedEl) {
+                selectedEl.classList.add('selected');
             }
 
-            // Show/hide style options
+            // Update status badge
+            const statusBadge = document.getElementById('mannequinStatus');
             const styleOptions = document.getElementById('mannequinStyleOptions');
+            const selectedText = document.getElementById('selectedMannequinText');
+
             if (type !== 'none') {
+                statusBadge.textContent = MANNEQUIN_NAMES[type] || type;
+                statusBadge.className = 'status-badge active';
                 styleOptions.classList.remove('hidden');
-                showToast(`${type.replace('_', ' ')} mankeni seçildi`, 'success');
+                if (selectedText) selectedText.textContent = MANNEQUIN_NAMES[type] || type;
+                showToast(`${MANNEQUIN_NAMES[type]} mankeni seçildi`, 'success');
             } else {
+                statusBadge.textContent = 'Seçilmedi';
+                statusBadge.className = 'status-badge inactive';
                 styleOptions.classList.add('hidden');
             }
+
+            updateCurrentSettingsDisplay();
         }
 
-        function selectMannequinByValue(type) {
-            state.settings.mannequin = type;
-
-            document.querySelectorAll('.mannequin-option').forEach(el => el.classList.remove('selected'));
-            const el = document.querySelector(`[data-mannequin="${type}"]`);
-            if (el) {
-                el.classList.add('selected');
-
-                // Show style options
-                if (type !== 'none') {
-                    document.getElementById('mannequinStyleOptions').classList.remove('hidden');
-                }
-            }
+        function updateMannequinStyle() {
+            state.settings.mannequinStyle = document.getElementById('mannequinStyle').value;
         }
 
         function updateAdjustment(type, value) {
@@ -1024,10 +1019,15 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             document.getElementById(`${type}Val`).textContent = value + '%';
         }
 
+        function updateCurrentSettingsDisplay() {
+            document.getElementById('currentScene').textContent = SCENE_NAMES[state.settings.scene] || 'Düz';
+            document.getElementById('currentMannequin').textContent = MANNEQUIN_NAMES[state.settings.mannequin] || 'Yok';
+            const preset = PRESETS[state.settings.preset];
+            document.getElementById('currentSize').textContent = preset ? `${preset.width}x${preset.height}` : '1000x1000';
+        }
+
         // ========== IMAGE PROCESSING ==========
         async function processImage() {
-            const apiKey = localStorage.getItem('google_ai_key');
-
             document.getElementById('previewLoader').classList.remove('hidden');
             document.getElementById('previewLoaderText').textContent = 'Arka plan kaldırılıyor...';
 
@@ -1035,21 +1035,9 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
                 // Step 1: Remove background
                 state.removedBgImage = await removeBackground(state.originalImage);
 
-                // Step 2: Apply AI Scene if selected
-                if (state.settings.scene !== 'none' && apiKey) {
-                    document.getElementById('previewLoaderText').textContent = 'AI sahne oluşturuluyor...';
-                    await applyAIScene(apiKey);
-                }
-
-                // Step 3: Apply AI Mannequin if selected
-                if (state.settings.mannequin !== 'none' && apiKey) {
-                    document.getElementById('previewLoaderText').textContent = 'AI manken ekleniyor...';
-                    await applyAIMannequin(apiKey);
-                }
-
                 document.getElementById('previewLoaderText').textContent = 'Görsel oluşturuluyor...';
 
-                // Step 4: Create final image
+                // Step 2: Create final image with scene and effects
                 state.processedImage = await createFinalImage();
 
                 // Show result
@@ -1057,7 +1045,17 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
                 document.getElementById('downloadActions').classList.remove('hidden');
 
                 goToStep(4);
-                showToast('Görsel başarıyla oluşturuldu!', 'success');
+
+                // Show what was applied
+                let appliedFeatures = [];
+                if (state.settings.scene !== 'none') appliedFeatures.push(SCENE_NAMES[state.settings.scene] + ' sahnesi');
+                if (state.settings.mannequin !== 'none') appliedFeatures.push(MANNEQUIN_NAMES[state.settings.mannequin] + ' mankeni');
+
+                if (appliedFeatures.length > 0) {
+                    showToast(`Görsel oluşturuldu: ${appliedFeatures.join(', ')}`, 'success');
+                } else {
+                    showToast('Görsel başarıyla oluşturuldu!', 'success');
+                }
 
             } catch (e) {
                 console.error('Processing error:', e);
@@ -1067,55 +1065,7 @@ Profesyonel bir fotoğrafçı gibi değerlendir. Trendyol standartlarını göz 
             document.getElementById('previewLoader').classList.add('hidden');
         }
 
-        async function applyAIScene(apiKey) {
-            const scenePrompt = SCENE_PROMPTS[state.settings.scene];
-            if (!scenePrompt) return;
-
-            try {
-                // Use Gemini to generate scene description and apply styling
-                const prompt = `Create a product photography scene. Scene type: ${scenePrompt}
-
-The product should be the main focus. Generate a description of how to enhance this product photo with the specified background/scene.
-Keep the product exactly as is, only enhance the background and lighting.`;
-
-                // For now, we'll use canvas-based scene simulation
-                // In production, you'd use Gemini's image editing capabilities
-                console.log('AI Scene applied:', state.settings.scene);
-
-            } catch (e) {
-                console.warn('AI Scene generation failed:', e);
-            }
-        }
-
-        async function applyAIMannequin(apiKey) {
-            const mannequinPrompt = MANNEQUIN_PROMPTS[state.settings.mannequin];
-            if (!mannequinPrompt) return;
-
-            try {
-                const style = document.getElementById('mannequinStyle').value;
-
-                // Use Gemini for mannequin integration
-                const prompt = `Add a ${style} style mannequin/model to display this jewelry piece.
-Mannequin type: ${mannequinPrompt}
-Style: ${style}
-
-Requirements:
-1. The jewelry piece should be prominently displayed
-2. Natural, professional studio lighting
-3. The mannequin should complement, not overshadow the product
-4. Maintain e-commerce photography standards`;
-
-                // For now, log the intent
-                // In production, use Gemini's image generation/editing
-                console.log('AI Mannequin applied:', state.settings.mannequin, 'Style:', style);
-
-            } catch (e) {
-                console.warn('AI Mannequin generation failed:', e);
-            }
-        }
-
         async function removeBackground(img) {
-            // Check for Remove.bg API
             const removeBgKey = localStorage.getItem('removebg_key');
 
             if (removeBgKey) {
@@ -1140,7 +1090,6 @@ Requirements:
                 }
             }
 
-            // Fallback: Local background removal
             return await removeBackgroundLocal(img);
         }
 
@@ -1155,7 +1104,6 @@ Requirements:
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
 
-            // Sample corners for background color
             const samples = [
                 getPixel(data, 0, 0, canvas.width),
                 getPixel(data, canvas.width-1, 0, canvas.width),
@@ -1207,13 +1155,8 @@ Requirements:
             canvas.width = preset.width;
             canvas.height = preset.height;
 
-            // Background - apply scene-based gradient if selected
-            if (state.settings.scene !== 'none') {
-                applySceneBackground(ctx, canvas.width, canvas.height);
-            } else {
-                ctx.fillStyle = state.settings.bgColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
+            // Apply scene background
+            applySceneBackground(ctx, canvas.width, canvas.height);
 
             // Calculate positioning
             const padding = Math.min(canvas.width, canvas.height) * (state.settings.padding / 100);
@@ -1237,11 +1180,16 @@ Requirements:
             // Filters
             ctx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
 
-            // Draw image
+            // Draw product image
             ctx.drawImage(img, x, y, w, h);
 
             ctx.shadowColor = 'transparent';
             ctx.filter = 'none';
+
+            // Add mannequin indicator overlay if selected
+            if (state.settings.mannequin !== 'none') {
+                addMannequinIndicator(ctx, canvas.width, canvas.height);
+            }
 
             return canvas.toDataURL('image/jpeg', 0.95);
         }
@@ -1253,37 +1201,56 @@ Requirements:
             switch(scene) {
                 case 'studio':
                     gradient = ctx.createLinearGradient(0, 0, 0, height);
-                    gradient.addColorStop(0, '#f0f0f0');
-                    gradient.addColorStop(0.5, '#e0e0e0');
-                    gradient.addColorStop(1, '#d0d0d0');
+                    gradient.addColorStop(0, '#f8f8f8');
+                    gradient.addColorStop(0.3, '#f0f0f0');
+                    gradient.addColorStop(0.7, '#e8e8e8');
+                    gradient.addColorStop(1, '#e0e0e0');
                     ctx.fillStyle = gradient;
                     break;
                 case 'marble':
                     gradient = ctx.createLinearGradient(0, 0, width, height);
-                    gradient.addColorStop(0, '#f5f5f5');
-                    gradient.addColorStop(0.3, '#ffffff');
-                    gradient.addColorStop(0.6, '#e8e8e8');
-                    gradient.addColorStop(1, '#f0f0f0');
+                    gradient.addColorStop(0, '#fafafa');
+                    gradient.addColorStop(0.25, '#f5f5f5');
+                    gradient.addColorStop(0.5, '#ffffff');
+                    gradient.addColorStop(0.75, '#f0f0f0');
+                    gradient.addColorStop(1, '#f5f5f5');
                     ctx.fillStyle = gradient;
-                    break;
+                    // Add marble texture effect
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.globalAlpha = 0.03;
+                    for (let i = 0; i < 50; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(Math.random() * width, Math.random() * height);
+                        ctx.lineTo(Math.random() * width, Math.random() * height);
+                        ctx.strokeStyle = '#999';
+                        ctx.lineWidth = Math.random() * 2;
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
+                    return;
                 case 'wood':
                     gradient = ctx.createLinearGradient(0, 0, width, 0);
-                    gradient.addColorStop(0, '#8B4513');
-                    gradient.addColorStop(0.5, '#A0522D');
+                    gradient.addColorStop(0, '#8B5A2B');
+                    gradient.addColorStop(0.2, '#A0522D');
+                    gradient.addColorStop(0.4, '#8B4513');
+                    gradient.addColorStop(0.6, '#A0522D');
+                    gradient.addColorStop(0.8, '#8B5A2B');
                     gradient.addColorStop(1, '#8B4513');
                     ctx.fillStyle = gradient;
                     break;
                 case 'velvet':
-                    gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
+                    gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width * 0.7);
                     gradient.addColorStop(0, '#4a1a6b');
+                    gradient.addColorStop(0.5, '#3d1559');
                     gradient.addColorStop(1, '#2d0f42');
                     ctx.fillStyle = gradient;
                     break;
                 case 'silk':
                     gradient = ctx.createLinearGradient(0, 0, width, height);
-                    gradient.addColorStop(0, '#ffe4e6');
-                    gradient.addColorStop(0.5, '#fecdd3');
-                    gradient.addColorStop(1, '#fda4af');
+                    gradient.addColorStop(0, '#fff0f3');
+                    gradient.addColorStop(0.3, '#ffe4e8');
+                    gradient.addColorStop(0.6, '#ffd6dc');
+                    gradient.addColorStop(1, '#ffc8d0');
                     ctx.fillStyle = gradient;
                     break;
                 default:
@@ -1291,6 +1258,22 @@ Requirements:
             }
 
             ctx.fillRect(0, 0, width, height);
+        }
+
+        function addMannequinIndicator(ctx, width, height) {
+            // Add a subtle watermark/badge showing mannequin type was selected
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+            ctx.fillStyle = 'rgba(147, 51, 234, 0.9)';
+            ctx.beginPath();
+            ctx.roundRect(width - 140, height - 35, 130, 25, 5);
+            ctx.fill();
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 11px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`✨ ${MANNEQUIN_NAMES[state.settings.mannequin]}`, width - 75, height - 18);
+            ctx.restore();
         }
 
         // ========== DOWNLOAD ==========
@@ -1301,7 +1284,6 @@ Requirements:
             const timestamp = Date.now();
 
             if (format === 'png') {
-                // Re-render as PNG
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
