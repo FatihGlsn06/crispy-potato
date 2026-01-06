@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v3.1 - Fixed Mannequin & Scene -->
+<!-- Trendyol Pro Studio v3.2 - Improved Background Removal & Mannequin Fix -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -128,7 +128,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v3.1</p>
+                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v3.2</p>
                 </div>
             </div>
 
@@ -1103,33 +1103,123 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
 
+            // Sample more points for better background detection
+            // Corners
             const samples = [
-                getPixel(data, 0, 0, canvas.width),
-                getPixel(data, canvas.width-1, 0, canvas.width),
-                getPixel(data, 0, canvas.height-1, canvas.width),
-                getPixel(data, canvas.width-1, canvas.height-1, canvas.width)
+                getPixel(data, 0, 0, width),
+                getPixel(data, width-1, 0, width),
+                getPixel(data, 0, height-1, width),
+                getPixel(data, width-1, height-1, width),
+                // Edge midpoints
+                getPixel(data, Math.floor(width/2), 0, width),
+                getPixel(data, Math.floor(width/2), height-1, width),
+                getPixel(data, 0, Math.floor(height/2), width),
+                getPixel(data, width-1, Math.floor(height/2), width),
+                // Quarter points on edges
+                getPixel(data, Math.floor(width/4), 0, width),
+                getPixel(data, Math.floor(width*3/4), 0, width),
+                getPixel(data, Math.floor(width/4), height-1, width),
+                getPixel(data, Math.floor(width*3/4), height-1, width)
             ];
 
+            // Filter outliers and calculate median background color
+            const validSamples = samples.filter(s => {
+                // Check if it's likely a background pixel (high brightness for white bg)
+                const brightness = (s.r + s.g + s.b) / 3;
+                return brightness > 180 || brightness < 50; // Either white-ish or black-ish backgrounds
+            });
+
+            const useableSamples = validSamples.length >= 4 ? validSamples : samples;
+
             const bg = {
-                r: Math.round(samples.reduce((a,b) => a + b.r, 0) / 4),
-                g: Math.round(samples.reduce((a,b) => a + b.g, 0) / 4),
-                b: Math.round(samples.reduce((a,b) => a + b.b, 0) / 4)
+                r: Math.round(useableSamples.reduce((a,b) => a + b.r, 0) / useableSamples.length),
+                g: Math.round(useableSamples.reduce((a,b) => a + b.g, 0) / useableSamples.length),
+                b: Math.round(useableSamples.reduce((a,b) => a + b.b, 0) / useableSamples.length)
             };
 
-            const threshold = 60;
+            // Adaptive threshold based on background brightness
+            const bgBrightness = (bg.r + bg.g + bg.b) / 3;
+            const baseThreshold = bgBrightness > 200 ? 45 : 55; // Lower threshold for white backgrounds
 
-            for (let i = 0; i < data.length; i += 4) {
-                const diff = Math.sqrt(
-                    Math.pow(data[i] - bg.r, 2) +
-                    Math.pow(data[i+1] - bg.g, 2) +
-                    Math.pow(data[i+2] - bg.b, 2)
-                );
+            // First pass: Create alpha mask
+            const alphaMask = new Uint8Array(width * height);
 
-                if (diff < threshold) {
-                    data[i+3] = 0;
-                } else if (diff < threshold * 1.5) {
-                    data[i+3] = Math.round(255 * (diff - threshold) / (threshold * 0.5));
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    const diff = Math.sqrt(
+                        Math.pow(data[i] - bg.r, 2) +
+                        Math.pow(data[i+1] - bg.g, 2) +
+                        Math.pow(data[i+2] - bg.b, 2)
+                    );
+
+                    if (diff < baseThreshold) {
+                        alphaMask[y * width + x] = 0;
+                    } else if (diff < baseThreshold * 1.8) {
+                        // Smoother transition zone
+                        alphaMask[y * width + x] = Math.round(255 * (diff - baseThreshold) / (baseThreshold * 0.8));
+                    } else {
+                        alphaMask[y * width + x] = 255;
+                    }
+                }
+            }
+
+            // Second pass: Erode edges to remove white fringe (2px erosion)
+            const erodedMask = new Uint8Array(width * height);
+            const erosionRadius = 2;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    let minAlpha = alphaMask[idx];
+
+                    // Check neighborhood
+                    for (let dy = -erosionRadius; dy <= erosionRadius; dy++) {
+                        for (let dx = -erosionRadius; dx <= erosionRadius; dx++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                minAlpha = Math.min(minAlpha, alphaMask[ny * width + nx]);
+                            }
+                        }
+                    }
+                    erodedMask[idx] = minAlpha;
+                }
+            }
+
+            // Third pass: Smooth edges with gaussian-like blur on alpha
+            const smoothedMask = new Uint8Array(width * height);
+            const blurRadius = 1;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    let sum = 0;
+                    let count = 0;
+
+                    for (let dy = -blurRadius; dy <= blurRadius; dy++) {
+                        for (let dx = -blurRadius; dx <= blurRadius; dx++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const weight = 1 / (1 + Math.abs(dx) + Math.abs(dy));
+                                sum += erodedMask[ny * width + nx] * weight;
+                                count += weight;
+                            }
+                        }
+                    }
+                    smoothedMask[idx] = Math.round(sum / count);
+                }
+            }
+
+            // Apply final mask
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    data[i+3] = smoothedMask[y * width + x];
                 }
             }
 
