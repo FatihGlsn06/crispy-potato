@@ -1664,97 +1664,172 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.fillRect(0, 0, width, height);
         }
 
-        // ========== GEMINI MODEL MOUNTING ==========
-        // Creates a realistic photo of a real model wearing the jewelry
-        // Uses stock-photo-style model descriptions for realistic results
+        // ========== 2-PHASE MODEL MOUNTING SYSTEM ==========
+        // BREAKTHROUGH: Completely eliminates mannequin influence!
+        // Phase 1: Analyze jewelry image → extract TEXT description only
+        // Phase 2: Generate fresh image using ONLY TEXT (no image = no mannequin!)
+
         async function mountOnModel(productImageBase64, modelType) {
             const apiKey = localStorage.getItem('google_ai_key');
             if (!apiKey) {
                 throw new Error('Gemini API key gerekli. Ayarlardan ekleyin.');
             }
 
-            // Detailed model descriptions - like stock photo models
-            const modelDescriptions = {
-                blonde: {
-                    appearance: 'beautiful blonde woman with golden/honey blonde hair, fair skin with light pink undertones, blue or green eyes, natural makeup',
-                    style: 'Scandinavian beauty, like a Swedish fashion model',
-                    skin: 'porcelain fair skin with natural rosy cheeks'
-                },
-                brunette: {
-                    appearance: 'stunning brunette woman with rich dark brown hair, warm olive/tan skin, brown or hazel eyes, elegant makeup',
-                    style: 'Mediterranean beauty, like an Italian or Spanish model',
-                    skin: 'warm olive complexion with golden undertones'
-                },
-                asian: {
-                    appearance: 'elegant Asian woman with sleek black hair, smooth porcelain skin, dark almond-shaped eyes, subtle natural makeup',
-                    style: 'East Asian beauty, like a Korean or Japanese model',
-                    skin: 'flawless ivory skin with warm undertones'
-                },
-                nordic: {
-                    appearance: 'striking Nordic woman with platinum/ash blonde or light brown hair, very fair skin, ice blue or grey eyes, minimal makeup',
-                    style: 'Scandinavian minimalist beauty, like a Danish or Norwegian model',
-                    skin: 'very fair, almost translucent skin with cool undertones'
-                }
-            };
+            console.log('🚀 2-PHASE SYSTEM BAŞLIYOR...');
+            console.log('📌 Anahtar fikir: Görsel INPUT yok = Manken etkisi YOK!');
 
-            const model = modelDescriptions[modelType] || modelDescriptions.blonde;
+            // ═══════════════════════════════════════════════════════
+            // PHASE 1: JEWELRY ANALYSIS (Image → Text)
+            // ═══════════════════════════════════════════════════════
+            console.log('📝 PHASE 1: Takı detaylı analiz ediliyor...');
+            document.getElementById('previewLoaderText').textContent = 'Takı analiz ediliyor...';
 
-            const prompt = `You are creating a professional e-commerce jewelry photo for a luxury brand.
+            const analysisPrompt = `Sen dünyaca ünlü bir mücevher uzmanısın. Bu takıyı AŞIRI DETAYLI analiz et.
 
-TASK: Generate a photorealistic image of this jewelry being worn by a real fashion model.
+Bu açıklama takıyı yeniden oluşturmak için kullanılacak, bu yüzden HER DETAY önemli:
 
-THE MODEL:
-- ${model.appearance}
-- Style reference: ${model.style}
-- Skin: ${model.skin}
+1. TAKI TİPİ: (kolye, bileklik, küpe, yüzük vb.)
 
-PHOTO COMPOSITION:
-- Show the model from shoulders up, with face partially visible (chin, lips, maybe nose - mysterious/elegant crop)
-- The necklace/jewelry should be the HERO of the image
-- Model's neck and décolletage clearly visible
-- Hair styled elegantly, not covering the jewelry
-- Slight head tilt, elegant pose like Vogue editorial
+2. MALZEMELER:
+   - Ana malzeme (boncuk, taş, inci, metal vb.)
+   - İkincil malzemeler (ara parçalar, klips vb.)
 
-JEWELRY INSTRUCTIONS - CRITICAL:
-- The jewelry in the reference image must be reproduced EXACTLY
-- Same beads, same colors, same pattern, same chain style
-- DO NOT modify, add, or remove any elements from the jewelry
-- The jewelry should look like it was photographed, not illustrated
+3. RENKLER (ÇOK DETAYLI):
+   - Her farklı rengi listele
+   - Spesifik ol: "koyu zümrüt yeşili", "açık mint yeşili", "siyaha yakın koyu yeşil" gibi
+   - Renklerin oranlarını belirt
 
-PHOTOGRAPHY STYLE:
-- High-end fashion magazine quality (Vogue, Harper's Bazaar)
-- Soft, flattering studio lighting
-- Clean background - soft gradient or subtle bokeh
-- Professional color grading
-- Shot on high-end camera with shallow depth of field
+4. BONCUK/TAŞ DETAYLARI:
+   - Şekil (yuvarlak, oval, fasetli, düzensiz)
+   - Boyut (küçük, orta, büyük, karışık)
+   - Yüzey (mat, parlak, pırıltılı, yarı saydam)
+   - Desen/sıralama (alternatif renkler, gradyan, rastgele)
 
-REALISM REQUIREMENTS:
-- Real human skin texture (pores, subtle imperfections, natural shadows)
-- NO mannequin, NO plastic, NO artificial look
-- Natural skin color variations
-- Realistic lighting on both skin and jewelry
-- The image should be indistinguishable from a real photograph
+5. METAL PARÇALAR:
+   - Renk (gümüş, altın, rose gold)
+   - Ara boncukların şekli ve boyutu
 
-OUTPUT: A stunning, magazine-quality product photo featuring this exact jewelry on a ${modelType} model.`;
+6. GENEL STİL: (bohem, şık, minimal, statement)
+
+7. UZUNLUK/BOYUT tahmini
+
+SADECE açıklamayı yaz, giriş veya sonuç ekleme.
+TÜRKÇE yaz.`;
+
+            let jewelryDescription = '';
 
             try {
-                const geminiModel = 'gemini-1.5-pro-latest';
-                console.log(`Generating with model: ${geminiModel}, Model type: ${modelType}`);
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`, {
+                const analysisResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: prompt },
-                                {
-                                    inlineData: {
-                                        mimeType: 'image/jpeg',
-                                        data: productImageBase64.split(',')[1]
-                                    }
-                                }
+                                { text: analysisPrompt },
+                                { inlineData: { mimeType: 'image/jpeg', data: productImageBase64.split(',')[1] } }
                             ]
+                        }]
+                    })
+                });
+
+                if (!analysisResponse.ok) throw new Error('Takı analizi başarısız');
+
+                const analysisData = await analysisResponse.json();
+                jewelryDescription = analysisData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                console.log('✅ PHASE 1 TAMAMLANDI!');
+                console.log('📋 Takı açıklaması:', jewelryDescription.substring(0, 300) + '...');
+
+            } catch (error) {
+                console.error('Phase 1 hatası:', error);
+                throw new Error('Takı analizi başarısız: ' + error.message);
+            }
+
+            // ═══════════════════════════════════════════════════════
+            // PHASE 2: FRESH IMAGE GENERATION (Text Only!)
+            // ═══════════════════════════════════════════════════════
+            console.log('🎨 PHASE 2: Sıfırdan model görseli üretiliyor...');
+            console.log('⚡ GÖRSEL INPUT YOK - Sadece metin = Manken etkisi SIFIR!');
+            document.getElementById('previewLoaderText').textContent = 'Model fotoğrafı oluşturuluyor...';
+
+            const modelStyles = {
+                blonde: {
+                    desc: 'İskandinav güzeli, bal sarısı dalgalı saçlar omuzlara dökülen, porselen beyaz ten pembe alt tonlu, büyüleyici mavi-yeşil gözler, doğal makyaj, yüksek elmacık kemikleri',
+                    hair: 'bal sarısı altın sarısı dalgalı saçlar',
+                    skin: 'porselen beyaz ten, pembe yanaklar',
+                    eyes: 'büyüleyici açık mavi veya yeşil gözler'
+                },
+                brunette: {
+                    desc: 'Akdeniz güzeli, zengin koyu kahve saçlar, bronz altın parıltılı ten, derin kahverengi etkileyici gözler, sofistike makyaj',
+                    hair: 'parlak koyu kahverengi uzun saçlar',
+                    skin: 'bronz ten altın parıltılı, zeytin tonu',
+                    eyes: 'derin kahverengi badem gözler'
+                },
+                asian: {
+                    desc: 'Doğu Asya güzeli, ipek gibi simsiyah düz saçlar, kusursuz porselen ten, büyüleyici badem şekilli koyu gözler, K-beauty doğal makyaj',
+                    hair: 'ipek gibi parlak siyah düz saçlar',
+                    skin: 'kusursuz porselen ten, fildişi tonu',
+                    eyes: 'etkileyici koyu badem gözler'
+                },
+                nordic: {
+                    desc: 'Kuzey Avrupa güzeli, platin sarısı veya kül sarısı saçlar, eterik soluk ten soğuk alt tonlu, buz mavisi keskin bakışlı gözler, minimal doğal makyaj',
+                    hair: 'platin veya kül sarısı açık saçlar',
+                    skin: 'çok açık ten, soğuk alt tonlar, neredeyse saydam',
+                    eyes: 'buz mavisi veya gri keskin gözler'
+                }
+            };
+
+            const style = modelStyles[modelType] || modelStyles.blonde;
+
+            // THE KEY: Only TEXT prompt, NO image input!
+            const generationPrompt = `Create a stunning luxury jewelry advertisement photograph.
+
+SCENE DESCRIPTION:
+A breathtakingly beautiful ${style.desc} fashion model is wearing an exquisite piece of jewelry. This is a high-end fashion magazine cover shot.
+
+THE MODEL'S FEATURES:
+- Hair: ${style.hair}
+- Skin: ${style.skin}
+- Eyes: ${style.eyes}
+- Expression: Confident, slightly mysterious smile, elegant
+
+THE JEWELRY (MUST MATCH THIS EXACTLY):
+${jewelryDescription}
+
+COMPOSITION - CRITICAL:
+- Frame: From mid-chest up (NOT full body, NOT just face)
+- Face: Show chin, lips with subtle smile, nose - eyes can be partially cropped for mystery
+- Neck & décolletage: FULLY VISIBLE - this is where the necklace sits
+- Hair: Styled elegantly away from neck, not covering jewelry
+- Pose: Head slightly tilted, one shoulder slightly forward, confident
+
+LIGHTING & PHOTOGRAPHY:
+- Professional studio beauty lighting
+- Soft key light from front-left illuminating face
+- Hair light creating rim glow
+- Jewelry catching light and sparkling
+- Shallow depth of field (f/2.8)
+- Clean soft-gradient background (warm cream to white)
+
+ABSOLUTE REQUIREMENTS:
+- PHOTOREALISTIC - must look like actual photograph
+- Real human skin texture: pores, subtle freckles okay, natural shadows
+- NO mannequin, NO plastic, NO CGI, NO illustration
+- Magazine cover quality (Vogue, Elle, Tiffany campaign)
+- The jewelry must be the HERO - prominently displayed
+- 8K detail quality
+
+Generate a single stunning image.`;
+
+            try {
+                // Using gemini-2.0-flash-exp for image generation
+                const generateResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: generationPrompt }]
+                            // 🔥 NO IMAGE INPUT! This is the breakthrough!
                         }],
                         generationConfig: {
                             responseModalities: ["image", "text"],
@@ -1763,19 +1838,19 @@ OUTPUT: A stunning, magazine-quality product photo featuring this exact jewelry 
                     })
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Gemini Error:', errorData);
-                    throw new Error(errorData.error?.message || 'Model montajı başarısız');
+                if (!generateResponse.ok) {
+                    const errorData = await generateResponse.json();
+                    console.error('Generation Error:', errorData);
+                    throw new Error(errorData.error?.message || 'Görsel üretimi başarısız');
                 }
 
-                const data = await response.json();
-                console.log('Gemini response:', data);
+                const generateData = await generateResponse.json();
+                console.log('✅ PHASE 2 TAMAMLANDI!');
 
-                if (data.candidates && data.candidates[0]?.content?.parts) {
-                    for (const part of data.candidates[0].content.parts) {
+                if (generateData.candidates && generateData.candidates[0]?.content?.parts) {
+                    for (const part of generateData.candidates[0].content.parts) {
                         if (part.inlineData?.data) {
-                            console.log('Image generated successfully!');
+                            console.log('🎉 BAŞARILI! Manken etkisi olmadan gerçek model görseli üretildi!');
                             return `data:image/jpeg;base64,${part.inlineData.data}`;
                         }
                     }
@@ -1783,7 +1858,7 @@ OUTPUT: A stunning, magazine-quality product photo featuring this exact jewelry 
 
                 throw new Error('Gemini görsel üretemedi');
             } catch (error) {
-                console.error('Model mounting error:', error);
+                console.error('Phase 2 hatası:', error);
                 throw error;
             }
         }
