@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v4.1 - Professional Jewelry Display Stands -->
+<!-- Trendyol Pro Studio v4.2 - Gemini (Nano Banana) Image Generation -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -128,7 +128,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v4.1</p>
+                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v4.2</p>
                 </div>
             </div>
 
@@ -552,16 +552,16 @@
 
             <div class="space-y-4">
                 <!-- Google AI -->
-                <div class="p-4 bg-slate-800/30 rounded-xl">
+                <div class="p-4 bg-slate-800/30 rounded-xl border border-green-500/30">
                     <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
                         <i class="fa-brands fa-google text-blue-400"></i> Google AI (Gemini)
-                        <span class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">Ücretsiz</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">ÖNERİLEN</span>
                     </label>
                     <input type="password" id="apiKeyInput"
                            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-orange-500 outline-none"
                            placeholder="AIza...">
                     <p class="text-xs text-slate-500 mt-1">
-                        Görsel analiz için • <a href="https://aistudio.google.com/apikey" target="_blank" class="text-orange-400 hover:underline">Ücretsiz al</a>
+                        <span class="text-green-400">✨ Analiz + AI Manken</span> • <a href="https://aistudio.google.com/apikey" target="_blank" class="text-orange-400 hover:underline">Ücretsiz al</a>
                     </p>
                 </div>
 
@@ -902,8 +902,129 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             }
         }
 
+        // Gemini (Nano Banana) - Image Generation with AI Reasoning
+        async function generateWithGemini(productImageBase64, prompt, mannequinType) {
+            const apiKey = localStorage.getItem('google_ai_key');
+            if (!apiKey) {
+                throw new Error('Google AI API key gerekli. Ayarlardan ekleyin.');
+            }
+
+            // Use Gemini 2.0 Flash with image generation capability
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`;
+
+            // Create a detailed prompt for jewelry product placement
+            const jewelryContext = {
+                'hand_female': 'Place this jewelry product on an elegant female hand with manicured nails. Professional jewelry photography style.',
+                'hand_male': 'Place this jewelry product on a masculine male hand. Professional jewelry photography style.',
+                'neck_bust': 'Place this necklace on an elegant neck and décolletage area. Professional jewelry photography.',
+                'ear_display': 'Place this earring on an elegant ear, showing from a side profile. Professional jewelry photography.',
+                'wrist_display': 'Place this bracelet on an elegant wrist. Professional jewelry photography.',
+                'finger_ring': 'Place this ring on an elegant finger. Professional jewelry photography.',
+                'model_closeup': 'Place this jewelry on a beautiful model, closeup shot. Professional fashion photography.',
+                'full_body': 'Place this jewelry on an elegant model in a full body shot. Professional fashion photography.'
+            };
+
+            const contextPrompt = jewelryContext[mannequinType] || 'Professional jewelry product photography.';
+            const fullPrompt = `${contextPrompt} ${prompt}. Keep the original product exactly as shown, only add realistic human element. White or soft gradient background. Photorealistic, high quality, 8K detail. No distortion of the original jewelry product.`;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                {
+                                    text: fullPrompt
+                                },
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/jpeg',
+                                        data: productImageBase64.split(',')[1]
+                                    }
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["image", "text"],
+                            responseMimeType: "image/jpeg"
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Gemini Image Generation Error:', errorData);
+
+                    // Check if it's a model not available error - try alternative model
+                    if (errorData.error?.message?.includes('not found') || errorData.error?.message?.includes('not supported')) {
+                        return await generateWithGeminiImagen(productImageBase64, fullPrompt);
+                    }
+                    throw new Error(errorData.error?.message || 'Gemini görsel üretimi başarısız');
+                }
+
+                const data = await response.json();
+
+                // Extract generated image from response
+                if (data.candidates && data.candidates[0]?.content?.parts) {
+                    for (const part of data.candidates[0].content.parts) {
+                        if (part.inlineData?.data) {
+                            return `data:image/jpeg;base64,${part.inlineData.data}`;
+                        }
+                    }
+                }
+
+                throw new Error('Gemini görsel üretemedi');
+            } catch (error) {
+                console.error('Gemini error:', error);
+                throw error;
+            }
+        }
+
+        // Alternative: Gemini with Imagen 3 for image generation
+        async function generateWithGeminiImagen(productImageBase64, prompt) {
+            const apiKey = localStorage.getItem('google_ai_key');
+
+            // Try using Imagen 3 via Gemini API
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        instances: [{
+                            prompt: prompt
+                        }],
+                        parameters: {
+                            sampleCount: 1,
+                            aspectRatio: "1:1",
+                            negativePrompt: "blurry, distorted jewelry, unrealistic, low quality, deformed",
+                            safetyFilterLevel: "block_few"
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Imagen modeli kullanılamıyor');
+                }
+
+                const data = await response.json();
+
+                if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
+                    return `data:image/jpeg;base64,${data.predictions[0].bytesBase64Encoded}`;
+                }
+
+                throw new Error('Imagen görsel üretemedi');
+            } catch (error) {
+                console.error('Imagen error:', error);
+                throw error;
+            }
+        }
+
         // Generate AI Mannequin Image
         async function generateAIMannequin(productImageBase64, mannequinType, style) {
+            const geminiKey = localStorage.getItem('google_ai_key');
             const photoroomKey = localStorage.getItem('photoroom_key');
             const stabilityKey = localStorage.getItem('stability_key');
 
@@ -930,7 +1051,17 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             const styleModifier = styleModifiers[style] || '';
             const fullPrompt = basePrompt + styleModifier;
 
-            // Try Photoroom first (better for virtual models)
+            // Try Gemini (Nano Banana) first - best quality with less hallucination
+            if (geminiKey) {
+                try {
+                    showToast('Gemini AI ile görsel oluşturuluyor...', 'success');
+                    return await generateWithGemini(productImageBase64, fullPrompt, mannequinType);
+                } catch (e) {
+                    console.warn('Gemini failed, trying Photoroom:', e.message);
+                }
+            }
+
+            // Fall back to Photoroom
             if (photoroomKey) {
                 try {
                     showToast('Photoroom AI ile görsel oluşturuluyor...', 'success');
@@ -951,7 +1082,7 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             }
 
             // No AI available - throw error
-            throw new Error('AI manken için Photoroom veya Stability AI API anahtarı gerekli.');
+            throw new Error('AI manken için Google AI (Gemini), Photoroom veya Stability AI API anahtarı gerekli.');
         }
 
         function blobToBase64(blob) {
