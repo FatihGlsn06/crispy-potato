@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v5.2 - LOCKED PRODUCT + Realistic Human Mounting -->
+<!-- Trendyol Pro Studio v17.3 - REALISM BOOST Edition -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trendyol Pro Studio v5.2 - AI Fotoğrafçı</title>
+    <title>Trendyol Pro Studio v17.3 - REALISM BOOST</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <style>
         :root {
             --primary: #f27a1a;
@@ -32,17 +34,12 @@
 
         .glow { box-shadow: 0 0 60px rgba(242,122,26,0.2); }
         .glow-success { box-shadow: 0 0 40px rgba(16,185,129,0.3); }
+        .glow-purple { box-shadow: 0 0 40px rgba(168,85,247,0.3); }
 
         .gradient-text {
             background: linear-gradient(135deg, #f27a1a, #fbbf24);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
         }
 
         .loader {
@@ -54,49 +51,46 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .step-indicator { transition: all 0.3s ease; }
-        .step-indicator.active {
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active {
             background: linear-gradient(135deg, var(--primary), #fbbf24);
-            transform: scale(1.1);
-        }
-        .step-indicator.completed {
-            background: var(--success);
+            color: white;
         }
 
-        .preset-card { transition: all 0.2s ease; }
-        .preset-card:hover { transform: translateY(-4px); }
-        .preset-card.selected {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(242,122,26,0.3);
-        }
-
-        .analysis-score {
-            background: conic-gradient(var(--success) calc(var(--score) * 1%), rgba(255,255,255,0.1) 0);
-            border-radius: 50%;
-        }
-
-        .template-option { transition: all 0.2s ease; cursor: pointer; }
-        .template-option:hover { transform: scale(1.05); border-color: rgba(242,122,26,0.5); }
-        .template-option.selected {
-            border-color: var(--primary) !important;
-            background: rgba(242,122,26,0.15) !important;
-            box-shadow: 0 0 15px rgba(242,122,26,0.3);
-        }
-
-        .scene-option { transition: all 0.2s ease; cursor: pointer; }
-        .scene-option:hover { transform: scale(1.02); border-color: rgba(242,122,26,0.5); }
-        .scene-option.selected {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 15px rgba(242,122,26,0.3);
-        }
-
-        .model-type-option { transition: all 0.2s ease; }
-        .model-type-option:hover { transform: scale(1.03); border-color: rgba(168,85,247,0.5) !important; }
-        .model-type-option.selected {
+        .model-card { transition: all 0.2s ease; cursor: pointer; }
+        .model-card:hover { transform: translateY(-2px); border-color: rgba(168,85,247,0.5); }
+        .model-card.selected {
             border-color: #a855f7 !important;
             background: rgba(168,85,247,0.15) !important;
-            box-shadow: 0 0 12px rgba(168,85,247,0.3);
+            box-shadow: 0 0 20px rgba(168,85,247,0.3);
         }
+
+        .style-card { transition: all 0.2s ease; cursor: pointer; }
+        .style-card:hover { transform: scale(1.02); }
+        .style-card.selected {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 15px rgba(242,122,26,0.3);
+        }
+
+        .gallery-slot {
+            aspect-ratio: 1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .gallery-slot:hover { border-color: rgba(242,122,26,0.5); }
+        .gallery-slot.active { border-color: var(--primary); box-shadow: 0 0 15px rgba(242,122,26,0.3); }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .status-badge.active { background: rgba(16,185,129,0.2); color: #10b981; }
+        .status-badge.inactive { background: rgba(148,163,184,0.2); color: #94a3b8; }
 
         input[type="range"] {
             -webkit-appearance: none;
@@ -112,17 +106,7 @@
             cursor: pointer;
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 9999px;
-            font-size: 10px;
-            font-weight: 500;
-        }
-        .status-badge.active { background: rgba(16,185,129,0.2); color: #10b981; }
-        .status-badge.inactive { background: rgba(148,163,184,0.2); color: #94a3b8; }
+        .cropper-container { max-height: 400px; }
     </style>
 </head>
 <body class="text-white">
@@ -136,7 +120,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">Locked Product Studio v5.2</p>
+                    <p class="text-[10px] text-slate-400">v17.3 REALISM BOOST Edition</p>
                 </div>
             </div>
 
@@ -152,459 +136,249 @@
         </div>
     </header>
 
-    <!-- Progress Steps -->
-    <div class="max-w-4xl mx-auto px-4 py-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div id="step1" class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                <span class="text-sm text-slate-400">Yükle</span>
-            </div>
-            <div class="flex-1 h-0.5 bg-slate-700 mx-4"></div>
-            <div class="flex items-center gap-2">
-                <div id="step2" class="step-indicator w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">2</div>
-                <span class="text-sm text-slate-400">Analiz</span>
-            </div>
-            <div class="flex-1 h-0.5 bg-slate-700 mx-4"></div>
-            <div class="flex items-center gap-2">
-                <div id="step3" class="step-indicator w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">3</div>
-                <span class="text-sm text-slate-400">Düzenle</span>
-            </div>
-            <div class="flex-1 h-0.5 bg-slate-700 mx-4"></div>
-            <div class="flex items-center gap-2">
-                <div id="step4" class="step-indicator w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold">4</div>
-                <span class="text-sm text-slate-400">İndir</span>
-            </div>
+    <!-- Tab Navigation -->
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="flex gap-2 bg-slate-800/30 p-1 rounded-xl w-fit">
+            <button onclick="switchTab('studio')" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Stüdyo
+            </button>
+            <button onclick="switchTab('gallery')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white">
+                <i class="fa-solid fa-images mr-2"></i>Galeri
+            </button>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 pb-12">
 
-        <!-- Step 1: Upload -->
-        <section id="uploadSection" class="mb-8">
-            <div class="glass rounded-2xl p-8 glow">
-                <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold mb-2">Ürün Fotoğrafınızı Yükleyin</h2>
-                    <p class="text-slate-400">AI fotoğrafçımız görselinizi analiz edecek ve iyileştirme önerileri sunacak</p>
-                </div>
-
-                <div id="dropZone" onclick="document.getElementById('fileInput').click()"
-                     class="border-2 border-dashed border-slate-600 rounded-2xl p-12 text-center cursor-pointer hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
-                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleUpload(event)">
-                    <div id="uploadPrompt">
-                        <div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4 animate-float">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500"></i>
-                        </div>
-                        <p class="text-lg font-medium mb-2">Sürükle & Bırak veya Tıkla</p>
-                        <p class="text-sm text-slate-500">PNG, JPG, WEBP • Max 20MB</p>
-                    </div>
-                    <div id="uploadPreviewContainer" class="hidden">
-                        <img id="uploadPreview" class="max-h-64 mx-auto rounded-xl shadow-2xl">
-                        <p id="fileName" class="mt-4 text-sm text-slate-400"></p>
-                    </div>
-                </div>
-
-                <div id="uploadActions" class="hidden mt-6 flex justify-center gap-4">
-                    <button onclick="clearUpload()" class="px-6 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors">
-                        <i class="fa-solid fa-trash-can mr-2"></i>Temizle
-                    </button>
-                    <button onclick="startAnalysis()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 font-semibold transition-all">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Analiz Başlat
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 2: Analysis Results -->
-        <section id="analysisSection" class="hidden mb-8">
-            <div class="grid lg:grid-cols-3 gap-6">
-                <div class="glass rounded-2xl p-6">
-                    <h3 class="font-semibold mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-image text-slate-400"></i>
-                        Orijinal Görsel
-                    </h3>
-                    <img id="analysisOriginal" class="w-full rounded-xl">
-                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <div class="bg-slate-800/50 rounded-lg p-2">
-                            <span class="text-slate-500">Boyut:</span>
-                            <span id="imgDimensions" class="ml-1">-</span>
-                        </div>
-                        <div class="bg-slate-800/50 rounded-lg p-2">
-                            <span class="text-slate-500">Format:</span>
-                            <span id="imgFormat" class="ml-1">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-2 glass rounded-2xl p-6">
-                    <h3 class="font-semibold mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-orange-400"></i>
-                        AI Fotoğrafçı Analizi
-                        <span id="analysisLoader" class="ml-auto">
-                            <div class="loader w-5 h-5 border-2"></div>
-                        </span>
-                    </h3>
-
-                    <div id="analysisContent" class="hidden">
-                        <div class="flex items-center gap-6 mb-6 p-4 bg-slate-800/30 rounded-xl">
-                            <div class="relative w-20 h-20">
-                                <div class="analysis-score w-full h-full flex items-center justify-center" style="--score: 0">
-                                    <div class="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center">
-                                        <span id="scoreValue" class="text-2xl font-bold">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <p id="scoreLabel" class="font-semibold text-lg">Analiz Ediliyor...</p>
-                                <p id="scoreDescription" class="text-sm text-slate-400">Fotoğraf kalite puanı</p>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">Ürün Tespiti</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <span id="productType" class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-sm"></span>
-                                <span id="productCategory" class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm"></span>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">Tespit Edilen Sorunlar</h4>
-                            <div id="issuesList" class="space-y-2"></div>
-                        </div>
-
-                        <div class="mb-4">
-                            <h4 class="text-sm font-semibold text-slate-400 uppercase mb-2">AI Önerileri</h4>
-                            <div id="recommendationsList" class="space-y-2"></div>
-                        </div>
-
-                        <button onclick="proceedToEdit()" class="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 font-semibold transition-all">
-                            <i class="fa-solid fa-arrow-right mr-2"></i>Düzenlemeye Geç
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 3: Edit -->
-        <section id="editSection" class="hidden mb-8">
+        <!-- AI Studio Tab -->
+        <section id="studioTab">
             <div class="grid lg:grid-cols-12 gap-6">
 
-                <!-- Left Panel: Settings -->
-                <div class="lg:col-span-4 space-y-4">
+                <!-- Left Panel: Upload & Settings -->
+                <div class="lg:col-span-5 space-y-4">
 
-                    <!-- Trendyol Presets -->
+                    <!-- Upload Area -->
                     <div class="glass rounded-2xl p-5">
                         <h3 class="font-semibold mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-th-large text-orange-400"></i>
-                            Trendyol Preset'leri
+                            <i class="fa-solid fa-cloud-arrow-up text-orange-400"></i>
+                            Ürün Yükle
                         </h3>
-                        <div class="grid grid-cols-2 gap-3" id="presetOptions">
-                            <div onclick="selectPreset('main')" class="preset-card selected p-4 rounded-xl border border-slate-700 cursor-pointer" data-preset="main">
-                                <div class="w-12 h-12 bg-white rounded-lg mb-2 mx-auto flex items-center justify-center">
-                                    <i class="fa-solid fa-image text-slate-800"></i>
-                                </div>
-                                <p class="text-sm font-medium text-center">Ana Görsel</p>
-                                <p class="text-xs text-slate-500 text-center">1000x1000</p>
+                        <div id="dropZone" onclick="document.getElementById('fileInput').click()"
+                             class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center cursor-pointer hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
+                            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleUpload(event)">
+                            <div id="uploadPrompt">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 mb-3"></i>
+                                <p class="text-sm font-medium">Sürükle & Bırak veya Tıkla</p>
+                                <p class="text-xs text-slate-500 mt-1">PNG, JPG, WEBP</p>
                             </div>
-                            <div onclick="selectPreset('detail')" class="preset-card p-4 rounded-xl border border-slate-700 cursor-pointer" data-preset="detail">
-                                <div class="w-12 h-8 bg-white rounded-lg mb-2 mx-auto flex items-center justify-center">
-                                    <i class="fa-solid fa-search-plus text-slate-800 text-xs"></i>
-                                </div>
-                                <p class="text-sm font-medium text-center">Detay</p>
-                                <p class="text-xs text-slate-500 text-center">1000x1500</p>
-                            </div>
-                            <div onclick="selectPreset('lifestyle')" class="preset-card p-4 rounded-xl border border-slate-700 cursor-pointer" data-preset="lifestyle">
-                                <div class="w-12 h-12 bg-gradient-to-br from-pink-200 to-purple-200 rounded-lg mb-2 mx-auto"></div>
-                                <p class="text-sm font-medium text-center">Lifestyle</p>
-                                <p class="text-xs text-slate-500 text-center">1000x1000</p>
-                            </div>
-                            <div onclick="selectPreset('social')" class="preset-card p-4 rounded-xl border border-slate-700 cursor-pointer" data-preset="social">
-                                <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-400 rounded-lg mb-2 mx-auto flex items-center justify-center">
-                                    <i class="fa-brands fa-instagram text-white"></i>
-                                </div>
-                                <p class="text-sm font-medium text-center">Sosyal</p>
-                                <p class="text-xs text-slate-500 text-center">1080x1080</p>
+                            <div id="uploadPreviewContainer" class="hidden">
+                                <img id="uploadPreview" class="max-h-40 mx-auto rounded-lg">
+                                <p id="fileName" class="mt-2 text-xs text-slate-400"></p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Background Options -->
+                    <!-- Model Profiles - REALISM BOOST -->
+                    <div class="glass rounded-2xl p-5 border border-purple-500/30">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user text-purple-400"></i>
+                            Model Profili
+                            <span class="status-badge active ml-auto">REALISM BOOST</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Gerçekçi cilt dokusu ve doğal insan görünümü için optimize edilmiş profiller
+                        </p>
+
+                        <div class="grid grid-cols-2 gap-3" id="modelProfiles">
+                            <div onclick="selectModelProfile('neck_model')" class="model-card selected p-3 rounded-xl border border-slate-700" data-model="neck_model">
+                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-rose-200 to-rose-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-user text-rose-700"></i>
+                                </div>
+                                <p class="text-xs font-medium text-center">Kolye Modeli</p>
+                                <p class="text-[9px] text-slate-500 text-center">Boyun & Dekolte</p>
+                            </div>
+                            <div onclick="selectModelProfile('hand_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="hand_model">
+                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-hand text-amber-700"></i>
+                                </div>
+                                <p class="text-xs font-medium text-center">El Modeli</p>
+                                <p class="text-[9px] text-slate-500 text-center">Yüzük & Bileklik</p>
+                            </div>
+                            <div onclick="selectModelProfile('set_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="set_model">
+                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-violet-200 to-violet-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-gem text-violet-700"></i>
+                                </div>
+                                <p class="text-xs font-medium text-center">Set Modeli</p>
+                                <p class="text-[9px] text-slate-500 text-center">Kolye + Küpe</p>
+                            </div>
+                            <div onclick="selectModelProfile('boho_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="boho_model">
+                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-200 to-amber-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-sun text-orange-700"></i>
+                                </div>
+                                <p class="text-xs font-medium text-center">Bohem Modeli</p>
+                                <p class="text-[9px] text-slate-500 text-center">Doğal & Yazlık</p>
+                            </div>
+                        </div>
+
+                        <!-- Model Profile Info -->
+                        <div id="modelProfileInfo" class="mt-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                            <p class="text-[10px] text-purple-300" id="modelProfileDesc">
+                                <i class="fa-solid fa-info-circle mr-1"></i>
+                                Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Style Presets -->
                     <div class="glass rounded-2xl p-5">
                         <h3 class="font-semibold mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-palette text-blue-400"></i>
-                            Arka Plan
+                            Stil Preset'leri
                         </h3>
-
-                        <div class="mb-4">
-                            <label class="text-xs text-slate-400 mb-2 block">Düz Renk</label>
-                            <div class="flex gap-2 flex-wrap">
-                                <button onclick="setBg('#FFFFFF')" class="bg-btn w-10 h-10 rounded-lg bg-white border-2 border-orange-500" data-bg="#FFFFFF"></button>
-                                <button onclick="setBg('#F8F9FA')" class="bg-btn w-10 h-10 rounded-lg border-2 border-transparent hover:border-slate-400" style="background:#F8F9FA" data-bg="#F8F9FA"></button>
-                                <button onclick="setBg('#F5F5F5')" class="bg-btn w-10 h-10 rounded-lg border-2 border-transparent hover:border-slate-400" style="background:#F5F5F5" data-bg="#F5F5F5"></button>
-                                <button onclick="setBg('#000000')" class="bg-btn w-10 h-10 rounded-lg bg-black border-2 border-transparent hover:border-slate-400" data-bg="#000000"></button>
-                                <input type="color" id="customBg" value="#FFFFFF" onchange="setBg(this.value)" class="w-10 h-10 rounded-lg cursor-pointer">
+                        <div class="grid grid-cols-3 gap-3" id="stylePresets">
+                            <div onclick="selectStyle('studio')" class="style-card selected p-3 rounded-xl border border-slate-700 text-center" data-style="studio">
+                                <div class="w-full h-12 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg mb-2"></div>
+                                <p class="text-xs font-medium">Studio</p>
+                                <p class="text-[9px] text-slate-500">Pandora Style</p>
                             </div>
-                        </div>
-
-                        <!-- AI Scene Selection -->
-                        <div class="mb-2">
-                            <label class="text-xs text-slate-400 mb-2 block flex items-center gap-2">
-                                <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-                                AI Sahne
-                                <span id="sceneStatus" class="status-badge inactive">Seçilmedi</span>
-                            </label>
-                            <div class="grid grid-cols-3 gap-2" id="sceneOptions">
-                                <div onclick="selectScene('none')" class="scene-option selected p-2 rounded-lg border border-slate-700 text-center" data-scene="none">
-                                    <div class="w-full h-10 bg-white rounded mb-1"></div>
-                                    <p class="text-[10px]">Düz</p>
-                                </div>
-                                <div onclick="selectScene('studio')" class="scene-option p-2 rounded-lg border border-slate-700 text-center" data-scene="studio">
-                                    <div class="w-full h-10 bg-gradient-to-b from-gray-100 to-gray-300 rounded mb-1"></div>
-                                    <p class="text-[10px]">Stüdyo</p>
-                                </div>
-                                <div onclick="selectScene('marble')" class="scene-option p-2 rounded-lg border border-slate-700 text-center" data-scene="marble">
-                                    <div class="w-full h-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 rounded mb-1"></div>
-                                    <p class="text-[10px]">Mermer</p>
-                                </div>
-                                <div onclick="selectScene('wood')" class="scene-option p-2 rounded-lg border border-slate-700 text-center" data-scene="wood">
-                                    <div class="w-full h-10 bg-gradient-to-r from-amber-700 to-amber-600 rounded mb-1"></div>
-                                    <p class="text-[10px]">Ahşap</p>
-                                </div>
-                                <div onclick="selectScene('velvet')" class="scene-option p-2 rounded-lg border border-slate-700 text-center" data-scene="velvet">
-                                    <div class="w-full h-10 bg-gradient-to-br from-purple-900 to-purple-700 rounded mb-1"></div>
-                                    <p class="text-[10px]">Kadife</p>
-                                </div>
-                                <div onclick="selectScene('silk')" class="scene-option p-2 rounded-lg border border-slate-700 text-center" data-scene="silk">
-                                    <div class="w-full h-10 bg-gradient-to-br from-rose-100 to-pink-200 rounded mb-1"></div>
-                                    <p class="text-[10px]">İpek</p>
-                                </div>
+                            <div onclick="selectStyle('boho')" class="style-card p-3 rounded-xl border border-slate-700 text-center" data-style="boho">
+                                <div class="w-full h-12 bg-gradient-to-br from-amber-100 to-orange-200 rounded-lg mb-2"></div>
+                                <p class="text-xs font-medium">Boho</p>
+                                <p class="text-[9px] text-slate-500">Milka Style</p>
+                            </div>
+                            <div onclick="selectStyle('luxury')" class="style-card p-3 rounded-xl border border-slate-700 text-center" data-style="luxury">
+                                <div class="w-full h-12 bg-gradient-to-br from-slate-900 to-slate-700 rounded-lg mb-2"></div>
+                                <p class="text-xs font-medium">Luxury</p>
+                                <p class="text-[9px] text-slate-500">Cartier Style</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- LOCKED PRODUCT - No AI hallucination -->
+                    <!-- Anti-Hallucination Protection -->
                     <div class="glass rounded-2xl p-5 border border-green-500/30">
                         <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-lock text-green-400"></i>
-                            Ürün Kilitli
-                            <span class="status-badge active ml-auto">Halüsinasyon Yok</span>
+                            <i class="fa-solid fa-shield-check text-green-400"></i>
+                            Anti-Halüsinasyon Koruması
+                            <span class="status-badge active ml-auto">Aktif</span>
                         </h3>
                         <p class="text-xs text-slate-400 mb-3">
-                            Ürün <b class="text-green-400">asla AI'a gönderilmez</b>. Sadece arka plan üretilir, ürün olduğu gibi yerleştirilir.
+                            Ürün <b class="text-green-400">asla değiştirilmez</b>. AI sadece arka plan üretir, ürün üzerine bindirilir.
                         </p>
-
-                        <!-- Lock Toggle -->
-                        <div class="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-xl mb-3">
+                        <div class="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
                             <div>
-                                <p class="text-sm font-medium text-green-400"><i class="fa-solid fa-shield-check mr-1"></i> Güvenli Mod</p>
-                                <p class="text-[10px] text-slate-500">Ürün piksel piksel korunur</p>
+                                <p class="text-sm font-medium text-green-400"><i class="fa-solid fa-lock mr-1"></i> Composite Protection</p>
+                                <p class="text-[10px] text-slate-500">Orijinal ürün korunur</p>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="lockProductToggle" checked disabled class="sr-only peer">
+                                <input type="checkbox" id="compositeToggle" checked class="sr-only peer">
                                 <div class="w-11 h-6 bg-green-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:translate-x-5"></div>
                             </label>
                         </div>
 
-                        <!-- Procedural Scene Selection -->
+                        <!-- Tolerance Slider -->
                         <div class="mt-3">
-                            <label class="text-xs text-slate-400 mb-2 block">Sahne Tipi (Procedural)</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <div onclick="selectProceduralScene('lifestyle')" class="scene-option selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="lifestyle">
-                                    <div class="w-full h-8 bg-gradient-to-br from-amber-50 to-orange-100 rounded mb-1 relative overflow-hidden">
-                                        <div class="absolute w-4 h-4 bg-white/40 rounded-full top-1 left-2 blur-sm"></div>
-                                        <div class="absolute w-3 h-3 bg-white/30 rounded-full bottom-1 right-3 blur-sm"></div>
-                                    </div>
-                                    <p class="text-[10px]">Lifestyle</p>
-                                </div>
-                                <div onclick="selectProceduralScene('studio_dark')" class="scene-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="studio_dark">
-                                    <div class="w-full h-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded mb-1 relative">
-                                        <div class="absolute w-6 h-6 bg-white/5 rounded-full top-0 left-1/2 -translate-x-1/2 blur-md"></div>
-                                    </div>
-                                    <p class="text-[10px]">Studio Dark</p>
-                                </div>
-                                <div onclick="selectProceduralScene('studio_light')" class="scene-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="studio_light">
-                                    <div class="w-full h-8 bg-gradient-to-br from-gray-100 to-white rounded mb-1"></div>
-                                    <p class="text-[10px]">Studio Light</p>
-                                </div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">Arka Plan Toleransı</span>
+                                <span id="toleranceVal" class="text-green-400">30</span>
                             </div>
-                            <button onclick="randomizeScene()" class="w-full mt-2 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs transition-colors">
-                                <i class="fa-solid fa-shuffle mr-1"></i> Varyasyon
-                            </button>
-                        </div>
-
-                        <!-- QA Checklist -->
-                        <details class="mt-3">
-                            <summary class="text-[10px] text-slate-500 cursor-pointer">Halüsinasyon QA Listesi</summary>
-                            <ul class="text-[10px] text-slate-500 mt-2 ml-4 space-y-1">
-                                <li>✓ Taş sayısı / motif aynı mı?</li>
-                                <li>✓ Zincir kalınlığı / klips aynı mı?</li>
-                                <li>✓ Ürün oranı (en/boy) bozuldu mu?</li>
-                                <li>✓ Ürün üzerinde yeni detay çıktı mı?</li>
-                            </ul>
-                        </details>
-                    </div>
-
-                    <!-- Adjustments - Product Placement -->
-                    <div class="glass rounded-2xl p-5">
-                        <h3 class="font-semibold mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-sliders text-green-400"></i>
-                            Ürün Yerleştirme
-                        </h3>
-
-                        <div class="space-y-4">
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Ürün Ölçek</span>
-                                    <span id="scaleVal" class="text-orange-400">60%</span>
-                                </div>
-                                <input type="range" id="scaleRange" min="20" max="100" value="60" oninput="updateAdjustment('scale', this.value)" class="w-full">
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Yukarı/Aşağı</span>
-                                    <span id="offsetYVal" class="text-orange-400">0px</span>
-                                </div>
-                                <input type="range" id="offsetYRange" min="-200" max="200" value="0" oninput="updateAdjustment('offsetY', this.value)" class="w-full">
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Gölge</span>
-                                    <span id="shadowVal" class="text-orange-400">45%</span>
-                                </div>
-                                <input type="range" id="shadowRange" min="0" max="100" value="45" oninput="updateAdjustment('shadow', this.value)" class="w-full">
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Parlaklık</span>
-                                    <span id="brightnessVal" class="text-orange-400">100%</span>
-                                </div>
-                                <input type="range" id="brightnessRange" min="50" max="150" value="100" oninput="updateAdjustment('brightness', this.value)" class="w-full">
-                            </div>
+                            <input type="range" id="toleranceRange" min="10" max="80" value="30" oninput="updateTolerance(this.value)" class="w-full">
                         </div>
                     </div>
 
-                    <!-- FINAL STEP: Model Mounting (Optional) -->
-                    <div class="glass rounded-2xl p-5 border border-purple-500/30">
-                        <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-user text-purple-400"></i>
-                            Son Adım: Model Montajı
-                            <span id="humanMountStatus" class="status-badge inactive ml-auto">Kapalı</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mb-3">
-                            Ürünü <b class="text-purple-400">gerçek model fotoğrafına</b> monte et
-                        </p>
-
-                        <!-- Toggle -->
-                        <div class="flex items-center justify-between p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-3">
-                            <div>
-                                <p class="text-sm font-medium">Model Montajı</p>
-                                <p class="text-[10px] text-slate-500">Ürün bozulmadan modele yerleştirilir</p>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="humanMountToggle" onchange="toggleHumanMount()" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
-                            </label>
-                        </div>
-
-                        <!-- Model Type Selection (shown when toggle is ON) -->
-                        <div id="humanMountOptions" class="hidden">
-                            <label class="text-xs text-slate-400 mb-2 block">Model Tipi Seç</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div onclick="selectModelType('blonde')" class="model-type-option selected p-3 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-model="blonde">
-                                    <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-amber-700"></i>
-                                    </div>
-                                    <p class="text-xs font-medium">Sarışın</p>
-                                    <p class="text-[9px] text-slate-500">Blonde Model</p>
-                                </div>
-                                <div onclick="selectModelType('brunette')" class="model-type-option p-3 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-model="brunette">
-                                    <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-amber-200"></i>
-                                    </div>
-                                    <p class="text-xs font-medium">Esmer</p>
-                                    <p class="text-[9px] text-slate-500">Brunette Model</p>
-                                </div>
-                                <div onclick="selectModelType('asian')" class="model-type-option p-3 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-model="asian">
-                                    <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-amber-800"></i>
-                                    </div>
-                                    <p class="text-xs font-medium">Asyalı</p>
-                                    <p class="text-[9px] text-slate-500">Asian Model</p>
-                                </div>
-                                <div onclick="selectModelType('nordic')" class="model-type-option p-3 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-model="nordic">
-                                    <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-slate-100 to-blue-100 flex items-center justify-center">
-                                        <i class="fa-solid fa-user text-slate-600"></i>
-                                    </div>
-                                    <p class="text-xs font-medium">Nordic</p>
-                                    <p class="text-[9px] text-slate-500">Scandinavian</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                                <p class="text-[10px] text-green-400">
-                                    <i class="fa-solid fa-check-circle mr-1"></i>
-                                    Ürün piksel piksel korunur, sadece model arka planı değişir
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Process Button -->
-                    <button onclick="processImage()" id="processBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 font-bold text-lg transition-all glow">
+                    <!-- Generate Button -->
+                    <button onclick="generateImage()" id="generateBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 font-bold text-lg transition-all glow-purple">
                         <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
-                        Görseli Oluştur
+                        Realistik Görsel Oluştur
                     </button>
                 </div>
 
-                <!-- Right Panel: Preview -->
-                <div class="lg:col-span-8">
-                    <div class="glass rounded-2xl p-6 h-full">
+                <!-- Right Panel: Preview & Gallery -->
+                <div class="lg:col-span-7 space-y-4">
+
+                    <!-- Main Preview -->
+                    <div class="glass rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-semibold flex items-center gap-2">
                                 <i class="fa-solid fa-eye text-slate-400"></i>
                                 Önizleme
                             </h3>
-                            <div id="previewInfo" class="text-xs text-slate-500">
-                                <span id="previewSize">1000x1000</span> •
-                                <span id="previewFormat">JPEG</span>
+                            <div class="flex items-center gap-2">
+                                <span id="engineBadge" class="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
+                                    <i class="fa-brands fa-google mr-1"></i>Gemini
+                                </span>
                             </div>
                         </div>
 
-                        <div id="previewArea" class="relative rounded-xl overflow-hidden min-h-[500px] flex items-center justify-center" style="background: #FFFFFF;">
-                            <!-- Loading -->
-                            <div id="previewLoader" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-                                <div class="text-center">
-                                    <div class="loader mx-auto mb-4"></div>
-                                    <p id="previewLoaderText" class="text-sm">İşleniyor...</p>
-                                </div>
+                        <div id="previewArea" class="relative rounded-xl overflow-hidden min-h-[400px] bg-slate-800/50 flex items-center justify-center">
+                            <!-- Loading Overlay -->
+                            <div id="previewLoader" class="hidden absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-10">
+                                <div class="loader mb-4"></div>
+                                <p id="loaderText" class="text-sm text-slate-300">İşleniyor...</p>
+                                <p id="loaderSubtext" class="text-xs text-slate-500 mt-1">Lütfen bekleyin</p>
                             </div>
 
-                            <!-- Result -->
-                            <img id="previewImage" class="max-w-full max-h-[500px] shadow-2xl rounded-lg">
-                        </div>
-
-                        <!-- Current Settings Display -->
-                        <div id="currentSettings" class="mt-4 p-3 bg-slate-800/30 rounded-xl text-xs">
-                            <div class="flex flex-wrap gap-2">
-                                <span class="px-2 py-1 bg-slate-700 rounded">Sahne: <span id="currentScene" class="text-orange-400">Düz</span></span>
-                                <span class="px-2 py-1 bg-slate-700 rounded">Manken: <span id="currentMannequin" class="text-purple-400">Yok</span></span>
-                                <span class="px-2 py-1 bg-slate-700 rounded">Boyut: <span id="currentSize" class="text-green-400">1000x1000</span></span>
+                            <!-- Preview Image -->
+                            <div id="previewPlaceholder" class="text-center text-slate-500">
+                                <i class="fa-solid fa-image text-4xl mb-3"></i>
+                                <p class="text-sm">Ürün yükleyin ve AI görsel oluşturun</p>
                             </div>
+                            <img id="previewImage" class="hidden max-w-full max-h-[500px] rounded-lg shadow-2xl">
                         </div>
 
                         <!-- Download Actions -->
                         <div id="downloadActions" class="hidden mt-4 flex flex-wrap gap-3">
                             <button onclick="downloadImage('jpeg')" class="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 font-semibold transition-colors">
-                                <i class="fa-solid fa-download mr-2"></i>JPEG İndir
+                                <i class="fa-solid fa-download mr-2"></i>JPEG
                             </button>
                             <button onclick="downloadImage('png')" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold transition-colors">
-                                <i class="fa-solid fa-download mr-2"></i>PNG İndir
+                                <i class="fa-solid fa-download mr-2"></i>PNG
                             </button>
-                            <button onclick="downloadImage('webp')" class="py-3 px-6 rounded-xl bg-purple-600 hover:bg-purple-500 font-semibold transition-colors">
-                                <i class="fa-solid fa-download mr-2"></i>WebP
+                            <button onclick="addToGallery()" class="py-3 px-6 rounded-xl bg-purple-600 hover:bg-purple-500 font-semibold transition-colors">
+                                <i class="fa-solid fa-plus mr-2"></i>Galeriye Ekle
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Mini Gallery (4 slots) -->
+                    <div class="glass rounded-2xl p-5">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-grip text-slate-400"></i>
+                            Hızlı Galeri
+                            <span class="text-xs text-slate-500 ml-auto">4 slot</span>
+                        </h3>
+                        <div class="grid grid-cols-4 gap-3" id="miniGallery">
+                            <div class="gallery-slot border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center" data-slot="0">
+                                <i class="fa-solid fa-plus text-slate-600"></i>
+                            </div>
+                            <div class="gallery-slot border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center" data-slot="1">
+                                <i class="fa-solid fa-plus text-slate-600"></i>
+                            </div>
+                            <div class="gallery-slot border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center" data-slot="2">
+                                <i class="fa-solid fa-plus text-slate-600"></i>
+                            </div>
+                            <div class="gallery-slot border-2 border-dashed border-slate-700 rounded-xl flex items-center justify-center" data-slot="3">
+                                <i class="fa-solid fa-plus text-slate-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Tab -->
+        <section id="galleryTab" class="hidden">
+            <div class="glass rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-semibold text-lg">Tüm Görseller</h3>
+                    <button onclick="clearGallery()" class="text-xs text-red-400 hover:text-red-300">
+                        <i class="fa-solid fa-trash mr-1"></i>Temizle
+                    </button>
+                </div>
+                <div id="fullGallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center text-slate-500 col-span-full py-12">
+                        <i class="fa-solid fa-images text-4xl mb-3"></i>
+                        <p>Henüz görsel yok</p>
                     </div>
                 </div>
             </div>
@@ -613,8 +387,8 @@
     </main>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div class="glass rounded-2xl w-full max-w-lg p-6 my-8">
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-2xl w-full max-w-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="font-bold text-lg">API Ayarları</h3>
                 <button onclick="closeSettings()" class="text-slate-400 hover:text-white">
@@ -623,31 +397,17 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Google AI -->
-                <div class="p-4 bg-slate-800/30 rounded-xl border border-green-500/30">
+                <!-- Google AI (Gemini) -->
+                <div class="p-4 bg-slate-800/30 rounded-xl border border-blue-500/30">
                     <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
-                        <i class="fa-brands fa-google text-blue-400"></i> Google AI (Gemini)
+                        <i class="fa-brands fa-google text-blue-400"></i> Google AI (Gemini 2.5)
                         <span class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">ÖNERİLEN</span>
                     </label>
-                    <input type="password" id="apiKeyInput"
-                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-orange-500 outline-none"
+                    <input type="password" id="geminiKeyInput"
+                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 outline-none"
                            placeholder="AIza...">
                     <p class="text-xs text-slate-500 mt-1">
-                        <span class="text-green-400">✨ Analiz + AI Manken</span> • <a href="https://aistudio.google.com/apikey" target="_blank" class="text-orange-400 hover:underline">Ücretsiz al</a>
-                    </p>
-                </div>
-
-                <!-- API Status -->
-                <div class="p-3 bg-slate-900/50 rounded-lg">
-                    <p class="text-xs text-slate-400 mb-2">API Durumu:</p>
-                    <div class="flex flex-wrap gap-2">
-                        <span id="geminiStatus" class="text-[10px] px-2 py-1 bg-slate-800 rounded flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Gemini
-                        </span>
-                    </div>
-                    <p class="text-[10px] text-slate-500 mt-2">
-                        <i class="fa-solid fa-info-circle mr-1"></i>
-                        Sadece Gemini API kullanılıyor (analiz + insan montajı)
+                        <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 hover:underline">Ücretsiz API key al</a>
                     </p>
                 </div>
             </div>
@@ -671,108 +431,92 @@
         let state = {
             originalImage: null,
             originalBase64: null,
-            removedBgImage: null,
             processedImage: null,
-            currentStep: 1,
-            analysis: null,
+            gallery: [],
             settings: {
-                preset: 'main',
-                bgColor: '#FFFFFF',
-                scene: 'none',
-                proceduralScene: 'lifestyle',
-                scale: 60,
-                offsetY: 0,
-                shadow: 45,
-                brightness: 100,
-                seed: Math.random() * 1e9,
-                // Model mounting settings
-                humanMount: false,
-                modelType: 'blonde'
+                modelProfile: 'neck_model',
+                style: 'studio',
+                tolerance: 30,
+                compositeEnabled: true
             }
         };
 
-        const PRESETS = {
-            main: { width: 1000, height: 1000, name: 'Ana Görsel', bg: '#FFFFFF' },
-            detail: { width: 1000, height: 1500, name: 'Detay', bg: '#FFFFFF' },
-            lifestyle: { width: 1000, height: 1000, name: 'Lifestyle', bg: '#F5F5F5' },
-            social: { width: 1080, height: 1080, name: 'Sosyal Medya', bg: '#FFFFFF' }
+        // ========== MODEL PROFILES - REALISM BOOST ==========
+        const modelProfiles = {
+            'neck_model': {
+                desc: "Jewelry Photography: Headless cropped shot of a female model focusing on the neck. Real human skin texture with pores and natural imperfections. Clean skin but NOT airbrushed. Hands completely away from the necklace/neck area. Hair tied back. Clear view of the decolletage.",
+                info: "Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar."
+            },
+            'hand_model': {
+                desc: "Hand jewelry photography: Elegant female hands with natural skin texture. Visible pores, subtle veins, and realistic nail beds. Fingers slightly spread to showcase rings. Wrist visible for bracelets. Real human hands, not mannequin.",
+                info: "El Modeli: Yüzük & bileklik için doğal el görünümü."
+            },
+            'set_model': {
+                desc: "Jewelry set photography: Female model from shoulders up, showing both neck and ears. Real skin texture with natural undertones. Hair elegantly styled away from ears and neck. Coordinated necklace and earring display on living human skin.",
+                info: "Set Modeli: Kolye + küpe birlikte görüntüleme."
+            },
+            'boho_model': {
+                desc: "Bohemian lifestyle jewelry photography: Sun-kissed skin with natural warmth. Outdoor lighting feel. Relaxed, natural pose. Visible freckles and tan lines welcome. Beach or nature vibes. Authentic human appearance.",
+                info: "Bohem Modeli: Doğal & yazlık görünüm."
+            }
         };
 
-        const SCENE_NAMES = {
-            none: 'Düz',
-            studio: 'Stüdyo',
-            marble: 'Mermer',
-            wood: 'Ahşap',
-            velvet: 'Kadife',
-            silk: 'İpek'
+        // ========== STYLE PRESETS ==========
+        const stylePresets = {
+            'studio': {
+                prompt: "Style: Commercial Studio Photography. Pure white or light grey background. Even lighting, no hard shadows. Clean, minimalist, high-end e-commerce look. Pandora/Tiffany aesthetic.",
+                bg: "#f5f5f5"
+            },
+            'boho': {
+                prompt: "Style: Bohemian Aesthetic. Warm earth tones, beige/sand colors. Natural organic textures (stone, wood, linen) in background. Soft sun flare. Lifestyle photography feel.",
+                bg: "#f5e6d3"
+            },
+            'luxury': {
+                prompt: "Style: Luxury Dark Mode. Black or deep navy background. Marble or velvet textures. Spot lighting to create dramatic highlights. Premium, expensive look. Cartier/Bulgari aesthetic.",
+                bg: "#1a1a1a"
+            }
         };
 
-        const TEMPLATE_NAMES = {
-            ring_stand: 'Yüzük Standı',
-            necklace_tbar: 'Kolye T-Bar',
-            earring_card: 'Küpe Kartı',
-            bracelet_cushion: 'Bileklik Yastık'
-        };
-
-        const PHOTOGRAPHER_ANALYSIS_PROMPT = `Sen profesyonel bir e-ticaret fotoğrafçısısın. 15 yıllık deneyiminle bu ürün fotoğrafını analiz et.
-
-GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey yazma):
-
-{
-    "productType": "ürün tipi (takı/giyim/aksesuar/elektronik/ev/diğer)",
-    "productCategory": "alt kategori (kolye/yüzük/bileklik/küpe/saat vb.)",
-    "qualityScore": 0-100 arası puan,
-    "currentIssues": [
-        {"issue": "sorun açıklaması", "severity": "high/medium/low"}
-    ],
-    "recommendations": [
-        {"tip": "öneri", "priority": "must/should/could"}
-    ],
-    "suggestedMannequin": "none/hand_female/neck_bust/ear_display/wrist_display/finger_ring",
-    "suggestedScene": "none/studio/marble/velvet",
-    "trendyolReady": true/false,
-    "isJewelry": true/false
-}`;
+        // ========== CRITICAL: SKIN FIX PROMPT ==========
+        const skinFix = " Render the neck/skin as hyper-realistic living human skin with pores and texture. REMOVE any plastic mannequin seams, stands, or artificial holders. The jewelry should rest naturally on human skin. NO mannequin, NO plastic, NO artificial appearance. ";
 
         // ========== INIT ==========
         window.onload = () => {
             loadSettings();
             setupDragDrop();
-            updateCurrentSettingsDisplay();
         };
+
+        // ========== TAB SWITCHING ==========
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.closest('.tab-btn').classList.add('active');
+
+            document.getElementById('studioTab').classList.toggle('hidden', tab !== 'studio');
+            document.getElementById('galleryTab').classList.toggle('hidden', tab !== 'gallery');
+        }
 
         // ========== SETTINGS ==========
         function loadSettings() {
-            const apiKey = localStorage.getItem('google_ai_key');
-
+            const apiKey = localStorage.getItem('gemini_api_key');
             if (apiKey) {
-                document.getElementById('apiKeyInput').value = apiKey;
-                validateGeminiKey(apiKey);
+                document.getElementById('geminiKeyInput').value = apiKey;
+                validateApiKey(apiKey);
             }
         }
 
-        function updateApiStatus(elementId, isActive) {
-            const el = document.getElementById(elementId);
-            if (el) {
-                const dot = el.querySelector('span');
-                if (dot) {
-                    dot.className = `w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-red-500'}`;
-                }
-            }
-        }
-
-        async function validateGeminiKey(key) {
+        async function validateApiKey(key) {
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
                 if (res.ok) {
                     document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-green-500';
                     document.getElementById('apiStatus').textContent = 'Gemini Bağlı';
                     document.getElementById('apiStatus').className = 'text-xs text-green-400';
-                    updateApiStatus('geminiStatus', true);
+                    return true;
                 }
             } catch(e) {
                 console.error(e);
             }
+            return false;
         }
 
         function openSettings() {
@@ -784,25 +528,13 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
         }
 
         function saveSettings() {
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
-
-            if (apiKey) {
-                localStorage.setItem('google_ai_key', apiKey);
-                validateGeminiKey(apiKey);
+            const geminiKey = document.getElementById('geminiKeyInput').value.trim();
+            if (geminiKey) {
+                localStorage.setItem('gemini_api_key', geminiKey);
+                validateApiKey(geminiKey);
             }
-
             closeSettings();
             showToast('API ayarları kaydedildi', 'success');
-        }
-
-        // ========== UTILITY ==========
-        function blobToBase64(blob) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
         }
 
         // ========== FILE UPLOAD ==========
@@ -810,13 +542,8 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             const dropZone = document.getElementById('dropZone');
 
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
-                dropZone.addEventListener(e, preventDefaults, false);
+                dropZone.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }, false);
             });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
 
             ['dragenter', 'dragover'].forEach(e => {
                 dropZone.addEventListener(e, () => dropZone.classList.add('border-orange-500', 'bg-orange-500/10'), false);
@@ -852,1326 +579,336 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
                     document.getElementById('uploadPreviewContainer').classList.remove('hidden');
                     document.getElementById('uploadPreview').src = state.originalBase64;
                     document.getElementById('fileName').textContent = `${file.name} (${img.width}x${img.height})`;
-                    document.getElementById('uploadActions').classList.remove('hidden');
+
+                    showToast('Ürün yüklendi', 'success');
                 };
                 img.src = state.originalBase64;
             };
             reader.readAsDataURL(file);
         }
 
-        function clearUpload() {
-            state.originalImage = null;
-            state.originalBase64 = null;
-            state.analysis = null;
+        // ========== MODEL PROFILE SELECTION ==========
+        function selectModelProfile(profile) {
+            state.settings.modelProfile = profile;
 
-            document.getElementById('uploadPrompt').classList.remove('hidden');
-            document.getElementById('uploadPreviewContainer').classList.add('hidden');
-            document.getElementById('uploadActions').classList.add('hidden');
-            document.getElementById('fileInput').value = '';
+            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-model="${profile}"]`)?.classList.add('selected');
 
-            goToStep(1);
+            document.getElementById('modelProfileDesc').innerHTML =
+                '<i class="fa-solid fa-info-circle mr-1"></i>' + modelProfiles[profile].info;
+
+            showToast(`${profile.replace('_', ' ')} profili seçildi`, 'success');
         }
 
-        // ========== ANALYSIS ==========
-        async function startAnalysis() {
-            const apiKey = localStorage.getItem('google_ai_key');
+        // ========== STYLE SELECTION ==========
+        function selectStyle(style) {
+            state.settings.style = style;
+
+            document.querySelectorAll('.style-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-style="${style}"]`)?.classList.add('selected');
+
+            showToast(`${style.charAt(0).toUpperCase() + style.slice(1)} stili seçildi`, 'success');
+        }
+
+        // ========== TOLERANCE ==========
+        function updateTolerance(value) {
+            state.settings.tolerance = parseInt(value);
+            document.getElementById('toleranceVal').textContent = value;
+        }
+
+        // ========== MAIN IMAGE GENERATION ==========
+        async function generateImage() {
+            const apiKey = localStorage.getItem('gemini_api_key');
             if (!apiKey) {
                 openSettings();
                 showToast('Lütfen API Key girin', 'error');
                 return;
             }
 
-            goToStep(2);
-            document.getElementById('analysisSection').classList.remove('hidden');
-            document.getElementById('analysisOriginal').src = state.originalBase64;
-            document.getElementById('imgDimensions').textContent = `${state.originalImage.width}x${state.originalImage.height}`;
-            document.getElementById('imgFormat').textContent = state.originalBase64.split(';')[0].split('/')[1].toUpperCase();
+            if (!state.originalBase64) {
+                showToast('Önce bir ürün yükleyin', 'error');
+                return;
+            }
 
-            document.getElementById('analysisLoader').classList.remove('hidden');
-            document.getElementById('analysisContent').classList.add('hidden');
+            showLoader('Ürün analiz ediliyor...', 'JSON özellikleri çıkarılıyor');
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: PHOTOGRAPHER_ANALYSIS_PROMPT },
-                                { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] }}
-                            ]
-                        }]
-                    })
-                });
+                // STEP 1: Analyze product features (JSON)
+                const productFeatures = await analyzeProductFeatures(apiKey, state.originalBase64);
+                console.log('📋 Ürün özellikleri:', productFeatures);
 
-                const data = await response.json();
-                let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                showLoader('Model görseli oluşturuluyor...', 'AI ile gerçekçi render');
 
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    state.analysis = JSON.parse(jsonMatch[0]);
-                    displayAnalysis(state.analysis);
+                // STEP 2: Generate realistic model image
+                const aiGeneratedImage = await generateModelImage(apiKey, productFeatures);
+
+                // STEP 3: Anti-hallucination composite (if enabled)
+                if (state.settings.compositeEnabled) {
+                    showLoader('Composite koruma uygulanıyor...', 'Orijinal ürün korunuyor');
+                    state.processedImage = await compositeProtection(aiGeneratedImage, state.originalBase64);
                 } else {
-                    throw new Error('Analiz sonucu alınamadı');
+                    state.processedImage = aiGeneratedImage;
                 }
-
-            } catch (e) {
-                console.error('Analysis error:', e);
-                state.analysis = {
-                    productType: 'ürün',
-                    productCategory: 'genel',
-                    qualityScore: 70,
-                    currentIssues: [{ issue: 'Arka plan düzensiz', severity: 'medium' }],
-                    recommendations: [{ tip: 'Beyaz arka plan kullanın', priority: 'must' }],
-                    suggestedMannequin: 'none',
-                    suggestedScene: 'none',
-                    trendyolReady: false,
-                    isJewelry: false
-                };
-                displayAnalysis(state.analysis);
-            }
-
-            document.getElementById('analysisLoader').classList.add('hidden');
-            document.getElementById('analysisContent').classList.remove('hidden');
-        }
-
-        function displayAnalysis(analysis) {
-            const score = analysis.qualityScore || 70;
-            document.getElementById('scoreValue').textContent = score;
-            document.querySelector('.analysis-score').style.setProperty('--score', score);
-
-            let scoreLabel = 'İyi';
-            let scoreDesc = 'Fotoğraf kalitesi kabul edilebilir';
-            if (score >= 80) { scoreLabel = 'Mükemmel'; scoreDesc = 'Profesyonel kalitede'; }
-            else if (score >= 60) { scoreLabel = 'İyi'; scoreDesc = 'Küçük iyileştirmeler gerekli'; }
-            else if (score >= 40) { scoreLabel = 'Orta'; scoreDesc = 'Önemli iyileştirmeler gerekli'; }
-            else { scoreLabel = 'Düşük'; scoreDesc = 'Yeniden çekim önerilir'; }
-
-            document.getElementById('scoreLabel').textContent = scoreLabel;
-            document.getElementById('scoreDescription').textContent = scoreDesc;
-
-            document.getElementById('productType').textContent = analysis.productType || 'Ürün';
-            document.getElementById('productCategory').textContent = analysis.productCategory || 'Genel';
-
-            const issuesList = document.getElementById('issuesList');
-            issuesList.innerHTML = '';
-            (analysis.currentIssues || []).forEach(issue => {
-                const color = issue.severity === 'high' ? 'red' : issue.severity === 'medium' ? 'yellow' : 'blue';
-                issuesList.innerHTML += `
-                    <div class="flex items-start gap-2 p-2 rounded-lg bg-${color}-500/10">
-                        <i class="fa-solid fa-exclamation-triangle text-${color}-400 mt-0.5"></i>
-                        <span class="text-sm">${issue.issue}</span>
-                    </div>`;
-            });
-
-            const recList = document.getElementById('recommendationsList');
-            recList.innerHTML = '';
-            (analysis.recommendations || []).forEach(rec => {
-                const icon = rec.priority === 'must' ? 'star' : rec.priority === 'should' ? 'lightbulb' : 'circle-info';
-                recList.innerHTML += `
-                    <div class="flex items-start gap-2 p-2 rounded-lg bg-green-500/10">
-                        <i class="fa-solid fa-${icon} text-green-400 mt-0.5"></i>
-                        <span class="text-sm">${rec.tip}</span>
-                    </div>`;
-            });
-
-            // Auto-suggest mannequin and scene
-            if (analysis.suggestedMannequin && analysis.suggestedMannequin !== 'none') {
-                selectMannequin(analysis.suggestedMannequin);
-            }
-            if (analysis.suggestedScene && analysis.suggestedScene !== 'none') {
-                selectScene(analysis.suggestedScene);
-            }
-        }
-
-        function proceedToEdit() {
-            goToStep(3);
-            document.getElementById('editSection').classList.remove('hidden');
-            document.getElementById('previewImage').src = state.originalBase64;
-            document.getElementById('editSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ========== STEP NAVIGATION ==========
-        function goToStep(step) {
-            state.currentStep = step;
-
-            for (let i = 1; i <= 4; i++) {
-                const el = document.getElementById(`step${i}`);
-                el.classList.remove('active', 'completed');
-
-                if (i < step) el.classList.add('completed');
-                else if (i === step) el.classList.add('active');
-            }
-        }
-
-        // ========== EDIT CONTROLS ==========
-        function selectPreset(preset) {
-            state.settings.preset = preset;
-
-            document.querySelectorAll('.preset-card').forEach(el => el.classList.remove('selected'));
-            document.querySelector(`[data-preset="${preset}"]`)?.classList.add('selected');
-
-            const p = PRESETS[preset];
-            document.getElementById('previewSize').textContent = `${p.width}x${p.height}`;
-            setBg(p.bg);
-            updateCurrentSettingsDisplay();
-            // Live preview update
-            updateLivePreview();
-        }
-
-        function setBg(color) {
-            state.settings.bgColor = color;
-
-            document.querySelectorAll('.bg-btn').forEach(el => {
-                el.classList.remove('border-orange-500');
-                el.classList.add('border-transparent');
-            });
-
-            const btn = document.querySelector(`[data-bg="${color}"]`);
-            if (btn) {
-                btn.classList.remove('border-transparent');
-                btn.classList.add('border-orange-500');
-            }
-
-            document.getElementById('previewArea').style.background = color;
-            // Live preview update
-            updateLivePreview();
-        }
-
-        // ========== SCENE SELECTION - FIXED ==========
-        function selectScene(scene) {
-            console.log('selectScene called with:', scene);
-            state.settings.scene = scene;
-
-            // Remove selected class from all scene options
-            document.querySelectorAll('.scene-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-
-            // Add selected class to the chosen one
-            const selectedEl = document.querySelector(`[data-scene="${scene}"]`);
-            if (selectedEl) {
-                selectedEl.classList.add('selected');
-            }
-
-            // Update status badge
-            const statusBadge = document.getElementById('sceneStatus');
-            if (scene !== 'none') {
-                statusBadge.textContent = SCENE_NAMES[scene] || scene;
-                statusBadge.className = 'status-badge active';
-                showToast(`${SCENE_NAMES[scene]} sahnesi seçildi`, 'success');
-            } else {
-                statusBadge.textContent = 'Seçilmedi';
-                statusBadge.className = 'status-badge inactive';
-            }
-
-            updateCurrentSettingsDisplay();
-            // Live preview update
-            updateLivePreview();
-        }
-
-        // ========== AI PLACEMENT & TEMPLATE SELECTION ==========
-        function toggleAIPlacement() {
-            const toggle = document.getElementById('aiPlacementToggle');
-            state.settings.aiPlacement = toggle.checked;
-
-            const templateOptions = document.getElementById('templateOptions');
-            const statusBadge = document.getElementById('mannequinStatus');
-
-            if (state.settings.aiPlacement) {
-                templateOptions.classList.remove('hidden');
-                statusBadge.textContent = TEMPLATE_NAMES[state.settings.template] || 'Aktif';
-                statusBadge.className = 'status-badge active';
-                showToast('AI Yerleştirme aktif - ' + TEMPLATE_NAMES[state.settings.template], 'success');
-            } else {
-                templateOptions.classList.add('hidden');
-                statusBadge.textContent = 'Kapalı';
-                statusBadge.className = 'status-badge inactive';
-            }
-
-            updateCurrentSettingsDisplay();
-        }
-
-        function selectTemplate(type) {
-            state.settings.template = type;
-
-            // Remove selected class from all template options
-            document.querySelectorAll('.template-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-
-            // Add selected class to the chosen one
-            const selectedEl = document.querySelector(`[data-template="${type}"]`);
-            if (selectedEl) {
-                selectedEl.classList.add('selected');
-            }
-
-            // Update status badge
-            const statusBadge = document.getElementById('mannequinStatus');
-            statusBadge.textContent = TEMPLATE_NAMES[type] || type;
-
-            showToast(`${TEMPLATE_NAMES[type]} şablonu seçildi`, 'success');
-            updateCurrentSettingsDisplay();
-        }
-
-        function updateAdjustment(type, value) {
-            state.settings[type] = parseInt(value);
-            const valEl = document.getElementById(`${type}Val`);
-            if (valEl) {
-                if (type === 'offsetY') {
-                    valEl.textContent = value + 'px';
-                } else {
-                    valEl.textContent = value + '%';
-                }
-            }
-            // Live preview update
-            updateLivePreview();
-        }
-
-        // Procedural scene selection
-        function selectProceduralScene(scene) {
-            state.settings.proceduralScene = scene;
-            document.querySelectorAll('[data-pscene]').forEach(el => {
-                el.classList.remove('selected');
-            });
-            const selectedEl = document.querySelector(`[data-pscene="${scene}"]`);
-            if (selectedEl) selectedEl.classList.add('selected');
-            showToast(`${scene.charAt(0).toUpperCase() + scene.slice(1).replace('_', ' ')} sahnesi seçildi`, 'success');
-            // Live preview update
-            updateLivePreview();
-        }
-
-        function randomizeScene() {
-            state.settings.seed = Math.random() * 1e9;
-            showToast('Yeni varyasyon oluşturuldu', 'success');
-            // Live preview update
-            updateLivePreview();
-        }
-
-        // Live preview - updates instantly without AI
-        let previewDebounceTimer = null;
-        function updateLivePreview() {
-            // Only update if we have a removed background image
-            if (!state.removedBgImage) return;
-
-            // Debounce to prevent too many updates
-            if (previewDebounceTimer) clearTimeout(previewDebounceTimer);
-            previewDebounceTimer = setTimeout(() => {
-                generateLivePreview();
-            }, 50);
-        }
-
-        function generateLivePreview() {
-            if (!state.removedBgImage) return;
-
-            const preset = PRESETS[state.settings.preset];
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            canvas.width = preset.width;
-            canvas.height = preset.height;
-
-            // Step 1: Draw procedural background
-            drawProceduralBackground(ctx, canvas.width, canvas.height, state.settings.proceduralScene);
-
-            // Step 2: Apply any selected scene overlay
-            if (state.settings.scene !== 'none') {
-                applySceneBackground(ctx, canvas.width, canvas.height);
-            }
-
-            // Step 3: Draw product LOCKED
-            const img = state.removedBgImage;
-            const scalePct = state.settings.scale / 100;
-            const offsetY = state.settings.offsetY;
-
-            const targetW = img.width * scalePct;
-            const targetH = img.height * scalePct;
-
-            const x = (canvas.width - targetW) / 2;
-            const y = (canvas.height - targetH) / 2 + offsetY;
-
-            // Soft shadow
-            const shadowStrength = state.settings.shadow / 100;
-            if (shadowStrength > 0) {
-                drawSoftShadow(ctx, x, y, targetW, targetH, shadowStrength);
-            }
-
-            // Apply brightness and draw product
-            ctx.filter = `brightness(${state.settings.brightness}%)`;
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, x, y, targetW, targetH);
-            ctx.filter = 'none';
-
-            // Update preview image
-            const previewImg = document.getElementById('previewImage');
-            previewImg.src = canvas.toDataURL('image/jpeg', 0.85);
-
-            // Update preview background
-            const previewArea = document.getElementById('previewArea');
-            previewArea.style.background = state.settings.bgColor;
-        }
-
-        // ========== MODEL MOUNTING FUNCTIONS ==========
-        function toggleHumanMount() {
-            const toggle = document.getElementById('humanMountToggle');
-            state.settings.humanMount = toggle.checked;
-
-            const options = document.getElementById('humanMountOptions');
-            const statusBadge = document.getElementById('humanMountStatus');
-
-            if (state.settings.humanMount) {
-                options.classList.remove('hidden');
-                statusBadge.textContent = 'Aktif';
-                statusBadge.className = 'status-badge active';
-                showToast('Model montajı aktif', 'success');
-            } else {
-                options.classList.add('hidden');
-                statusBadge.textContent = 'Kapalı';
-                statusBadge.className = 'status-badge inactive';
-            }
-        }
-
-        function selectModelType(modelType) {
-            state.settings.modelType = modelType;
-            document.querySelectorAll('.model-type-option').forEach(el => el.classList.remove('selected'));
-            const selectedEl = document.querySelector(`[data-model="${modelType}"]`);
-            if (selectedEl) selectedEl.classList.add('selected');
-
-            const modelNames = {
-                blonde: 'Sarışın Model',
-                brunette: 'Esmer Model',
-                asian: 'Asyalı Model',
-                nordic: 'Nordic Model'
-            };
-            showToast(`${modelNames[modelType]} seçildi`, 'success');
-        }
-
-        function updateCurrentSettingsDisplay() {
-            document.getElementById('currentScene').textContent = SCENE_NAMES[state.settings.scene] || 'Düz';
-            const proceduralNames = { lifestyle: 'Lifestyle', studio_dark: 'Studio Dark', studio_light: 'Studio Light' };
-            document.getElementById('currentMannequin').textContent = proceduralNames[state.settings.proceduralScene] || 'Lifestyle';
-            const preset = PRESETS[state.settings.preset];
-            document.getElementById('currentSize').textContent = preset ? `${preset.width}x${preset.height}` : '1000x1000';
-        }
-
-        // ========== IMAGE PROCESSING ==========
-        async function processImage() {
-            document.getElementById('previewLoader').classList.remove('hidden');
-            document.getElementById('previewLoaderText').textContent = 'Arka plan kaldırılıyor...';
-
-            try {
-                // Step 1: Remove background
-                state.removedBgImage = await removeBackground(state.originalImage);
-
-                document.getElementById('previewLoaderText').textContent = 'Görsel oluşturuluyor...';
-
-                // Step 2: Create final image with scene and effects
-                state.processedImage = await createFinalImage();
 
                 // Show result
+                document.getElementById('previewPlaceholder').classList.add('hidden');
+                document.getElementById('previewImage').classList.remove('hidden');
                 document.getElementById('previewImage').src = state.processedImage;
                 document.getElementById('downloadActions').classList.remove('hidden');
 
-                goToStep(4);
+                hideLoader();
+                showToast('Realistik görsel oluşturuldu!', 'success');
 
-                // Show what was applied
-                let appliedFeatures = [];
-                if (state.settings.scene !== 'none') appliedFeatures.push(SCENE_NAMES[state.settings.scene] + ' sahnesi');
-                if (state.settings.aiPlacement) appliedFeatures.push(TEMPLATE_NAMES[state.settings.template] + ' şablonu');
-
-                if (appliedFeatures.length > 0) {
-                    showToast(`Görsel oluşturuldu: ${appliedFeatures.join(', ')}`, 'success');
-                } else {
-                    showToast('Görsel başarıyla oluşturuldu!', 'success');
-                }
-
-            } catch (e) {
-                console.error('Processing error:', e);
-                showToast('Hata: ' + e.message, 'error');
+            } catch (error) {
+                console.error('Generation error:', error);
+                hideLoader();
+                showToast('Hata: ' + error.message, 'error');
             }
-
-            document.getElementById('previewLoader').classList.add('hidden');
         }
 
-        async function removeBackground(img) {
-            const removeBgKey = localStorage.getItem('removebg_key');
+        // ========== STEP 1: ANALYZE PRODUCT FEATURES (JSON) ==========
+        async function analyzeProductFeatures(apiKey, base64Image) {
+            const analysisPrompt = `Analyze this jewelry product image and return a JSON object with these exact fields:
 
-            if (removeBgKey) {
-                try {
-                    const formData = new FormData();
-                    const blob = await fetch(state.originalBase64).then(r => r.blob());
-                    formData.append('image_file', blob);
-                    formData.append('size', 'auto');
+{
+    "product_type": "necklace|ring|bracelet|earrings|set",
+    "material": "gold|silver|rose gold|mixed metals|beads|pearls|gems",
+    "gemstones": ["list of visible stones or beads with colors"],
+    "design_details": "describe the design pattern, chain type, pendant shape etc",
+    "color_palette": ["primary colors in the jewelry"],
+    "visual_description": "detailed 2-3 sentence description for image generation"
+}
 
-                    const res = await fetch('https://api.remove.bg/v1.0/removebg', {
-                        method: 'POST',
-                        headers: { 'X-Api-Key': removeBgKey },
-                        body: formData
-                    });
+IMPORTANT: Return ONLY the JSON, no other text.`;
 
-                    if (res.ok) {
-                        const resultBlob = await res.blob();
-                        return await blobToImage(resultBlob);
-                    }
-                } catch (e) {
-                    console.warn('Remove.bg failed, using fallback:', e);
-                }
-            }
-
-            return await removeBackgroundLocal(img);
-        }
-
-        async function removeBackgroundLocal(img) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
-            const width = canvas.width;
-            const height = canvas.height;
-
-            // Sample more points for better background detection
-            // Corners
-            const samples = [
-                getPixel(data, 0, 0, width),
-                getPixel(data, width-1, 0, width),
-                getPixel(data, 0, height-1, width),
-                getPixel(data, width-1, height-1, width),
-                // Edge midpoints
-                getPixel(data, Math.floor(width/2), 0, width),
-                getPixel(data, Math.floor(width/2), height-1, width),
-                getPixel(data, 0, Math.floor(height/2), width),
-                getPixel(data, width-1, Math.floor(height/2), width),
-                // Quarter points on edges
-                getPixel(data, Math.floor(width/4), 0, width),
-                getPixel(data, Math.floor(width*3/4), 0, width),
-                getPixel(data, Math.floor(width/4), height-1, width),
-                getPixel(data, Math.floor(width*3/4), height-1, width)
-            ];
-
-            // Filter outliers and calculate median background color
-            const validSamples = samples.filter(s => {
-                // Check if it's likely a background pixel (high brightness for white bg)
-                const brightness = (s.r + s.g + s.b) / 3;
-                return brightness > 180 || brightness < 50; // Either white-ish or black-ish backgrounds
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: analysisPrompt },
+                            { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } }
+                        ]
+                    }]
+                })
             });
 
-            const useableSamples = validSamples.length >= 4 ? validSamples : samples;
+            if (!response.ok) throw new Error('Ürün analizi başarısız');
 
-            const bg = {
-                r: Math.round(useableSamples.reduce((a,b) => a + b.r, 0) / useableSamples.length),
-                g: Math.round(useableSamples.reduce((a,b) => a + b.g, 0) / useableSamples.length),
-                b: Math.round(useableSamples.reduce((a,b) => a + b.b, 0) / useableSamples.length)
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+
+            // Fallback
+            return {
+                product_type: "jewelry",
+                material: "mixed",
+                gemstones: [],
+                design_details: "elegant jewelry piece",
+                color_palette: ["gold", "silver"],
+                visual_description: "Beautiful jewelry piece with elegant design"
             };
+        }
 
-            // Adaptive threshold based on background brightness
-            const bgBrightness = (bg.r + bg.g + bg.b) / 3;
-            const baseThreshold = bgBrightness > 200 ? 45 : 55; // Lower threshold for white backgrounds
+        // ========== STEP 2: GENERATE REALISTIC MODEL IMAGE ==========
+        async function generateModelImage(apiKey, productFeatures) {
+            const profile = modelProfiles[state.settings.modelProfile];
+            const style = stylePresets[state.settings.style];
 
-            // First pass: Create alpha mask
-            const alphaMask = new Uint8Array(width * height);
+            const generationPrompt = `Create a stunning jewelry advertisement photograph.
 
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    const diff = Math.sqrt(
-                        Math.pow(data[i] - bg.r, 2) +
-                        Math.pow(data[i+1] - bg.g, 2) +
-                        Math.pow(data[i+2] - bg.b, 2)
-                    );
+${profile.desc}
 
-                    if (diff < baseThreshold) {
-                        alphaMask[y * width + x] = 0;
-                    } else if (diff < baseThreshold * 1.8) {
-                        // Smoother transition zone
-                        alphaMask[y * width + x] = Math.round(255 * (diff - baseThreshold) / (baseThreshold * 0.8));
-                    } else {
-                        alphaMask[y * width + x] = 255;
+THE JEWELRY (MUST MATCH EXACTLY):
+Product type: ${productFeatures.product_type}
+Material: ${productFeatures.material}
+Gemstones/Beads: ${productFeatures.gemstones.join(', ')}
+Design: ${productFeatures.design_details}
+Colors: ${productFeatures.color_palette.join(', ')}
+Description: ${productFeatures.visual_description}
+
+${style.prompt}
+
+${skinFix}
+
+CRITICAL REQUIREMENTS:
+- PHOTOREALISTIC - must look like actual photograph from Vogue or Elle magazine
+- Real human skin texture: visible pores, subtle freckles, natural shadows
+- NO mannequin, NO plastic, NO CGI, NO illustration, NO artificial look
+- The jewelry must be the HERO - prominently displayed and crystal clear
+- Professional studio lighting with catch lights
+- 8K detail quality, sharp focus on jewelry`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: generationPrompt }]
+                        // NO IMAGE INPUT - This is the key to avoiding mannequin influence!
+                    }],
+                    generationConfig: {
+                        responseModalities: ["image", "text"],
+                        responseMimeType: "image/jpeg"
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Görsel üretimi başarısız');
+            }
+
+            const data = await response.json();
+
+            if (data.candidates && data.candidates[0]?.content?.parts) {
+                for (const part of data.candidates[0].content.parts) {
+                    if (part.inlineData?.data) {
+                        return `data:image/jpeg;base64,${part.inlineData.data}`;
                     }
                 }
             }
 
-            // Second pass: Erode edges to remove white fringe (2px erosion)
-            const erodedMask = new Uint8Array(width * height);
-            const erosionRadius = 2;
+            throw new Error('AI görsel üretemedi');
+        }
 
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = y * width + x;
-                    let minAlpha = alphaMask[idx];
+        // ========== STEP 3: ANTI-HALLUCINATION COMPOSITE PROTECTION ==========
+        async function compositeProtection(aiBgUrl, originalBase64) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1000;
+                canvas.height = 1000;
 
-                    // Check neighborhood
-                    for (let dy = -erosionRadius; dy <= erosionRadius; dy++) {
-                        for (let dx = -erosionRadius; dx <= erosionRadius; dx++) {
-                            const nx = x + dx;
-                            const ny = y + dy;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                minAlpha = Math.min(minAlpha, alphaMask[ny * width + nx]);
+                const bgImg = new Image();
+                bgImg.crossOrigin = "anonymous";
+                bgImg.onload = () => {
+                    // 1. Draw AI-generated background
+                    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+                    const productImg = new Image();
+                    productImg.onload = () => {
+                        // 2. Create temporary canvas for product with transparent background
+                        const tempCanvas = document.createElement('canvas');
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCanvas.width = productImg.width;
+                        tempCanvas.height = productImg.height;
+                        tempCtx.drawImage(productImg, 0, 0);
+
+                        // 3. Remove background from product (chroma key)
+                        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                        const data = imageData.data;
+                        const tolerance = state.settings.tolerance;
+
+                        // Sample corners for background color
+                        const samples = [
+                            getPixelColor(data, 0, 0, tempCanvas.width),
+                            getPixelColor(data, tempCanvas.width - 1, 0, tempCanvas.width),
+                            getPixelColor(data, 0, tempCanvas.height - 1, tempCanvas.width),
+                            getPixelColor(data, tempCanvas.width - 1, tempCanvas.height - 1, tempCanvas.width)
+                        ];
+
+                        const bgColor = {
+                            r: Math.round(samples.reduce((a, b) => a + b.r, 0) / 4),
+                            g: Math.round(samples.reduce((a, b) => a + b.g, 0) / 4),
+                            b: Math.round(samples.reduce((a, b) => a + b.b, 0) / 4)
+                        };
+
+                        // Remove background
+                        for (let i = 0; i < data.length; i += 4) {
+                            const diff = Math.sqrt(
+                                Math.pow(data[i] - bgColor.r, 2) +
+                                Math.pow(data[i + 1] - bgColor.g, 2) +
+                                Math.pow(data[i + 2] - bgColor.b, 2)
+                            );
+
+                            if (diff < tolerance) {
+                                data[i + 3] = 0; // Make transparent
+                            } else if (diff < tolerance * 1.5) {
+                                // Feathering
+                                data[i + 3] = Math.round(255 * (diff - tolerance) / (tolerance * 0.5));
                             }
                         }
-                    }
-                    erodedMask[idx] = minAlpha;
-                }
-            }
 
-            // Third pass: Smooth edges with gaussian-like blur on alpha
-            const smoothedMask = new Uint8Array(width * height);
-            const blurRadius = 1;
+                        tempCtx.putImageData(imageData, 0, 0);
 
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = y * width + x;
-                    let sum = 0;
-                    let count = 0;
+                        // 4. Overlay product on AI background (centered)
+                        const scale = 0.6;
+                        const w = tempCanvas.width * scale;
+                        const h = tempCanvas.height * scale;
+                        const x = (canvas.width - w) / 2;
+                        const y = (canvas.height - h) / 2;
 
-                    for (let dy = -blurRadius; dy <= blurRadius; dy++) {
-                        for (let dx = -blurRadius; dx <= blurRadius; dx++) {
-                            const nx = x + dx;
-                            const ny = y + dy;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                const weight = 1 / (1 + Math.abs(dx) + Math.abs(dy));
-                                sum += erodedMask[ny * width + nx] * weight;
-                                count += weight;
-                            }
-                        }
-                    }
-                    smoothedMask[idx] = Math.round(sum / count);
-                }
-            }
+                        ctx.drawImage(tempCanvas, x, y, w, h);
 
-            // Apply final mask
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const i = (y * width + x) * 4;
-                    data[i+3] = smoothedMask[y * width + x];
-                }
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-
-            return new Promise(resolve => {
-                const newImg = new Image();
-                newImg.onload = () => resolve(newImg);
-                newImg.src = canvas.toDataURL('image/png');
+                        resolve(canvas.toDataURL('image/jpeg', 0.95));
+                    };
+                    productImg.src = originalBase64;
+                };
+                bgImg.src = aiBgUrl;
             });
         }
 
-        function getPixel(data, x, y, width) {
+        function getPixelColor(data, x, y, width) {
             const i = (y * width + x) * 4;
-            return { r: data[i], g: data[i+1], b: data[i+2] };
+            return { r: data[i], g: data[i + 1], b: data[i + 2] };
         }
 
-        // ========== LOCKED PRODUCT FINAL IMAGE ==========
-        // Product is NEVER sent to AI - only drawn as-is onto canvas
-        // OPTIONAL: At the very end, can be mounted on human body via AI
-        async function createFinalImage() {
-            const preset = PRESETS[state.settings.preset];
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+        // ========== GALLERY FUNCTIONS ==========
+        function addToGallery() {
+            if (!state.processedImage) return;
 
-            canvas.width = preset.width;
-            canvas.height = preset.height;
-
-            // Step 1: Draw procedural background (no AI, code-generated)
-            drawProceduralBackground(ctx, canvas.width, canvas.height, state.settings.proceduralScene);
-
-            // Step 2: Apply any selected scene overlay (marble, wood, etc.)
-            if (state.settings.scene !== 'none') {
-                applySceneBackground(ctx, canvas.width, canvas.height);
+            // Find empty slot
+            const emptySlotIndex = state.gallery.findIndex(g => !g);
+            if (emptySlotIndex === -1 && state.gallery.length >= 4) {
+                showToast('Galeri dolu! Önce bir slot boşaltın.', 'error');
+                return;
             }
 
-            // Step 3: Draw product LOCKED - exactly as uploaded, no modification
-            const img = state.removedBgImage;
-            const scalePct = state.settings.scale / 100;
-            const offsetY = state.settings.offsetY;
+            const slotIndex = emptySlotIndex !== -1 ? emptySlotIndex : state.gallery.length;
+            state.gallery[slotIndex] = state.processedImage;
 
-            const targetW = img.width * scalePct;
-            const targetH = img.height * scalePct;
+            updateMiniGallery();
+            showToast(`Slot ${slotIndex + 1}'e eklendi`, 'success');
+        }
 
-            const x = (canvas.width - targetW) / 2;
-            const y = (canvas.height - targetH) / 2 + offsetY;
-
-            // Soft shadow under product
-            const shadowStrength = state.settings.shadow / 100;
-            if (shadowStrength > 0) {
-                drawSoftShadow(ctx, x, y, targetW, targetH, shadowStrength);
-            }
-
-            // Apply brightness filter
-            ctx.filter = `brightness(${state.settings.brightness}%)`;
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-
-            // Draw product (LOCKED - pixel-perfect, no AI modification)
-            ctx.drawImage(img, x, y, targetW, targetH);
-
-            ctx.filter = 'none';
-
-            // Get the locked product image
-            let finalImage = canvas.toDataURL('image/jpeg', 0.95);
-
-            // Step 4 (OPTIONAL): Mount on human body using Gemini AI
-            // Send ONLY the isolated product (no mannequin context) to get realistic results
-            if (state.settings.humanMount) {
-                const apiKey = localStorage.getItem('google_ai_key');
-                if (apiKey) {
-                    try {
-                        document.getElementById('previewLoaderText').textContent = 'İnsan montajı yapılıyor...';
-                        showToast('Gemini AI ile gerçek insan görseli oluşturuluyor...', 'success');
-
-                        // Create isolated product image (white background, just the product)
-                        const isolatedCanvas = document.createElement('canvas');
-                        const isoCtx = isolatedCanvas.getContext('2d');
-                        isolatedCanvas.width = 1000;
-                        isolatedCanvas.height = 1000;
-
-                        // White background
-                        isoCtx.fillStyle = '#FFFFFF';
-                        isoCtx.fillRect(0, 0, 1000, 1000);
-
-                        // Draw only the product centered
-                        const pImg = state.removedBgImage;
-                        const pScale = 0.7;
-                        const pW = pImg.width * pScale;
-                        const pH = pImg.height * pScale;
-                        const pX = (1000 - pW) / 2;
-                        const pY = (1000 - pH) / 2;
-                        isoCtx.drawImage(pImg, pX, pY, pW, pH);
-
-                        const isolatedProductBase64 = isolatedCanvas.toDataURL('image/jpeg', 0.95);
-
-                        finalImage = await mountOnModel(
-                            isolatedProductBase64,
-                            state.settings.modelType
-                        );
-
-                        showToast('Model montajı tamamlandı!', 'success');
-                    } catch (error) {
-                        console.warn('Human mounting failed:', error.message);
-                        showToast('İnsan montajı başarısız: ' + error.message, 'error');
-                        // Return the locked product image without human mounting
-                    }
+        function updateMiniGallery() {
+            const slots = document.querySelectorAll('.gallery-slot');
+            slots.forEach((slot, index) => {
+                if (state.gallery[index]) {
+                    slot.innerHTML = `<img src="${state.gallery[index]}" class="w-full h-full object-cover rounded-lg">`;
+                    slot.onclick = () => showGalleryImage(index);
                 } else {
-                    showToast('İnsan montajı için Gemini API gerekli', 'error');
+                    slot.innerHTML = '<i class="fa-solid fa-plus text-slate-600"></i>';
+                    slot.onclick = null;
                 }
-            }
-
-            return finalImage;
-        }
-
-        // Soft elliptical shadow under product
-        function drawSoftShadow(ctx, px, py, pw, ph, strength) {
-            if (strength <= 0) return;
-
-            const centerX = px + pw / 2;
-            const shadowY = py + ph * 0.92;
-            const maxR = pw * 0.55;
-
-            const grad = ctx.createRadialGradient(centerX, shadowY, 0, centerX, shadowY, maxR);
-            grad.addColorStop(0, `rgba(0,0,0,${0.25 * strength})`);
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.ellipse(centerX, shadowY, pw * 0.50, ph * 0.12, 0, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Procedural background generation (no AI, deterministic with seed)
-        function drawProceduralBackground(ctx, width, height, type) {
-            let seed = state.settings.seed;
-
-            // Simple seeded random function
-            function rand() {
-                let x = (seed | 0) || 123456789;
-                x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
-                seed = x;
-                return ((x >>> 0) / 4294967296);
-            }
-
-            if (type === 'studio_dark') {
-                // Dark premium background with subtle spotlight
-                const g = ctx.createLinearGradient(0, 0, width, height);
-                g.addColorStop(0, '#0b0b0f');
-                g.addColorStop(0.5, '#12131a');
-                g.addColorStop(1, '#07070a');
-                ctx.fillStyle = g;
-                ctx.fillRect(0, 0, width, height);
-
-                // Subtle spotlight
-                const cx = width * (0.45 + rand() * 0.1);
-                const cy = height * (0.35 + rand() * 0.1);
-                const r = width * (0.55 + rand() * 0.15);
-                const rad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-                rad.addColorStop(0, 'rgba(255,255,255,0.08)');
-                rad.addColorStop(1, 'rgba(255,255,255,0)');
-                ctx.fillStyle = rad;
-                ctx.fillRect(0, 0, width, height);
-                return;
-            }
-
-            if (type === 'studio_light') {
-                // Light premium background with soft vignette
-                const g = ctx.createLinearGradient(0, 0, width, height);
-                g.addColorStop(0, '#fbfbfd');
-                g.addColorStop(0.5, '#f1f2f6');
-                g.addColorStop(1, '#ffffff');
-                ctx.fillStyle = g;
-                ctx.fillRect(0, 0, width, height);
-
-                // Soft vignette
-                const cx = width / 2, cy = height / 2, r = width * 0.75;
-                const rad = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
-                rad.addColorStop(0, 'rgba(0,0,0,0)');
-                rad.addColorStop(1, 'rgba(0,0,0,0.06)');
-                ctx.fillStyle = rad;
-                ctx.fillRect(0, 0, width, height);
-                return;
-            }
-
-            // Lifestyle - warm bokeh background
-            const a = 245 - Math.floor(rand() * 10);
-            const b = 238 - Math.floor(rand() * 12);
-            const c = 230 - Math.floor(rand() * 12);
-            ctx.fillStyle = `rgb(${a},${b},${c})`;
-            ctx.fillRect(0, 0, width, height);
-
-            // Bokeh circles
-            const count = 25 + Math.floor(rand() * 15);
-            for (let i = 0; i < count; i++) {
-                const bx = rand() * width;
-                const by = rand() * height;
-                const br = (rand() * 100) + 30;
-                const alpha = 0.04 + rand() * 0.08;
-                const col = 255 - Math.floor(rand() * 35);
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(${col},${col},${col},${alpha})`;
-                ctx.arc(bx, by, br, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Directional light
-            const lcx = width * 0.25, lcy = height * 0.2, lr = width * 0.85;
-            const lrad = ctx.createRadialGradient(lcx, lcy, 0, lcx, lcy, lr);
-            lrad.addColorStop(0, 'rgba(255,255,255,0.22)');
-            lrad.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = lrad;
-            ctx.fillRect(0, 0, width, height);
-        }
-
-        // ========== 2-PHASE MODEL MOUNTING SYSTEM ==========
-        // BREAKTHROUGH: Completely eliminates mannequin influence!
-        // Phase 1: Analyze jewelry image → extract TEXT description only
-        // Phase 2: Generate fresh image using ONLY TEXT (no image = no mannequin!)
-
-        async function mountOnModel(productImageBase64, modelType) {
-            const apiKey = localStorage.getItem('google_ai_key');
-            if (!apiKey) {
-                throw new Error('Gemini API key gerekli. Ayarlardan ekleyin.');
-            }
-
-            console.log('🚀 2-PHASE SYSTEM BAŞLIYOR...');
-            console.log('📌 Anahtar fikir: Görsel INPUT yok = Manken etkisi YOK!');
-
-            // ═══════════════════════════════════════════════════════
-            // PHASE 1: JEWELRY ANALYSIS (Image → Text)
-            // ═══════════════════════════════════════════════════════
-            console.log('📝 PHASE 1: Takı detaylı analiz ediliyor...');
-            document.getElementById('previewLoaderText').textContent = 'Takı analiz ediliyor...';
-
-            const analysisPrompt = `Sen dünyaca ünlü bir mücevher uzmanısın. Bu takıyı AŞIRI DETAYLI analiz et.
-
-Bu açıklama takıyı yeniden oluşturmak için kullanılacak, bu yüzden HER DETAY önemli:
-
-1. TAKI TİPİ: (kolye, bileklik, küpe, yüzük vb.)
-
-2. MALZEMELER:
-   - Ana malzeme (boncuk, taş, inci, metal vb.)
-   - İkincil malzemeler (ara parçalar, klips vb.)
-
-3. RENKLER (ÇOK DETAYLI):
-   - Her farklı rengi listele
-   - Spesifik ol: "koyu zümrüt yeşili", "açık mint yeşili", "siyaha yakın koyu yeşil" gibi
-   - Renklerin oranlarını belirt
-
-4. BONCUK/TAŞ DETAYLARI:
-   - Şekil (yuvarlak, oval, fasetli, düzensiz)
-   - Boyut (küçük, orta, büyük, karışık)
-   - Yüzey (mat, parlak, pırıltılı, yarı saydam)
-   - Desen/sıralama (alternatif renkler, gradyan, rastgele)
-
-5. METAL PARÇALAR:
-   - Renk (gümüş, altın, rose gold)
-   - Ara boncukların şekli ve boyutu
-
-6. GENEL STİL: (bohem, şık, minimal, statement)
-
-7. UZUNLUK/BOYUT tahmini
-
-SADECE açıklamayı yaz, giriş veya sonuç ekleme.
-TÜRKÇE yaz.`;
-
-            let jewelryDescription = '';
-
-            try {
-                const analysisResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: analysisPrompt },
-                                { inlineData: { mimeType: 'image/jpeg', data: productImageBase64.split(',')[1] } }
-                            ]
-                        }]
-                    })
-                });
-
-                if (!analysisResponse.ok) throw new Error('Takı analizi başarısız');
-
-                const analysisData = await analysisResponse.json();
-                jewelryDescription = analysisData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-                console.log('✅ PHASE 1 TAMAMLANDI!');
-                console.log('📋 Takı açıklaması:', jewelryDescription.substring(0, 300) + '...');
-
-            } catch (error) {
-                console.error('Phase 1 hatası:', error);
-                throw new Error('Takı analizi başarısız: ' + error.message);
-            }
-
-            // ═══════════════════════════════════════════════════════
-            // PHASE 2: FRESH IMAGE GENERATION (Text Only!)
-            // ═══════════════════════════════════════════════════════
-            console.log('🎨 PHASE 2: Sıfırdan model görseli üretiliyor...');
-            console.log('⚡ GÖRSEL INPUT YOK - Sadece metin = Manken etkisi SIFIR!');
-            document.getElementById('previewLoaderText').textContent = 'Model fotoğrafı oluşturuluyor...';
-
-            const modelStyles = {
-                blonde: {
-                    desc: 'İskandinav güzeli, bal sarısı dalgalı saçlar omuzlara dökülen, porselen beyaz ten pembe alt tonlu, büyüleyici mavi-yeşil gözler, doğal makyaj, yüksek elmacık kemikleri',
-                    hair: 'bal sarısı altın sarısı dalgalı saçlar',
-                    skin: 'porselen beyaz ten, pembe yanaklar',
-                    eyes: 'büyüleyici açık mavi veya yeşil gözler'
-                },
-                brunette: {
-                    desc: 'Akdeniz güzeli, zengin koyu kahve saçlar, bronz altın parıltılı ten, derin kahverengi etkileyici gözler, sofistike makyaj',
-                    hair: 'parlak koyu kahverengi uzun saçlar',
-                    skin: 'bronz ten altın parıltılı, zeytin tonu',
-                    eyes: 'derin kahverengi badem gözler'
-                },
-                asian: {
-                    desc: 'Doğu Asya güzeli, ipek gibi simsiyah düz saçlar, kusursuz porselen ten, büyüleyici badem şekilli koyu gözler, K-beauty doğal makyaj',
-                    hair: 'ipek gibi parlak siyah düz saçlar',
-                    skin: 'kusursuz porselen ten, fildişi tonu',
-                    eyes: 'etkileyici koyu badem gözler'
-                },
-                nordic: {
-                    desc: 'Kuzey Avrupa güzeli, platin sarısı veya kül sarısı saçlar, eterik soluk ten soğuk alt tonlu, buz mavisi keskin bakışlı gözler, minimal doğal makyaj',
-                    hair: 'platin veya kül sarısı açık saçlar',
-                    skin: 'çok açık ten, soğuk alt tonlar, neredeyse saydam',
-                    eyes: 'buz mavisi veya gri keskin gözler'
-                }
-            };
-
-            const style = modelStyles[modelType] || modelStyles.blonde;
-
-            // THE KEY: Only TEXT prompt, NO image input!
-            const generationPrompt = `Create a stunning luxury jewelry advertisement photograph.
-
-SCENE DESCRIPTION:
-A breathtakingly beautiful ${style.desc} fashion model is wearing an exquisite piece of jewelry. This is a high-end fashion magazine cover shot.
-
-THE MODEL'S FEATURES:
-- Hair: ${style.hair}
-- Skin: ${style.skin}
-- Eyes: ${style.eyes}
-- Expression: Confident, slightly mysterious smile, elegant
-
-THE JEWELRY (MUST MATCH THIS EXACTLY):
-${jewelryDescription}
-
-COMPOSITION - CRITICAL:
-- Frame: From mid-chest up (NOT full body, NOT just face)
-- Face: Show chin, lips with subtle smile, nose - eyes can be partially cropped for mystery
-- Neck & décolletage: FULLY VISIBLE - this is where the necklace sits
-- Hair: Styled elegantly away from neck, not covering jewelry
-- Pose: Head slightly tilted, one shoulder slightly forward, confident
-
-LIGHTING & PHOTOGRAPHY:
-- Professional studio beauty lighting
-- Soft key light from front-left illuminating face
-- Hair light creating rim glow
-- Jewelry catching light and sparkling
-- Shallow depth of field (f/2.8)
-- Clean soft-gradient background (warm cream to white)
-
-ABSOLUTE REQUIREMENTS:
-- PHOTOREALISTIC - must look like actual photograph
-- Real human skin texture: pores, subtle freckles okay, natural shadows
-- NO mannequin, NO plastic, NO CGI, NO illustration
-- Magazine cover quality (Vogue, Elle, Tiffany campaign)
-- The jewelry must be the HERO - prominently displayed
-- 8K detail quality
-
-Generate a single stunning image.`;
-
-            try {
-                // Using gemini-2.0-flash-exp for image generation
-                const generateResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: generationPrompt }]
-                            // 🔥 NO IMAGE INPUT! This is the breakthrough!
-                        }],
-                        generationConfig: {
-                            responseModalities: ["image", "text"],
-                            responseMimeType: "image/jpeg"
-                        }
-                    })
-                });
-
-                if (!generateResponse.ok) {
-                    const errorData = await generateResponse.json();
-                    console.error('Generation Error:', errorData);
-                    throw new Error(errorData.error?.message || 'Görsel üretimi başarısız');
-                }
-
-                const generateData = await generateResponse.json();
-                console.log('✅ PHASE 2 TAMAMLANDI!');
-
-                if (generateData.candidates && generateData.candidates[0]?.content?.parts) {
-                    for (const part of generateData.candidates[0].content.parts) {
-                        if (part.inlineData?.data) {
-                            console.log('🎉 BAŞARILI! Manken etkisi olmadan gerçek model görseli üretildi!');
-                            return `data:image/jpeg;base64,${part.inlineData.data}`;
-                        }
-                    }
-                }
-
-                throw new Error('Gemini görsel üretemedi');
-            } catch (error) {
-                console.error('Phase 2 hatası:', error);
-                throw error;
-            }
-        }
-
-        function loadImage(src) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = reject;
-                img.src = src;
             });
         }
 
-        function applySceneBackground(ctx, width, height) {
-            const scene = state.settings.scene;
-            let gradient;
-
-            switch(scene) {
-                case 'studio':
-                    gradient = ctx.createLinearGradient(0, 0, 0, height);
-                    gradient.addColorStop(0, '#f8f8f8');
-                    gradient.addColorStop(0.3, '#f0f0f0');
-                    gradient.addColorStop(0.7, '#e8e8e8');
-                    gradient.addColorStop(1, '#e0e0e0');
-                    ctx.fillStyle = gradient;
-                    break;
-                case 'marble':
-                    gradient = ctx.createLinearGradient(0, 0, width, height);
-                    gradient.addColorStop(0, '#fafafa');
-                    gradient.addColorStop(0.25, '#f5f5f5');
-                    gradient.addColorStop(0.5, '#ffffff');
-                    gradient.addColorStop(0.75, '#f0f0f0');
-                    gradient.addColorStop(1, '#f5f5f5');
-                    ctx.fillStyle = gradient;
-                    // Add marble texture effect
-                    ctx.fillRect(0, 0, width, height);
-                    ctx.globalAlpha = 0.03;
-                    for (let i = 0; i < 50; i++) {
-                        ctx.beginPath();
-                        ctx.moveTo(Math.random() * width, Math.random() * height);
-                        ctx.lineTo(Math.random() * width, Math.random() * height);
-                        ctx.strokeStyle = '#999';
-                        ctx.lineWidth = Math.random() * 2;
-                        ctx.stroke();
-                    }
-                    ctx.globalAlpha = 1;
-                    return;
-                case 'wood':
-                    gradient = ctx.createLinearGradient(0, 0, width, 0);
-                    gradient.addColorStop(0, '#8B5A2B');
-                    gradient.addColorStop(0.2, '#A0522D');
-                    gradient.addColorStop(0.4, '#8B4513');
-                    gradient.addColorStop(0.6, '#A0522D');
-                    gradient.addColorStop(0.8, '#8B5A2B');
-                    gradient.addColorStop(1, '#8B4513');
-                    ctx.fillStyle = gradient;
-                    break;
-                case 'velvet':
-                    gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width * 0.7);
-                    gradient.addColorStop(0, '#4a1a6b');
-                    gradient.addColorStop(0.5, '#3d1559');
-                    gradient.addColorStop(1, '#2d0f42');
-                    ctx.fillStyle = gradient;
-                    break;
-                case 'silk':
-                    gradient = ctx.createLinearGradient(0, 0, width, height);
-                    gradient.addColorStop(0, '#fff0f3');
-                    gradient.addColorStop(0.3, '#ffe4e8');
-                    gradient.addColorStop(0.6, '#ffd6dc');
-                    gradient.addColorStop(1, '#ffc8d0');
-                    ctx.fillStyle = gradient;
-                    break;
-                default:
-                    ctx.fillStyle = state.settings.bgColor;
-            }
-
-            ctx.fillRect(0, 0, width, height);
-        }
-
-        // ========== FIXED DISPLAY STAND SYSTEM ==========
-        // Simple, elegant display stands for jewelry products
-
-        function drawDisplayStand(ctx, width, height, templateType) {
-            ctx.save();
-
-            // Elegant white/cream color palette
-            const colors = {
-                main: '#f5f5f5',
-                accent: '#e8e8e8',
-                highlight: '#ffffff',
-                shadow: '#d0d0d0'
-            };
-
-            switch(templateType) {
-                case 'ring_stand':
-                    drawRingConeStand(ctx, width, height, colors);
-                    break;
-                case 'necklace_tbar':
-                    drawNecklaceTBar(ctx, width, height, colors);
-                    break;
-                case 'earring_card':
-                    drawEarringCard(ctx, width, height, colors);
-                    break;
-                case 'bracelet_cushion':
-                    drawBraceletCushion(ctx, width, height, colors);
-                    break;
-            }
-
-            ctx.restore();
-        }
-
-        // Get anchor point for product placement on template
-        function getTemplateAnchor(templateType, width, height) {
-            const cx = width / 2;
-            const cy = height / 2;
-
-            switch(templateType) {
-                case 'ring_stand':
-                    return { x: cx, y: cy - height * 0.15, scale: 0.35 };
-                case 'necklace_tbar':
-                    return { x: cx, y: cy - height * 0.1, scale: 0.5 };
-                case 'earring_card':
-                    return { x: cx, y: cy - height * 0.05, scale: 0.4 };
-                case 'bracelet_cushion':
-                    return { x: cx, y: cy, scale: 0.45 };
-                default:
-                    return { x: cx, y: cy, scale: 0.5 };
+        function showGalleryImage(index) {
+            if (state.gallery[index]) {
+                document.getElementById('previewImage').src = state.gallery[index];
+                document.getElementById('previewImage').classList.remove('hidden');
+                document.getElementById('previewPlaceholder').classList.add('hidden');
+                state.processedImage = state.gallery[index];
+                document.getElementById('downloadActions').classList.remove('hidden');
             }
         }
 
-        // Ring cone stand - elegant vertical cone
-        function drawRingConeStand(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.55;
-            const scale = Math.min(width, height) / 800;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            // Shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 40;
-            ctx.shadowOffsetY = 20;
-
-            // Base plate
-            const baseGrad = ctx.createLinearGradient(-150, 150, 150, 200);
-            baseGrad.addColorStop(0, colors.highlight);
-            baseGrad.addColorStop(0.5, colors.main);
-            baseGrad.addColorStop(1, colors.shadow);
-            ctx.fillStyle = baseGrad;
-            ctx.beginPath();
-            ctx.ellipse(0, 180, 150, 40, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cone stand
-            const coneGrad = ctx.createLinearGradient(-40, -200, 40, 100);
-            coneGrad.addColorStop(0, colors.highlight);
-            coneGrad.addColorStop(0.3, colors.main);
-            coneGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = coneGrad;
-
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.moveTo(-35, 150);
-            ctx.quadraticCurveTo(-45, 50, -30, -100);
-            ctx.quadraticCurveTo(-25, -180, 0, -200);
-            ctx.quadraticCurveTo(25, -180, 30, -100);
-            ctx.quadraticCurveTo(45, 50, 35, 150);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        // Necklace T-bar stand
-        function drawNecklaceTBar(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.5;
-            const scale = Math.min(width, height) / 800;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.15)';
-            ctx.shadowBlur = 30;
-            ctx.shadowOffsetY = 15;
-
-            // Base
-            const baseGrad = ctx.createLinearGradient(-150, 250, 150, 300);
-            baseGrad.addColorStop(0, colors.main);
-            baseGrad.addColorStop(1, colors.shadow);
-            ctx.fillStyle = baseGrad;
-            ctx.beginPath();
-            ctx.ellipse(0, 280, 150, 35, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Vertical pole
-            ctx.fillStyle = colors.main;
-            ctx.fillRect(-15, 50, 30, 230);
-
-            // T-bar top
-            const tbarGrad = ctx.createLinearGradient(-200, -50, 200, 50);
-            tbarGrad.addColorStop(0, colors.accent);
-            tbarGrad.addColorStop(0.5, colors.highlight);
-            tbarGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = tbarGrad;
-
-            // Curved T-bar
-            ctx.beginPath();
-            ctx.moveTo(-200, 50);
-            ctx.quadraticCurveTo(-200, -100, -100, -150);
-            ctx.quadraticCurveTo(0, -180, 100, -150);
-            ctx.quadraticCurveTo(200, -100, 200, 50);
-            ctx.lineTo(180, 70);
-            ctx.quadraticCurveTo(0, 30, -180, 70);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        // Earring card display
-        function drawEarringCard(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.5;
-            const scale = Math.min(width, height) / 800;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.15)';
-            ctx.shadowBlur = 25;
-            ctx.shadowOffsetY = 10;
-
-            // Card background
-            const cardGrad = ctx.createLinearGradient(-120, -200, 120, 150);
-            cardGrad.addColorStop(0, colors.highlight);
-            cardGrad.addColorStop(0.5, colors.main);
-            cardGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = cardGrad;
-
-            // Rounded rectangle card
-            ctx.beginPath();
-            ctx.roundRect(-120, -200, 240, 320, 12);
-            ctx.fill();
-
-            // Earring holes
-            ctx.fillStyle = colors.shadow;
-            ctx.beginPath();
-            ctx.ellipse(-50, -50, 6, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(50, -50, 6, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Small stand at bottom
-            ctx.fillStyle = colors.main;
-            ctx.beginPath();
-            ctx.moveTo(-60, 120);
-            ctx.lineTo(-40, 180);
-            ctx.lineTo(40, 180);
-            ctx.lineTo(60, 120);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
-        }
-
-        // Bracelet cushion/pillow display
-        function drawBraceletCushion(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.5;
-            const scale = Math.min(width, height) / 800;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
-            ctx.shadowBlur = 35;
-            ctx.shadowOffsetY = 15;
-
-            // Base tray
-            const trayGrad = ctx.createLinearGradient(-200, 100, 200, 150);
-            trayGrad.addColorStop(0, colors.main);
-            trayGrad.addColorStop(1, colors.shadow);
-            ctx.fillStyle = trayGrad;
-            ctx.beginPath();
-            ctx.ellipse(0, 120, 200, 50, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cushion pillow
-            const cushionGrad = ctx.createRadialGradient(0, 0, 20, 0, 0, 180);
-            cushionGrad.addColorStop(0, colors.highlight);
-            cushionGrad.addColorStop(0.7, colors.main);
-            cushionGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = cushionGrad;
-
-            ctx.shadowBlur = 20;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 180, 100, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cushion highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(-30, -30, 80, 40, -0.3, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.restore();
+        function clearGallery() {
+            state.gallery = [];
+            updateMiniGallery();
+            document.getElementById('fullGallery').innerHTML = `
+                <div class="text-center text-slate-500 col-span-full py-12">
+                    <i class="fa-solid fa-images text-4xl mb-3"></i>
+                    <p>Henüz görsel yok</p>
+                </div>`;
+            showToast('Galeri temizlendi', 'success');
         }
 
         // ========== DOWNLOAD ==========
@@ -2179,7 +916,7 @@ Generate a single stunning image.`;
             if (!state.processedImage) return;
 
             const link = document.createElement('a');
-            const timestamp = Date.now();
+            link.download = `trendyol_pro_${Date.now()}.${format}`;
 
             if (format === 'png') {
                 const img = new Image();
@@ -2190,54 +927,38 @@ Generate a single stunning image.`;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0);
                     link.href = canvas.toDataURL('image/png');
-                    link.download = `trendyol_${timestamp}.png`;
-                    link.click();
-                };
-                img.src = state.processedImage;
-            } else if (format === 'webp') {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    link.href = canvas.toDataURL('image/webp', 0.9);
-                    link.download = `trendyol_${timestamp}.webp`;
                     link.click();
                 };
                 img.src = state.processedImage;
             } else {
                 link.href = state.processedImage;
-                link.download = `trendyol_${timestamp}.jpg`;
                 link.click();
             }
 
             showToast(`${format.toUpperCase()} indirildi`, 'success');
         }
 
-        // ========== HELPERS ==========
-        function blobToImage(blob) {
-            return new Promise(resolve => {
-                const url = URL.createObjectURL(blob);
-                const img = new Image();
-                img.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve(img);
-                };
-                img.src = url;
-            });
+        // ========== LOADER ==========
+        function showLoader(text, subtext) {
+            document.getElementById('previewLoader').classList.remove('hidden');
+            document.getElementById('loaderText').textContent = text;
+            document.getElementById('loaderSubtext').textContent = subtext || 'Lütfen bekleyin';
         }
 
+        function hideLoader() {
+            document.getElementById('previewLoader').classList.add('hidden');
+        }
+
+        // ========== TOAST ==========
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
             const msg = document.getElementById('toastMessage');
 
+            msg.textContent = message;
             icon.className = type === 'success'
                 ? 'fa-solid fa-check-circle text-green-400 text-xl'
                 : 'fa-solid fa-exclamation-circle text-red-400 text-xl';
-            msg.textContent = message;
 
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
