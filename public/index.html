@@ -668,50 +668,81 @@
 
         // ========== STEP 1: ANALYZE PRODUCT FEATURES (JSON) ==========
         async function analyzeProductFeatures(apiKey, base64Image) {
-            const analysisPrompt = `Analyze this jewelry product image and return a JSON object with these exact fields:
+            const analysisPrompt = `Bu takı ürününü analiz et ve aşağıdaki JSON formatında yanıt ver:
 
 {
-    "product_type": "necklace|ring|bracelet|earrings|set",
-    "material": "gold|silver|rose gold|mixed metals|beads|pearls|gems",
-    "gemstones": ["list of visible stones or beads with colors"],
-    "design_details": "describe the design pattern, chain type, pendant shape etc",
-    "color_palette": ["primary colors in the jewelry"],
-    "visual_description": "detailed 2-3 sentence description for image generation"
+    "product_type": "necklace veya ring veya bracelet veya earrings veya set",
+    "material": "malzeme türü",
+    "gemstones": ["taş veya boncuk listesi"],
+    "design_details": "tasarım detayları",
+    "color_palette": ["ana renkler"],
+    "visual_description": "görsel üretim için 2-3 cümlelik detaylı açıklama"
 }
 
-IMPORTANT: Return ONLY the JSON, no other text.`;
+SADECE JSON döndür, başka bir şey yazma.`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: analysisPrompt },
-                            { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } }
-                        ]
-                    }]
-                })
-            });
+            try {
+                // gemini-1.5-flash daha stabil çalışıyor
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: analysisPrompt },
+                                { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } }
+                            ]
+                        }],
+                        generationConfig: {
+                            temperature: 0.1,
+                            maxOutputTokens: 1024
+                        }
+                    })
+                });
 
-            if (!response.ok) throw new Error('Ürün analizi başarısız');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Analiz API hatası:', errorData);
+                    throw new Error(errorData.error?.message || 'API yanıt vermedi');
+                }
 
-            const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                const data = await response.json();
+                console.log('Gemini yanıtı:', data);
 
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                console.log('Ham metin:', text);
+
+                // Markdown code block içindeki JSON'u da yakala
+                let jsonStr = text;
+
+                // ```json ... ``` formatını temizle
+                const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+                if (codeBlockMatch) {
+                    jsonStr = codeBlockMatch[1].trim();
+                }
+
+                // Düz JSON'u bul
+                const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    console.log('✅ JSON parse başarılı:', parsed);
+                    return parsed;
+                }
+
+                console.warn('JSON bulunamadı, fallback kullanılıyor');
+            } catch (error) {
+                console.error('Analiz hatası:', error);
+                showToast('Analiz hatası: ' + error.message, 'error');
             }
 
-            // Fallback
+            // Fallback - hata durumunda basit değerler
             return {
-                product_type: "jewelry",
-                material: "mixed",
-                gemstones: [],
-                design_details: "elegant jewelry piece",
-                color_palette: ["gold", "silver"],
-                visual_description: "Beautiful jewelry piece with elegant design"
+                product_type: "necklace",
+                material: "beads",
+                gemstones: ["colorful beads"],
+                design_details: "beaded necklace with elegant design",
+                color_palette: ["multicolor"],
+                visual_description: "A beautiful handcrafted beaded necklace with vibrant colorful beads arranged in an elegant pattern"
             };
         }
 
