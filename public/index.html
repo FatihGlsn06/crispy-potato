@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v4.3 - Fixed Templates + Gemini Inpainting -->
+<!-- Trendyol Pro Studio v5.0 - LOCKED PRODUCT (No AI Hallucination) -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -128,7 +128,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v4.3</p>
+                    <p class="text-[10px] text-slate-400">Locked Product Studio v5.0</p>
                 </div>
             </div>
 
@@ -375,69 +375,96 @@
                         </div>
                     </div>
 
-                    <!-- AI Product Placement - Simplified -->
-                    <div class="glass rounded-2xl p-5">
+                    <!-- LOCKED PRODUCT - No AI hallucination -->
+                    <div class="glass rounded-2xl p-5 border border-green-500/30">
                         <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
-                            AI Ürün Yerleştirme
-                            <span id="mannequinStatus" class="status-badge inactive ml-auto">Kapalı</span>
+                            <i class="fa-solid fa-lock text-green-400"></i>
+                            Ürün Kilitli
+                            <span class="status-badge active ml-auto">Halüsinasyon Yok</span>
                         </h3>
-                        <p class="text-xs text-slate-500 mb-3">Gemini AI ile ürünü sabit şablona yerleştir</p>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Ürün <b class="text-green-400">asla AI'a gönderilmez</b>. Sadece arka plan üretilir, ürün olduğu gibi yerleştirilir.
+                        </p>
 
-                        <!-- Simple Toggle -->
-                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl mb-3">
+                        <!-- Lock Toggle -->
+                        <div class="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-xl mb-3">
                             <div>
-                                <p class="text-sm font-medium">AI Yerleştirme</p>
-                                <p class="text-[10px] text-slate-500">Ürünü otomatik konumlandır</p>
+                                <p class="text-sm font-medium text-green-400"><i class="fa-solid fa-shield-check mr-1"></i> Güvenli Mod</p>
+                                <p class="text-[10px] text-slate-500">Ürün piksel piksel korunur</p>
                             </div>
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="aiPlacementToggle" onchange="toggleAIPlacement()" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                                <input type="checkbox" id="lockProductToggle" checked disabled class="sr-only peer">
+                                <div class="w-11 h-6 bg-green-600 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:translate-x-5"></div>
                             </label>
                         </div>
 
-                        <!-- Template Selection (shown when AI is ON) -->
-                        <div id="templateOptions" class="hidden">
-                            <label class="text-xs text-slate-400 mb-2 block">Şablon Seç</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div onclick="selectTemplate('ring_stand')" class="template-option selected p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="ring_stand">
-                                    <i class="fa-solid fa-ring text-amber-400 text-xl mb-1 block"></i>
-                                    <p class="text-xs">Yüzük Standı</p>
+                        <!-- Procedural Scene Selection -->
+                        <div class="mt-3">
+                            <label class="text-xs text-slate-400 mb-2 block">Sahne Tipi (Procedural)</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div onclick="selectProceduralScene('lifestyle')" class="scene-option selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="lifestyle">
+                                    <div class="w-full h-8 bg-gradient-to-br from-amber-50 to-orange-100 rounded mb-1 relative overflow-hidden">
+                                        <div class="absolute w-4 h-4 bg-white/40 rounded-full top-1 left-2 blur-sm"></div>
+                                        <div class="absolute w-3 h-3 bg-white/30 rounded-full bottom-1 right-3 blur-sm"></div>
+                                    </div>
+                                    <p class="text-[10px]">Lifestyle</p>
                                 </div>
-                                <div onclick="selectTemplate('necklace_tbar')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="necklace_tbar">
-                                    <i class="fa-solid fa-t text-blue-400 text-xl mb-1 block"></i>
-                                    <p class="text-xs">Kolye T-Bar</p>
+                                <div onclick="selectProceduralScene('studio_dark')" class="scene-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="studio_dark">
+                                    <div class="w-full h-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded mb-1 relative">
+                                        <div class="absolute w-6 h-6 bg-white/5 rounded-full top-0 left-1/2 -translate-x-1/2 blur-md"></div>
+                                    </div>
+                                    <p class="text-[10px]">Studio Dark</p>
                                 </div>
-                                <div onclick="selectTemplate('earring_card')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="earring_card">
-                                    <i class="fa-solid fa-grip-lines-vertical text-pink-400 text-xl mb-1 block"></i>
-                                    <p class="text-xs">Küpe Kartı</p>
-                                </div>
-                                <div onclick="selectTemplate('bracelet_cushion')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="bracelet_cushion">
-                                    <i class="fa-solid fa-circle text-cyan-400 text-xl mb-1 block"></i>
-                                    <p class="text-xs">Bileklik Yastık</p>
+                                <div onclick="selectProceduralScene('studio_light')" class="scene-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-pscene="studio_light">
+                                    <div class="w-full h-8 bg-gradient-to-br from-gray-100 to-white rounded mb-1"></div>
+                                    <p class="text-[10px]">Studio Light</p>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-green-400 mt-2">
-                                <i class="fa-solid fa-sparkles mr-1"></i>
-                                Gemini AI ürünü şablona otomatik yerleştirecek
-                            </p>
+                            <button onclick="randomizeScene()" class="w-full mt-2 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs transition-colors">
+                                <i class="fa-solid fa-shuffle mr-1"></i> Varyasyon
+                            </button>
                         </div>
+
+                        <!-- QA Checklist -->
+                        <details class="mt-3">
+                            <summary class="text-[10px] text-slate-500 cursor-pointer">Halüsinasyon QA Listesi</summary>
+                            <ul class="text-[10px] text-slate-500 mt-2 ml-4 space-y-1">
+                                <li>✓ Taş sayısı / motif aynı mı?</li>
+                                <li>✓ Zincir kalınlığı / klips aynı mı?</li>
+                                <li>✓ Ürün oranı (en/boy) bozuldu mu?</li>
+                                <li>✓ Ürün üzerinde yeni detay çıktı mı?</li>
+                            </ul>
+                        </details>
                     </div>
 
-                    <!-- Adjustments -->
+                    <!-- Adjustments - Product Placement -->
                     <div class="glass rounded-2xl p-5">
                         <h3 class="font-semibold mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-sliders text-green-400"></i>
-                            İnce Ayarlar
+                            Ürün Yerleştirme
                         </h3>
 
                         <div class="space-y-4">
                             <div>
                                 <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Gölge</span>
-                                    <span id="shadowVal" class="text-orange-400">50%</span>
+                                    <span class="text-slate-400">Ürün Ölçek</span>
+                                    <span id="scaleVal" class="text-orange-400">60%</span>
                                 </div>
-                                <input type="range" id="shadowRange" min="0" max="100" value="50" oninput="updateAdjustment('shadow', this.value)" class="w-full">
+                                <input type="range" id="scaleRange" min="20" max="100" value="60" oninput="updateAdjustment('scale', this.value)" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">Yukarı/Aşağı</span>
+                                    <span id="offsetYVal" class="text-orange-400">0px</span>
+                                </div>
+                                <input type="range" id="offsetYRange" min="-200" max="200" value="0" oninput="updateAdjustment('offsetY', this.value)" class="w-full">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">Gölge</span>
+                                    <span id="shadowVal" class="text-orange-400">45%</span>
+                                </div>
+                                <input type="range" id="shadowRange" min="0" max="100" value="45" oninput="updateAdjustment('shadow', this.value)" class="w-full">
                             </div>
                             <div>
                                 <div class="flex justify-between text-xs mb-1">
@@ -445,20 +472,6 @@
                                     <span id="brightnessVal" class="text-orange-400">100%</span>
                                 </div>
                                 <input type="range" id="brightnessRange" min="50" max="150" value="100" oninput="updateAdjustment('brightness', this.value)" class="w-full">
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Kontrast</span>
-                                    <span id="contrastVal" class="text-orange-400">100%</span>
-                                </div>
-                                <input type="range" id="contrastRange" min="50" max="150" value="100" oninput="updateAdjustment('contrast', this.value)" class="w-full">
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1">
-                                    <span class="text-slate-400">Padding</span>
-                                    <span id="paddingVal" class="text-orange-400">10%</span>
-                                </div>
-                                <input type="range" id="paddingRange" min="0" max="30" value="10" oninput="updateAdjustment('padding', this.value)" class="w-full">
                             </div>
                         </div>
                     </div>
@@ -639,12 +652,12 @@
                 preset: 'main',
                 bgColor: '#FFFFFF',
                 scene: 'none',
-                aiPlacement: false,
-                template: 'ring_stand',
-                shadow: 50,
+                proceduralScene: 'lifestyle',
+                scale: 60,
+                offsetY: 0,
+                shadow: 45,
                 brightness: 100,
-                contrast: 100,
-                padding: 10
+                seed: Math.random() * 1e9
             }
         };
 
@@ -1405,12 +1418,36 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
 
         function updateAdjustment(type, value) {
             state.settings[type] = parseInt(value);
-            document.getElementById(`${type}Val`).textContent = value + '%';
+            const valEl = document.getElementById(`${type}Val`);
+            if (valEl) {
+                if (type === 'offsetY') {
+                    valEl.textContent = value + 'px';
+                } else {
+                    valEl.textContent = value + '%';
+                }
+            }
+        }
+
+        // Procedural scene selection
+        function selectProceduralScene(scene) {
+            state.settings.proceduralScene = scene;
+            document.querySelectorAll('[data-pscene]').forEach(el => {
+                el.classList.remove('selected');
+            });
+            const selectedEl = document.querySelector(`[data-pscene="${scene}"]`);
+            if (selectedEl) selectedEl.classList.add('selected');
+            showToast(`${scene.charAt(0).toUpperCase() + scene.slice(1).replace('_', ' ')} sahnesi seçildi`, 'success');
+        }
+
+        function randomizeScene() {
+            state.settings.seed = Math.random() * 1e9;
+            showToast('Yeni varyasyon oluşturuldu', 'success');
         }
 
         function updateCurrentSettingsDisplay() {
             document.getElementById('currentScene').textContent = SCENE_NAMES[state.settings.scene] || 'Düz';
-            document.getElementById('currentMannequin').textContent = state.settings.aiPlacement ? TEMPLATE_NAMES[state.settings.template] : 'Kapalı';
+            const proceduralNames = { lifestyle: 'Lifestyle', studio_dark: 'Studio Dark', studio_light: 'Studio Light' };
+            document.getElementById('currentMannequin').textContent = proceduralNames[state.settings.proceduralScene] || 'Lifestyle';
             const preset = PRESETS[state.settings.preset];
             document.getElementById('currentSize').textContent = preset ? `${preset.width}x${preset.height}` : '1000x1000';
         }
@@ -1626,152 +1663,152 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
             return { r: data[i], g: data[i+1], b: data[i+2] };
         }
 
+        // ========== LOCKED PRODUCT FINAL IMAGE ==========
+        // Product is NEVER sent to AI - only drawn as-is onto canvas
         async function createFinalImage() {
             const preset = PRESETS[state.settings.preset];
-            const aiPlacement = state.settings.aiPlacement;
-            const template = state.settings.template;
-
-            // Check if Gemini API is available
-            const hasGeminiApi = localStorage.getItem('google_ai_key');
-
-            // If AI placement is ON and Gemini API available, use Gemini inpainting
-            if (aiPlacement && hasGeminiApi) {
-                try {
-                    document.getElementById('previewLoaderText').textContent = 'Gemini AI ile yerleştiriliyor...';
-
-                    // Step 1: Create the display stand template
-                    const templateCanvas = document.createElement('canvas');
-                    templateCanvas.width = preset.width;
-                    templateCanvas.height = preset.height;
-                    const templateCtx = templateCanvas.getContext('2d');
-
-                    // Apply scene background
-                    applySceneBackground(templateCtx, preset.width, preset.height);
-
-                    // Draw the fixed display stand template
-                    drawDisplayStand(templateCtx, preset.width, preset.height, template);
-
-                    // Get template as base64
-                    const templateBase64 = templateCanvas.toDataURL('image/jpeg', 0.9);
-
-                    // Step 2: Get product image as base64
-                    const productCanvas = document.createElement('canvas');
-                    productCanvas.width = state.removedBgImage.width;
-                    productCanvas.height = state.removedBgImage.height;
-                    productCanvas.getContext('2d').drawImage(state.removedBgImage, 0, 0);
-                    const productBase64 = productCanvas.toDataURL('image/png');
-
-                    // Step 3: Use Gemini to intelligently place the product on the template
-                    const aiResult = await geminiInpaintProduct(templateBase64, productBase64, template);
-
-                    // Step 4: Resize and apply final adjustments
-                    const finalCanvas = document.createElement('canvas');
-                    finalCanvas.width = preset.width;
-                    finalCanvas.height = preset.height;
-                    const finalCtx = finalCanvas.getContext('2d');
-
-                    const aiImage = await loadImage(aiResult);
-
-                    // Apply filters and draw
-                    finalCtx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
-                    finalCtx.drawImage(aiImage, 0, 0, preset.width, preset.height);
-                    finalCtx.filter = 'none';
-
-                    return finalCanvas.toDataURL('image/jpeg', 0.95);
-                } catch (error) {
-                    console.warn('Gemini inpainting failed, falling back to canvas:', error.message);
-                    showToast('Gemini AI kullanılamadı: ' + error.message, 'error');
-                    // Fall back to canvas-based placement
-                }
-            }
-
-            // Fallback or no AI: Canvas-based rendering
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
             canvas.width = preset.width;
             canvas.height = preset.height;
 
-            // Apply scene background
-            applySceneBackground(ctx, canvas.width, canvas.height);
+            // Step 1: Draw procedural background (no AI, code-generated)
+            drawProceduralBackground(ctx, canvas.width, canvas.height, state.settings.proceduralScene);
 
-            const img = state.removedBgImage;
-
-            if (aiPlacement) {
-                // Draw display stand template
-                drawDisplayStand(ctx, canvas.width, canvas.height, template);
-
-                // Get anchor point for product placement on template
-                const anchor = getTemplateAnchor(template, canvas.width, canvas.height);
-
-                // Calculate product size based on template type
-                const maxSize = Math.min(canvas.width, canvas.height) * anchor.scale;
-                const productScale = Math.min(maxSize / img.width, maxSize / img.height);
-                const w = img.width * productScale;
-                const h = img.height * productScale;
-                const x = anchor.x - w / 2;
-                const y = anchor.y - h / 2;
-
-                // Shadow for product
-                if (state.settings.shadow > 0) {
-                    ctx.shadowColor = `rgba(0,0,0,${state.settings.shadow / 250})`;
-                    ctx.shadowBlur = 15 + state.settings.shadow / 5;
-                    ctx.shadowOffsetY = 3 + state.settings.shadow / 15;
-                }
-
-                // Filters
-                ctx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
-
-                // Draw product on template
-                ctx.drawImage(img, x, y, w, h);
-
-                ctx.shadowColor = 'transparent';
-                ctx.filter = 'none';
-
-                // Add info badge if no Gemini API
-                if (!hasGeminiApi) {
-                    ctx.save();
-                    ctx.globalAlpha = 0.8;
-                    ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
-                    ctx.beginPath();
-                    ctx.roundRect(10, canvas.height - 35, 230, 25, 5);
-                    ctx.fill();
-                    ctx.fillStyle = '#fff';
-                    ctx.font = 'bold 10px Inter, sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('Gemini API ekleyin (daha iyi sonuç)', 20, canvas.height - 18);
-                    ctx.restore();
-                }
-            } else {
-                // No mannequin - center product as before
-                const padding = Math.min(canvas.width, canvas.height) * (state.settings.padding / 100);
-                const availW = canvas.width - padding * 2;
-                const availH = canvas.height - padding * 2;
-
-                const scale = Math.min(availW / img.width, availH / img.height);
-                const w = img.width * scale;
-                const h = img.height * scale;
-                const x = (canvas.width - w) / 2;
-                const y = (canvas.height - h) / 2;
-
-                // Shadow
-                if (state.settings.shadow > 0) {
-                    ctx.shadowColor = `rgba(0,0,0,${state.settings.shadow / 300})`;
-                    ctx.shadowBlur = 20 + state.settings.shadow / 3;
-                    ctx.shadowOffsetY = 5 + state.settings.shadow / 10;
-                }
-
-                // Filters
-                ctx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
-
-                // Draw product image
-                ctx.drawImage(img, x, y, w, h);
-
-                ctx.shadowColor = 'transparent';
-                ctx.filter = 'none';
+            // Step 2: Apply any selected scene overlay (marble, wood, etc.)
+            if (state.settings.scene !== 'none') {
+                applySceneBackground(ctx, canvas.width, canvas.height);
             }
 
+            // Step 3: Draw product LOCKED - exactly as uploaded, no modification
+            const img = state.removedBgImage;
+            const scalePct = state.settings.scale / 100;
+            const offsetY = state.settings.offsetY;
+
+            const targetW = img.width * scalePct;
+            const targetH = img.height * scalePct;
+
+            const x = (canvas.width - targetW) / 2;
+            const y = (canvas.height - targetH) / 2 + offsetY;
+
+            // Soft shadow under product
+            const shadowStrength = state.settings.shadow / 100;
+            if (shadowStrength > 0) {
+                drawSoftShadow(ctx, x, y, targetW, targetH, shadowStrength);
+            }
+
+            // Apply brightness filter
+            ctx.filter = `brightness(${state.settings.brightness}%)`;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // Draw product (LOCKED - pixel-perfect, no AI modification)
+            ctx.drawImage(img, x, y, targetW, targetH);
+
+            ctx.filter = 'none';
+
             return canvas.toDataURL('image/jpeg', 0.95);
+        }
+
+        // Soft elliptical shadow under product
+        function drawSoftShadow(ctx, px, py, pw, ph, strength) {
+            if (strength <= 0) return;
+
+            const centerX = px + pw / 2;
+            const shadowY = py + ph * 0.92;
+            const maxR = pw * 0.55;
+
+            const grad = ctx.createRadialGradient(centerX, shadowY, 0, centerX, shadowY, maxR);
+            grad.addColorStop(0, `rgba(0,0,0,${0.25 * strength})`);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.ellipse(centerX, shadowY, pw * 0.50, ph * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Procedural background generation (no AI, deterministic with seed)
+        function drawProceduralBackground(ctx, width, height, type) {
+            let seed = state.settings.seed;
+
+            // Simple seeded random function
+            function rand() {
+                let x = (seed | 0) || 123456789;
+                x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+                seed = x;
+                return ((x >>> 0) / 4294967296);
+            }
+
+            if (type === 'studio_dark') {
+                // Dark premium background with subtle spotlight
+                const g = ctx.createLinearGradient(0, 0, width, height);
+                g.addColorStop(0, '#0b0b0f');
+                g.addColorStop(0.5, '#12131a');
+                g.addColorStop(1, '#07070a');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, width, height);
+
+                // Subtle spotlight
+                const cx = width * (0.45 + rand() * 0.1);
+                const cy = height * (0.35 + rand() * 0.1);
+                const r = width * (0.55 + rand() * 0.15);
+                const rad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+                rad.addColorStop(0, 'rgba(255,255,255,0.08)');
+                rad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = rad;
+                ctx.fillRect(0, 0, width, height);
+                return;
+            }
+
+            if (type === 'studio_light') {
+                // Light premium background with soft vignette
+                const g = ctx.createLinearGradient(0, 0, width, height);
+                g.addColorStop(0, '#fbfbfd');
+                g.addColorStop(0.5, '#f1f2f6');
+                g.addColorStop(1, '#ffffff');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, width, height);
+
+                // Soft vignette
+                const cx = width / 2, cy = height / 2, r = width * 0.75;
+                const rad = ctx.createRadialGradient(cx, cy, r * 0.2, cx, cy, r);
+                rad.addColorStop(0, 'rgba(0,0,0,0)');
+                rad.addColorStop(1, 'rgba(0,0,0,0.06)');
+                ctx.fillStyle = rad;
+                ctx.fillRect(0, 0, width, height);
+                return;
+            }
+
+            // Lifestyle - warm bokeh background
+            const a = 245 - Math.floor(rand() * 10);
+            const b = 238 - Math.floor(rand() * 12);
+            const c = 230 - Math.floor(rand() * 12);
+            ctx.fillStyle = `rgb(${a},${b},${c})`;
+            ctx.fillRect(0, 0, width, height);
+
+            // Bokeh circles
+            const count = 25 + Math.floor(rand() * 15);
+            for (let i = 0; i < count; i++) {
+                const bx = rand() * width;
+                const by = rand() * height;
+                const br = (rand() * 100) + 30;
+                const alpha = 0.04 + rand() * 0.08;
+                const col = 255 - Math.floor(rand() * 35);
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(${col},${col},${col},${alpha})`;
+                ctx.arc(bx, by, br, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Directional light
+            const lcx = width * 0.25, lcy = height * 0.2, lr = width * 0.85;
+            const lrad = ctx.createRadialGradient(lcx, lcy, 0, lcx, lcy, lr);
+            lrad.addColorStop(0, 'rgba(255,255,255,0.22)');
+            lrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = lrad;
+            ctx.fillRect(0, 0, width, height);
         }
 
         function loadImage(src) {
