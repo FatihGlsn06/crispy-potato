@@ -759,7 +759,7 @@ CRITICAL REQUIREMENTS:
 - Professional studio lighting with catch lights
 - 8K detail quality, sharp focus on jewelry`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -768,8 +768,7 @@ CRITICAL REQUIREMENTS:
                         // NO IMAGE INPUT - This is the key to avoiding mannequin influence!
                     }],
                     generationConfig: {
-                        responseModalities: ["image", "text"],
-                        responseMimeType: "image/jpeg"
+                        responseModalities: ["IMAGE", "TEXT"]
                     }
                 })
             });
@@ -780,16 +779,26 @@ CRITICAL REQUIREMENTS:
             }
 
             const data = await response.json();
+            console.log('Görsel üretim yanıtı:', data);
 
             if (data.candidates && data.candidates[0]?.content?.parts) {
                 for (const part of data.candidates[0].content.parts) {
                     if (part.inlineData?.data) {
-                        return `data:image/jpeg;base64,${part.inlineData.data}`;
+                        const mimeType = part.inlineData.mimeType || 'image/png';
+                        console.log('✅ Görsel alındı, mimeType:', mimeType);
+                        return `data:${mimeType};base64,${part.inlineData.data}`;
                     }
                 }
             }
 
-            throw new Error('AI görsel üretemedi');
+            // Eğer görsel yoksa, text yanıtını göster
+            const textPart = data.candidates?.[0]?.content?.parts?.find(p => p.text);
+            if (textPart) {
+                console.log('AI text yanıtı:', textPart.text);
+                throw new Error('AI görsel üretemedi: ' + textPart.text.substring(0, 100));
+            }
+
+            throw new Error('AI görsel üretemedi - yanıt boş');
         }
 
         // ========== GALLERY FUNCTIONS ==========
