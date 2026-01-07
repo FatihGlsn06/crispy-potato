@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v5.0 - LOCKED PRODUCT (No AI Hallucination) -->
+<!-- Trendyol Pro Studio v5.0 - LOCKED PRODUCT System (Zero Hallucination) -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -88,6 +88,21 @@
         .scene-option.selected {
             border-color: var(--primary) !important;
             box-shadow: 0 0 15px rgba(242,122,26,0.3);
+        }
+
+        .body-part-option { transition: all 0.2s ease; }
+        .body-part-option:hover { transform: scale(1.05); }
+        .body-part-option.selected {
+            border-color: #a855f7 !important;
+            background: rgba(168,85,247,0.15) !important;
+            box-shadow: 0 0 12px rgba(168,85,247,0.3);
+        }
+
+        .skin-tone-btn { transition: all 0.2s ease; color: #333; font-weight: 600; }
+        .skin-tone-btn:hover { transform: scale(1.02); }
+        .skin-tone-btn.selected {
+            border-color: #a855f7 !important;
+            box-shadow: 0 0 10px rgba(168,85,247,0.4);
         }
 
         input[type="range"] {
@@ -476,6 +491,78 @@
                         </div>
                     </div>
 
+                    <!-- FINAL STEP: Human Body Mounting (Optional) -->
+                    <div class="glass rounded-2xl p-5 border border-purple-500/30">
+                        <h3 class="font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-user text-purple-400"></i>
+                            Son Adım: İnsan Montajı
+                            <span id="humanMountStatus" class="status-badge inactive ml-auto">Kapalı</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Kilitli ürünü <b class="text-purple-400">gerçek insan vücuduna</b> monte et (Gemini AI)
+                        </p>
+
+                        <!-- Toggle -->
+                        <div class="flex items-center justify-between p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl mb-3">
+                            <div>
+                                <p class="text-sm font-medium">İnsan Montajı</p>
+                                <p class="text-[10px] text-slate-500">Ürün kilitli kalır, sadece insan eklenir</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="humanMountToggle" onchange="toggleHumanMount()" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                            </label>
+                        </div>
+
+                        <!-- Body Part Selection (shown when toggle is ON) -->
+                        <div id="humanMountOptions" class="hidden">
+                            <label class="text-xs text-slate-400 mb-2 block">Vücut Bölgesi Seç</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div onclick="selectBodyPart('hand_female')" class="body-part-option selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="hand_female">
+                                    <i class="fa-solid fa-hand text-pink-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Kadın El</p>
+                                </div>
+                                <div onclick="selectBodyPart('hand_male')" class="body-part-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="hand_male">
+                                    <i class="fa-solid fa-hand text-blue-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Erkek El</p>
+                                </div>
+                                <div onclick="selectBodyPart('neck')" class="body-part-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="neck">
+                                    <i class="fa-solid fa-user text-amber-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Boyun/Göğüs</p>
+                                </div>
+                                <div onclick="selectBodyPart('ear')" class="body-part-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="ear">
+                                    <i class="fa-solid fa-ear-listen text-green-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Kulak</p>
+                                </div>
+                                <div onclick="selectBodyPart('wrist')" class="body-part-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="wrist">
+                                    <i class="fa-regular fa-circle text-cyan-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Bilek</p>
+                                </div>
+                                <div onclick="selectBodyPart('finger')" class="body-part-option p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500/50" data-bodypart="finger">
+                                    <i class="fa-solid fa-ring text-yellow-400 text-lg mb-1 block"></i>
+                                    <p class="text-[10px]">Parmak</p>
+                                </div>
+                            </div>
+
+                            <!-- Skin Tone -->
+                            <div class="mt-3">
+                                <label class="text-xs text-slate-400 mb-2 block">Ten Rengi</label>
+                                <div class="flex gap-2">
+                                    <button onclick="selectSkinTone('light')" class="skin-tone-btn selected flex-1 py-2 rounded-lg border border-slate-700 text-[10px]" data-skin="light" style="background: linear-gradient(135deg, #FFDFC4, #F0C8A0);">Açık</button>
+                                    <button onclick="selectSkinTone('medium')" class="skin-tone-btn flex-1 py-2 rounded-lg border border-slate-700 text-[10px]" data-skin="medium" style="background: linear-gradient(135deg, #D4A574, #C68642);">Orta</button>
+                                    <button onclick="selectSkinTone('dark')" class="skin-tone-btn flex-1 py-2 rounded-lg border border-slate-700 text-[10px]" data-skin="dark" style="background: linear-gradient(135deg, #8D5524, #5C3A21);">Koyu</button>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                                <p class="text-[10px] text-yellow-400">
+                                    <i class="fa-solid fa-info-circle mr-1"></i>
+                                    Gemini API gerekli. Ürün kilitli kalır, sadece insan elementi eklenir.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Process Button -->
                     <button onclick="processImage()" id="processBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 font-bold text-lg transition-all glow">
                         <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
@@ -657,7 +744,11 @@
                 offsetY: 0,
                 shadow: 45,
                 brightness: 100,
-                seed: Math.random() * 1e9
+                seed: Math.random() * 1e9,
+                // Human mounting settings
+                humanMount: false,
+                bodyPart: 'hand_female',
+                skinTone: 'light'
             }
         };
 
@@ -1444,6 +1535,53 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
             showToast('Yeni varyasyon oluşturuldu', 'success');
         }
 
+        // ========== HUMAN MOUNTING FUNCTIONS ==========
+        function toggleHumanMount() {
+            const toggle = document.getElementById('humanMountToggle');
+            state.settings.humanMount = toggle.checked;
+
+            const options = document.getElementById('humanMountOptions');
+            const statusBadge = document.getElementById('humanMountStatus');
+
+            if (state.settings.humanMount) {
+                options.classList.remove('hidden');
+                statusBadge.textContent = 'Aktif';
+                statusBadge.className = 'status-badge active';
+                showToast('İnsan montajı aktif - Gemini API kullanılacak', 'success');
+            } else {
+                options.classList.add('hidden');
+                statusBadge.textContent = 'Kapalı';
+                statusBadge.className = 'status-badge inactive';
+            }
+        }
+
+        function selectBodyPart(part) {
+            state.settings.bodyPart = part;
+            document.querySelectorAll('.body-part-option').forEach(el => el.classList.remove('selected'));
+            const selectedEl = document.querySelector(`[data-bodypart="${part}"]`);
+            if (selectedEl) selectedEl.classList.add('selected');
+
+            const partNames = {
+                hand_female: 'Kadın El',
+                hand_male: 'Erkek El',
+                neck: 'Boyun/Göğüs',
+                ear: 'Kulak',
+                wrist: 'Bilek',
+                finger: 'Parmak'
+            };
+            showToast(`${partNames[part]} seçildi`, 'success');
+        }
+
+        function selectSkinTone(tone) {
+            state.settings.skinTone = tone;
+            document.querySelectorAll('.skin-tone-btn').forEach(el => el.classList.remove('selected'));
+            const selectedEl = document.querySelector(`[data-skin="${tone}"]`);
+            if (selectedEl) selectedEl.classList.add('selected');
+
+            const toneNames = { light: 'Açık', medium: 'Orta', dark: 'Koyu' };
+            showToast(`${toneNames[tone]} ten rengi seçildi`, 'success');
+        }
+
         function updateCurrentSettingsDisplay() {
             document.getElementById('currentScene').textContent = SCENE_NAMES[state.settings.scene] || 'Düz';
             const proceduralNames = { lifestyle: 'Lifestyle', studio_dark: 'Studio Dark', studio_light: 'Studio Light' };
@@ -1665,6 +1803,7 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
 
         // ========== LOCKED PRODUCT FINAL IMAGE ==========
         // Product is NEVER sent to AI - only drawn as-is onto canvas
+        // OPTIONAL: At the very end, can be mounted on human body via AI
         async function createFinalImage() {
             const preset = PRESETS[state.settings.preset];
             const canvas = document.createElement('canvas');
@@ -1708,7 +1847,37 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
 
             ctx.filter = 'none';
 
-            return canvas.toDataURL('image/jpeg', 0.95);
+            // Get the locked product image
+            let finalImage = canvas.toDataURL('image/jpeg', 0.95);
+
+            // Step 4 (OPTIONAL): Mount on human body using Gemini AI
+            // This is the ONLY step where AI touches the image
+            // The product has already been "locked in" - AI just adds human around it
+            if (state.settings.humanMount) {
+                const apiKey = localStorage.getItem('google_ai_key');
+                if (apiKey) {
+                    try {
+                        document.getElementById('previewLoaderText').textContent = 'İnsan montajı yapılıyor...';
+                        showToast('Gemini AI ile insan elementi ekleniyor...', 'success');
+
+                        finalImage = await mountOnHumanBody(
+                            finalImage,
+                            state.settings.bodyPart,
+                            state.settings.skinTone
+                        );
+
+                        showToast('İnsan montajı tamamlandı!', 'success');
+                    } catch (error) {
+                        console.warn('Human mounting failed:', error.message);
+                        showToast('İnsan montajı başarısız: ' + error.message, 'error');
+                        // Return the locked product image without human mounting
+                    }
+                } else {
+                    showToast('İnsan montajı için Gemini API gerekli', 'error');
+                }
+            }
+
+            return finalImage;
         }
 
         // Soft elliptical shadow under product
@@ -1809,6 +1978,103 @@ OUTPUT: A single combined image showing the product placed naturally on the stan
             lrad.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = lrad;
             ctx.fillRect(0, 0, width, height);
+        }
+
+        // ========== GEMINI HUMAN MOUNTING ==========
+        // Takes the LOCKED product image and asks Gemini to add human element
+        // Product remains unchanged - AI only adds the human body part around it
+        async function mountOnHumanBody(lockedProductBase64, bodyPart, skinTone) {
+            const apiKey = localStorage.getItem('google_ai_key');
+            if (!apiKey) {
+                throw new Error('Gemini API key gerekli. Ayarlardan ekleyin.');
+            }
+
+            // Skin tone descriptions
+            const skinTones = {
+                light: 'fair/light Caucasian skin tone',
+                medium: 'medium/olive Mediterranean skin tone',
+                dark: 'dark/deep African skin tone'
+            };
+
+            // Body part specific prompts - very explicit about NOT modifying the product
+            const bodyPartPrompts = {
+                hand_female: `Add an elegant female hand with manicured nails (${skinTones[skinTone]}) that appears to be wearing or holding this jewelry product. The hand should be positioned naturally as if modeling the jewelry for a professional product photo.`,
+                hand_male: `Add a masculine male hand (${skinTones[skinTone]}) that appears to be wearing or holding this jewelry product. The hand should be positioned naturally as if modeling the jewelry for a professional product photo.`,
+                neck: `Add an elegant female neck, décolletage and partial shoulders (${skinTones[skinTone]}) that appears to be wearing this jewelry. Show from chin to upper chest area, positioned as if modeling the jewelry for a professional product photo.`,
+                ear: `Add a female ear and partial face profile (${skinTones[skinTone]}) that appears to be wearing this earring. Show the ear naturally positioned as if modeling the earring for a professional product photo.`,
+                wrist: `Add an elegant female wrist and partial forearm (${skinTones[skinTone]}) that appears to be wearing this bracelet/watch. The wrist should be positioned naturally as if modeling the jewelry for a professional product photo.`,
+                finger: `Add an elegant female hand focusing on the ring finger (${skinTones[skinTone]}) that appears to be wearing this ring. The hand should be positioned elegantly as if modeling the ring for a professional product photo.`
+            };
+
+            const bodyPrompt = bodyPartPrompts[bodyPart] || bodyPartPrompts.hand_female;
+
+            const prompt = `You are a professional product photographer specializing in jewelry photography.
+
+TASK: Add a realistic human body element to this jewelry product photo.
+
+CRITICAL RULES - YOU MUST FOLLOW THESE EXACTLY:
+1. The jewelry product in this image is LOCKED and SACRED - DO NOT modify, distort, resize, recolor, or change it in ANY way
+2. DO NOT add new details, stones, patterns, or elements to the jewelry
+3. DO NOT change the jewelry's shape, proportions, or appearance
+4. The jewelry must appear EXACTLY as it is in the original image
+5. ONLY add the human body element around/behind the jewelry
+
+WHAT TO ADD:
+${bodyPrompt}
+
+COMPOSITION:
+- Professional jewelry advertising photography style
+- Soft, flattering lighting on the skin
+- The human element should complement the jewelry, not distract from it
+- Natural pose that showcases the jewelry
+- Clean, professional result suitable for e-commerce
+
+Remember: The jewelry is the star - the human element is just to show how it looks when worn. The jewelry MUST remain pixel-perfect identical to the input.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/jpeg',
+                                        data: lockedProductBase64.split(',')[1]
+                                    }
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["image", "text"],
+                            responseMimeType: "image/jpeg"
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Gemini Human Mount Error:', errorData);
+                    throw new Error(errorData.error?.message || 'İnsan montajı başarısız');
+                }
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates[0]?.content?.parts) {
+                    for (const part of data.candidates[0].content.parts) {
+                        if (part.inlineData?.data) {
+                            return `data:image/jpeg;base64,${part.inlineData.data}`;
+                        }
+                    }
+                }
+
+                throw new Error('Gemini görsel üretemedi');
+            } catch (error) {
+                console.error('Human mounting error:', error);
+                throw error;
+            }
         }
 
         function loadImage(src) {
