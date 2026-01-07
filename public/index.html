@@ -395,10 +395,25 @@
             </div>
 
             <div class="space-y-4">
+                <!-- Fal.ai (Flux) - Görsel üretim için -->
+                <div class="p-4 bg-slate-800/30 rounded-xl border border-purple-500/30">
+                    <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-purple-400"></i> Fal.ai (Flux)
+                        <span class="text-[10px] px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">GÖRSEL ÜRETİM</span>
+                    </label>
+                    <input type="password" id="falKeyInput"
+                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-purple-500 outline-none"
+                           placeholder="fal_...">
+                    <p class="text-xs text-slate-500 mt-1">
+                        <a href="https://fal.ai/dashboard/keys" target="_blank" class="text-purple-400 hover:underline">Fal.ai API key al</a>
+                    </p>
+                </div>
+
                 <!-- Google AI (Gemini) - Analiz için -->
                 <div class="p-4 bg-slate-800/30 rounded-xl border border-blue-500/30">
                     <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
                         <i class="fa-brands fa-google text-blue-400"></i> Gemini API (Analiz)
+                        <span class="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">ÜRÜN ANALİZ</span>
                     </label>
                     <input type="password" id="geminiKeyInput"
                            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 outline-none"
@@ -494,15 +509,30 @@
         // ========== SETTINGS ==========
         function loadSettings() {
             const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
+
             if (geminiKey) {
                 document.getElementById('geminiKeyInput').value = geminiKey;
-                updateApiStatus();
             }
+            if (falKey) {
+                document.getElementById('falKeyInput').value = falKey;
+            }
+            updateApiStatus();
         }
 
         function updateApiStatus() {
             const hasGemini = localStorage.getItem('gemini_api_key');
-            if (hasGemini) {
+            const hasFal = localStorage.getItem('fal_api_key');
+
+            if (hasFal && hasGemini) {
+                document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-purple-500';
+                document.getElementById('apiStatus').textContent = 'Fal.ai + Gemini';
+                document.getElementById('apiStatus').className = 'text-xs text-purple-400';
+            } else if (hasFal) {
+                document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-purple-500';
+                document.getElementById('apiStatus').textContent = 'Fal.ai Bağlı';
+                document.getElementById('apiStatus').className = 'text-xs text-purple-400';
+            } else if (hasGemini) {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-green-500';
                 document.getElementById('apiStatus').textContent = 'Gemini Bağlı';
                 document.getElementById('apiStatus').className = 'text-xs text-green-400';
@@ -523,8 +553,13 @@
 
         function saveSettings() {
             const geminiKey = document.getElementById('geminiKeyInput').value.trim();
+            const falKey = document.getElementById('falKeyInput').value.trim();
+
             if (geminiKey) {
                 localStorage.setItem('gemini_api_key', geminiKey);
+            }
+            if (falKey) {
+                localStorage.setItem('fal_api_key', falKey);
             }
             updateApiStatus();
             closeSettings();
@@ -757,46 +792,57 @@ CRITICAL REQUIREMENTS:
 - Professional studio lighting with catch lights
 - 8K detail quality, sharp focus on jewelry`;
 
-            // Gemini 2.0 Flash ile görsel üretim
-            console.log('🎨 Gemini 2.0 Flash kullanılıyor');
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+            // Fal.ai key kontrolü
+            const falKey = localStorage.getItem('fal_api_key');
+            if (!falKey) {
+                throw new Error('Fal.ai API key gerekli. Ayarlardan ekleyin.');
+            }
+
+            // Fal.ai Flux ile görsel üretim
+            console.log('🎨 Fal.ai Flux kullanılıyor');
+
+            const response = await fetch('https://fal.run/fal-ai/flux/dev', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Key ${falKey}`
+                },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: generationPrompt }]
-                    }],
-                    generationConfig: {
-                        responseModalities: ["IMAGE"]
-                    }
+                    prompt: generationPrompt,
+                    image_size: "square_hd",
+                    num_inference_steps: 28,
+                    guidance_scale: 3.5,
+                    num_images: 1,
+                    enable_safety_checker: false
                 })
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error?.message || 'Görsel üretimi başarısız');
+                console.error('Fal.ai hatası:', errorData);
+                throw new Error(errorData.detail || 'Fal.ai görsel üretimi başarısız');
             }
 
             const data = await response.json();
-            console.log('Gemini yanıtı:', data);
+            console.log('Fal.ai yanıtı:', data);
 
-            // Gemini response format
-            if (data.candidates && data.candidates[0]?.content?.parts) {
-                for (const part of data.candidates[0].content.parts) {
-                    if (part.inlineData?.data) {
-                        const mimeType = part.inlineData.mimeType || 'image/png';
-                        console.log('✅ Gemini görsel alındı, mimeType:', mimeType);
-                        return `data:${mimeType};base64,${part.inlineData.data}`;
-                    }
-                    if (part.text) {
-                        console.log('AI text yanıtı:', part.text);
-                    }
-                }
+            // Fal.ai response format
+            if (data.images && data.images[0]?.url) {
+                console.log('✅ Fal.ai görsel URL:', data.images[0].url);
+                // URL'yi base64'e çevir
+                const imageUrl = data.images[0].url;
+                const imageResponse = await fetch(imageUrl);
+                const imageBlob = await imageResponse.blob();
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(imageBlob);
+                });
             }
 
             // Hata detayı
             if (data.error) {
-                throw new Error(data.error.message || 'API hatası');
+                throw new Error(data.error || 'API hatası');
             }
 
             console.error('Beklenmeyen yanıt:', data);
