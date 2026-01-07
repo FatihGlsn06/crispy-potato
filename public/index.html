@@ -1542,17 +1542,37 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             let finalImage = canvas.toDataURL('image/jpeg', 0.95);
 
             // Step 4 (OPTIONAL): Mount on human body using Gemini AI
-            // This is the ONLY step where AI touches the image
-            // The product has already been "locked in" - AI just adds human around it
+            // Send ONLY the isolated product (no mannequin context) to get realistic results
             if (state.settings.humanMount) {
                 const apiKey = localStorage.getItem('google_ai_key');
                 if (apiKey) {
                     try {
                         document.getElementById('previewLoaderText').textContent = 'İnsan montajı yapılıyor...';
-                        showToast('Gemini AI ile insan elementi ekleniyor...', 'success');
+                        showToast('Gemini AI ile gerçek insan görseli oluşturuluyor...', 'success');
+
+                        // Create isolated product image (white background, just the product)
+                        const isolatedCanvas = document.createElement('canvas');
+                        const isoCtx = isolatedCanvas.getContext('2d');
+                        isolatedCanvas.width = 1000;
+                        isolatedCanvas.height = 1000;
+
+                        // White background
+                        isoCtx.fillStyle = '#FFFFFF';
+                        isoCtx.fillRect(0, 0, 1000, 1000);
+
+                        // Draw only the product centered
+                        const pImg = state.removedBgImage;
+                        const pScale = 0.7;
+                        const pW = pImg.width * pScale;
+                        const pH = pImg.height * pScale;
+                        const pX = (1000 - pW) / 2;
+                        const pY = (1000 - pH) / 2;
+                        isoCtx.drawImage(pImg, pX, pY, pW, pH);
+
+                        const isolatedProductBase64 = isolatedCanvas.toDataURL('image/jpeg', 0.95);
 
                         finalImage = await mountOnHumanBody(
-                            finalImage,
+                            isolatedProductBase64,
                             state.settings.bodyPart,
                             state.settings.skinTone
                         );
@@ -1768,17 +1788,22 @@ BACKGROUND: Clean white or soft cream gradient`,
 
 YOUR TASK: Generate a photorealistic image of a REAL PERSON wearing the jewelry shown in the reference image.
 
+IMPORTANT: The reference image may show the jewelry on a mannequin or display stand - COMPLETELY IGNORE the mannequin/stand. Look ONLY at the jewelry design (beads, stones, chain, colors, pattern) and recreate it on a REAL HUMAN BEING.
+
 ${partConfig.scene}
 
 CRITICAL INSTRUCTIONS:
-1. The jewelry in the reference image must be reproduced EXACTLY - same design, stones, chain style, colors, proportions
+1. The jewelry design must be reproduced EXACTLY - same bead colors, stone arrangement, chain style, metal color, proportions
 2. DO NOT add, remove, or modify any details of the jewelry (no extra stones, no changed patterns)
-3. Create a REAL HUMAN, not a mannequin - include realistic skin texture, pores, subtle imperfections
-4. The person should look like a professional model in a high-end jewelry campaign
-5. Focus area: ${partConfig.focus}
-6. The result should be indistinguishable from a real professional product photo
+3. Create a REAL HUMAN with realistic skin - NOT a mannequin, NOT plastic, NOT artificial
+4. Include realistic details: skin pores, subtle veins, natural color variations, soft shadows
+5. The person should look like a professional model in a high-end jewelry campaign
+6. Focus area: ${partConfig.focus}
+7. The result must look like a real photograph taken in a professional studio
 
-OUTPUT: A single stunning product photo that could be used on Tiffany.com or in Vogue magazine.`;
+ABSOLUTELY NO MANNEQUINS - only real human skin, real body, real photography.
+
+OUTPUT: A stunning product photo that looks like it was shot for Vogue or Tiffany.com - featuring a REAL person.`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
