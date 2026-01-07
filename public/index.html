@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v4.2 - Gemini (Nano Banana) Image Generation -->
+<!-- Trendyol Pro Studio v4.3 - Fixed Templates + Gemini Inpainting -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -75,9 +75,9 @@
             border-radius: 50%;
         }
 
-        .mannequin-option { transition: all 0.2s ease; cursor: pointer; }
-        .mannequin-option:hover { transform: scale(1.05); border-color: rgba(242,122,26,0.5); }
-        .mannequin-option.selected {
+        .template-option { transition: all 0.2s ease; cursor: pointer; }
+        .template-option:hover { transform: scale(1.05); border-color: rgba(242,122,26,0.5); }
+        .template-option.selected {
             border-color: var(--primary) !important;
             background: rgba(242,122,26,0.15) !important;
             box-shadow: 0 0 15px rgba(242,122,26,0.3);
@@ -128,7 +128,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v4.2</p>
+                    <p class="text-[10px] text-slate-400">AI Fotoğrafçı Asistanı v4.3</p>
                 </div>
             </div>
 
@@ -375,66 +375,51 @@
                         </div>
                     </div>
 
-                    <!-- Virtual Mannequin for Jewelry -->
+                    <!-- AI Product Placement - Simplified -->
                     <div class="glass rounded-2xl p-5">
                         <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-gem text-purple-400"></i>
-                            Takı Mankeni
-                            <span id="mannequinStatus" class="status-badge inactive ml-auto">Seçilmedi</span>
+                            <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
+                            AI Ürün Yerleştirme
+                            <span id="mannequinStatus" class="status-badge inactive ml-auto">Kapalı</span>
                         </h3>
-                        <p class="text-xs text-slate-500 mb-3">Profesyonel mücevher display standları</p>
+                        <p class="text-xs text-slate-500 mb-3">Gemini AI ile ürünü sabit şablona yerleştir</p>
 
-                        <div id="mannequinOptions" class="grid grid-cols-3 gap-2">
-                            <div onclick="selectMannequin('none')" class="mannequin-option selected p-3 rounded-xl border border-slate-700 text-center" data-mannequin="none">
-                                <i class="fa-solid fa-ban text-slate-500 text-xl mb-1 block"></i>
-                                <p class="text-xs">Yok</p>
+                        <!-- Simple Toggle -->
+                        <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl mb-3">
+                            <div>
+                                <p class="text-sm font-medium">AI Yerleştirme</p>
+                                <p class="text-[10px] text-slate-500">Ürünü otomatik konumlandır</p>
                             </div>
-                            <div onclick="selectMannequin('hand_female')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_female">
-                                <i class="fa-solid fa-hand text-pink-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Kadın El</p>
-                            </div>
-                            <div onclick="selectMannequin('hand_male')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="hand_male">
-                                <i class="fa-solid fa-hand text-blue-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Erkek El</p>
-                            </div>
-                            <div onclick="selectMannequin('neck_bust')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="neck_bust">
-                                <i class="fa-solid fa-user text-amber-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Boyun Büst</p>
-                            </div>
-                            <div onclick="selectMannequin('ear_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="ear_display">
-                                <i class="fa-solid fa-ear-listen text-green-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Kulak</p>
-                            </div>
-                            <div onclick="selectMannequin('wrist_display')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="wrist_display">
-                                <i class="fa-regular fa-circle text-cyan-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Bilek</p>
-                            </div>
-                            <div onclick="selectMannequin('finger_ring')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="finger_ring">
-                                <i class="fa-solid fa-ring text-yellow-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Yüzük</p>
-                            </div>
-                            <div onclick="selectMannequin('model_closeup')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="model_closeup">
-                                <i class="fa-solid fa-face-smile text-rose-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Model</p>
-                            </div>
-                            <div onclick="selectMannequin('full_body')" class="mannequin-option p-3 rounded-xl border border-slate-700 text-center" data-mannequin="full_body">
-                                <i class="fa-solid fa-person-dress text-violet-400 text-xl mb-1 block"></i>
-                                <p class="text-xs">Tam Boy</p>
-                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="aiPlacementToggle" onchange="toggleAIPlacement()" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                            </label>
                         </div>
 
-                        <!-- Mannequin Style Options -->
-                        <div id="mannequinStyleOptions" class="hidden mt-3 p-3 bg-slate-800/50 rounded-xl">
-                            <label class="text-xs text-slate-400 mb-2 block">Manken Stili</label>
-                            <select id="mannequinStyle" onchange="updateMannequinStyle()" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm">
-                                <option value="realistic">Gerçekçi (Fotoğraf)</option>
-                                <option value="elegant">Elegant (Işıklı)</option>
-                                <option value="minimal">Minimal (Sade)</option>
-                                <option value="luxury">Lüks (Premium)</option>
-                            </select>
-                            <p class="text-[10px] text-slate-500 mt-2">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Seçilen: <span id="selectedMannequinText" class="text-orange-400">-</span>
+                        <!-- Template Selection (shown when AI is ON) -->
+                        <div id="templateOptions" class="hidden">
+                            <label class="text-xs text-slate-400 mb-2 block">Şablon Seç</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div onclick="selectTemplate('ring_stand')" class="template-option selected p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="ring_stand">
+                                    <i class="fa-solid fa-ring text-amber-400 text-xl mb-1 block"></i>
+                                    <p class="text-xs">Yüzük Standı</p>
+                                </div>
+                                <div onclick="selectTemplate('necklace_tbar')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="necklace_tbar">
+                                    <i class="fa-solid fa-t text-blue-400 text-xl mb-1 block"></i>
+                                    <p class="text-xs">Kolye T-Bar</p>
+                                </div>
+                                <div onclick="selectTemplate('earring_card')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="earring_card">
+                                    <i class="fa-solid fa-grip-lines-vertical text-pink-400 text-xl mb-1 block"></i>
+                                    <p class="text-xs">Küpe Kartı</p>
+                                </div>
+                                <div onclick="selectTemplate('bracelet_cushion')" class="template-option p-3 rounded-xl border border-slate-700 text-center cursor-pointer hover:border-orange-500/50" data-template="bracelet_cushion">
+                                    <i class="fa-solid fa-circle text-cyan-400 text-xl mb-1 block"></i>
+                                    <p class="text-xs">Bileklik Yastık</p>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-green-400 mt-2">
+                                <i class="fa-solid fa-sparkles mr-1"></i>
+                                Gemini AI ürünü şablona otomatik yerleştirecek
                             </p>
                         </div>
                     </div>
@@ -654,8 +639,8 @@
                 preset: 'main',
                 bgColor: '#FFFFFF',
                 scene: 'none',
-                mannequin: 'none',
-                mannequinStyle: 'realistic',
+                aiPlacement: false,
+                template: 'ring_stand',
                 shadow: 50,
                 brightness: 100,
                 contrast: 100,
@@ -679,16 +664,11 @@
             silk: 'İpek'
         };
 
-        const MANNEQUIN_NAMES = {
-            none: 'Yok',
-            hand_female: 'Kadın El',
-            hand_male: 'Erkek El',
-            neck_bust: 'Boyun Büst',
-            ear_display: 'Kulak',
-            wrist_display: 'Bilek',
-            finger_ring: 'Yüzük Parmak',
-            model_closeup: 'Model Yüz',
-            full_body: 'Tam Boy Model'
+        const TEMPLATE_NAMES = {
+            ring_stand: 'Yüzük Standı',
+            necklace_tbar: 'Kolye T-Bar',
+            earring_card: 'Küpe Kartı',
+            bracelet_cushion: 'Bileklik Yastık'
         };
 
         const PHOTOGRAPHER_ANALYSIS_PROMPT = `Sen profesyonel bir e-ticaret fotoğrafçısısın. 15 yıllık deneyiminle bu ürün fotoğrafını analiz et.
@@ -1022,67 +1002,93 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             }
         }
 
-        // Generate AI Mannequin Image
-        async function generateAIMannequin(productImageBase64, mannequinType, style) {
-            const geminiKey = localStorage.getItem('google_ai_key');
-            const photoroomKey = localStorage.getItem('photoroom_key');
-            const stabilityKey = localStorage.getItem('stability_key');
+        // Gemini Inpainting - Place product on template with AI
+        async function geminiInpaintProduct(templateBase64, productBase64, templateType) {
+            const apiKey = localStorage.getItem('google_ai_key');
+            if (!apiKey) {
+                throw new Error('Google AI API key gerekli. Ayarlardan ekleyin.');
+            }
 
-            // Determine jewelry type and create prompt
-            const mannequinPrompts = {
-                'hand_female': 'elegant female hand with manicured nails wearing jewelry, soft studio lighting, white background, professional product photography',
-                'hand_male': 'masculine male hand wearing jewelry, professional studio lighting, white background, product photography',
-                'neck_bust': 'elegant neck and décolletage wearing necklace jewelry, professional studio lighting, white background, jewelry photography',
-                'ear_display': 'elegant ear wearing earring, side profile, soft lighting, white background, professional jewelry photography',
-                'wrist_display': 'elegant wrist wearing bracelet, professional lighting, white background, jewelry product photography',
-                'finger_ring': 'elegant finger wearing ring, soft lighting, white background, professional jewelry photography',
-                'model_closeup': 'beautiful female model face closeup wearing jewelry, professional fashion photography, soft lighting',
-                'full_body': 'elegant female model in white dress wearing jewelry, full body shot, professional fashion photography'
+            // Template-specific placement instructions
+            const placementInstructions = {
+                'ring_stand': 'Place the ring product naturally on the ring cone stand. The ring should sit on the cone at a slight angle, looking elegant and professional.',
+                'necklace_tbar': 'Drape the necklace over the T-bar stand naturally. The pendant should hang centered, chains should drape elegantly on both sides.',
+                'earring_card': 'Attach the earrings to the earring card display. Position them symmetrically with proper spacing.',
+                'bracelet_cushion': 'Place the bracelet on the cushion pillow display. It should wrap around naturally, showing the full design.'
             };
 
-            const styleModifiers = {
-                'realistic': ', hyperrealistic, photorealistic, 8k quality',
-                'elegant': ', elegant, luxurious, soft golden lighting',
-                'minimal': ', minimalist, clean, modern aesthetic',
-                'luxury': ', luxury, premium, high-end jewelry brand aesthetic'
-            };
+            const instruction = placementInstructions[templateType] || 'Place the jewelry product naturally on the display stand.';
 
-            const basePrompt = mannequinPrompts[mannequinType] || 'professional jewelry photography';
-            const styleModifier = styleModifiers[style] || '';
-            const fullPrompt = basePrompt + styleModifier;
+            const prompt = `You are a professional product photographer.
 
-            // Try Gemini (Nano Banana) first - best quality with less hallucination
-            if (geminiKey) {
-                try {
-                    showToast('Gemini AI ile görsel oluşturuluyor...', 'success');
-                    return await generateWithGemini(productImageBase64, fullPrompt, mannequinType);
-                } catch (e) {
-                    console.warn('Gemini failed, trying Photoroom:', e.message);
+TASK: Combine these two images into one professional product photo.
+
+IMAGE 1 (First image): A jewelry display stand template
+IMAGE 2 (Second image): A jewelry product with transparent background
+
+INSTRUCTIONS:
+1. ${instruction}
+2. Keep the display stand EXACTLY as shown - do not modify it
+3. Keep the jewelry product EXACTLY as shown - do not modify or distort it
+4. Add realistic shadows where the product touches the stand
+5. Ensure professional lighting consistency
+6. The final image should look like a real product photography shot
+7. DO NOT add any human elements (hands, skin, body parts)
+8. DO NOT hallucinate or add any extra elements
+
+OUTPUT: A single combined image showing the product placed naturally on the stand.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/jpeg',
+                                        data: templateBase64.split(',')[1]
+                                    }
+                                },
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/png',
+                                        data: productBase64.split(',')[1]
+                                    }
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["image", "text"],
+                            responseMimeType: "image/jpeg"
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Gemini Inpainting Error:', errorData);
+                    throw new Error(errorData.error?.message || 'Gemini inpainting başarısız');
                 }
-            }
 
-            // Fall back to Photoroom
-            if (photoroomKey) {
-                try {
-                    showToast('Photoroom AI ile görsel oluşturuluyor...', 'success');
-                    return await generateWithPhotoroom(productImageBase64, mannequinType);
-                } catch (e) {
-                    console.warn('Photoroom failed, trying Stability:', e.message);
+                const data = await response.json();
+
+                // Extract generated image from response
+                if (data.candidates && data.candidates[0]?.content?.parts) {
+                    for (const part of data.candidates[0].content.parts) {
+                        if (part.inlineData?.data) {
+                            return `data:image/jpeg;base64,${part.inlineData.data}`;
+                        }
+                    }
                 }
-            }
 
-            // Fall back to Stability AI
-            if (stabilityKey) {
-                try {
-                    showToast('Stability AI ile görsel oluşturuluyor...', 'success');
-                    return await generateWithStability(productImageBase64, fullPrompt, 'image-to-image');
-                } catch (e) {
-                    console.warn('Stability AI failed:', e.message);
-                }
+                throw new Error('Gemini görsel üretemedi - metin yanıtı döndü');
+            } catch (error) {
+                console.error('Gemini inpainting error:', error);
+                throw error;
             }
-
-            // No AI available - throw error
-            throw new Error('AI manken için Google AI (Gemini), Photoroom veya Stability AI API anahtarı gerekli.');
         }
 
         function blobToBase64(blob) {
@@ -1353,44 +1359,48 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             updateCurrentSettingsDisplay();
         }
 
-        // ========== MANNEQUIN SELECTION - FIXED ==========
-        function selectMannequin(type) {
-            console.log('selectMannequin called with:', type);
-            state.settings.mannequin = type;
+        // ========== AI PLACEMENT & TEMPLATE SELECTION ==========
+        function toggleAIPlacement() {
+            const toggle = document.getElementById('aiPlacementToggle');
+            state.settings.aiPlacement = toggle.checked;
 
-            // Remove selected class from all mannequin options
-            document.querySelectorAll('.mannequin-option').forEach(el => {
+            const templateOptions = document.getElementById('templateOptions');
+            const statusBadge = document.getElementById('mannequinStatus');
+
+            if (state.settings.aiPlacement) {
+                templateOptions.classList.remove('hidden');
+                statusBadge.textContent = TEMPLATE_NAMES[state.settings.template] || 'Aktif';
+                statusBadge.className = 'status-badge active';
+                showToast('AI Yerleştirme aktif - ' + TEMPLATE_NAMES[state.settings.template], 'success');
+            } else {
+                templateOptions.classList.add('hidden');
+                statusBadge.textContent = 'Kapalı';
+                statusBadge.className = 'status-badge inactive';
+            }
+
+            updateCurrentSettingsDisplay();
+        }
+
+        function selectTemplate(type) {
+            state.settings.template = type;
+
+            // Remove selected class from all template options
+            document.querySelectorAll('.template-option').forEach(el => {
                 el.classList.remove('selected');
             });
 
             // Add selected class to the chosen one
-            const selectedEl = document.querySelector(`[data-mannequin="${type}"]`);
+            const selectedEl = document.querySelector(`[data-template="${type}"]`);
             if (selectedEl) {
                 selectedEl.classList.add('selected');
             }
 
             // Update status badge
             const statusBadge = document.getElementById('mannequinStatus');
-            const styleOptions = document.getElementById('mannequinStyleOptions');
-            const selectedText = document.getElementById('selectedMannequinText');
+            statusBadge.textContent = TEMPLATE_NAMES[type] || type;
 
-            if (type !== 'none') {
-                statusBadge.textContent = MANNEQUIN_NAMES[type] || type;
-                statusBadge.className = 'status-badge active';
-                styleOptions.classList.remove('hidden');
-                if (selectedText) selectedText.textContent = MANNEQUIN_NAMES[type] || type;
-                showToast(`${MANNEQUIN_NAMES[type]} mankeni seçildi`, 'success');
-            } else {
-                statusBadge.textContent = 'Seçilmedi';
-                statusBadge.className = 'status-badge inactive';
-                styleOptions.classList.add('hidden');
-            }
-
+            showToast(`${TEMPLATE_NAMES[type]} şablonu seçildi`, 'success');
             updateCurrentSettingsDisplay();
-        }
-
-        function updateMannequinStyle() {
-            state.settings.mannequinStyle = document.getElementById('mannequinStyle').value;
         }
 
         function updateAdjustment(type, value) {
@@ -1400,7 +1410,7 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
         function updateCurrentSettingsDisplay() {
             document.getElementById('currentScene').textContent = SCENE_NAMES[state.settings.scene] || 'Düz';
-            document.getElementById('currentMannequin').textContent = MANNEQUIN_NAMES[state.settings.mannequin] || 'Yok';
+            document.getElementById('currentMannequin').textContent = state.settings.aiPlacement ? TEMPLATE_NAMES[state.settings.template] : 'Kapalı';
             const preset = PRESETS[state.settings.preset];
             document.getElementById('currentSize').textContent = preset ? `${preset.width}x${preset.height}` : '1000x1000';
         }
@@ -1428,7 +1438,7 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
                 // Show what was applied
                 let appliedFeatures = [];
                 if (state.settings.scene !== 'none') appliedFeatures.push(SCENE_NAMES[state.settings.scene] + ' sahnesi');
-                if (state.settings.mannequin !== 'none') appliedFeatures.push(MANNEQUIN_NAMES[state.settings.mannequin] + ' mankeni');
+                if (state.settings.aiPlacement) appliedFeatures.push(TEMPLATE_NAMES[state.settings.template] + ' şablonu');
 
                 if (appliedFeatures.length > 0) {
                     showToast(`Görsel oluşturuldu: ${appliedFeatures.join(', ')}`, 'success');
@@ -1618,28 +1628,43 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
         async function createFinalImage() {
             const preset = PRESETS[state.settings.preset];
-            const mannequin = state.settings.mannequin;
-            const style = state.settings.mannequinStyle;
+            const aiPlacement = state.settings.aiPlacement;
+            const template = state.settings.template;
 
-            // Check if AI APIs are available for mannequin generation
-            const hasAIApi = localStorage.getItem('photoroom_key') || localStorage.getItem('stability_key');
+            // Check if Gemini API is available
+            const hasGeminiApi = localStorage.getItem('google_ai_key');
 
-            // If mannequin selected and AI API available, try AI generation
-            if (mannequin !== 'none' && hasAIApi) {
+            // If AI placement is ON and Gemini API available, use Gemini inpainting
+            if (aiPlacement && hasGeminiApi) {
                 try {
-                    document.getElementById('previewLoaderText').textContent = 'AI manken oluşturuluyor...';
+                    document.getElementById('previewLoaderText').textContent = 'Gemini AI ile yerleştiriliyor...';
 
-                    // Get the removed background image as base64
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = state.removedBgImage.width;
-                    tempCanvas.height = state.removedBgImage.height;
-                    tempCanvas.getContext('2d').drawImage(state.removedBgImage, 0, 0);
-                    const productBase64 = tempCanvas.toDataURL('image/png');
+                    // Step 1: Create the display stand template
+                    const templateCanvas = document.createElement('canvas');
+                    templateCanvas.width = preset.width;
+                    templateCanvas.height = preset.height;
+                    const templateCtx = templateCanvas.getContext('2d');
 
-                    // Generate AI mannequin image
-                    const aiResult = await generateAIMannequin(productBase64, mannequin, style);
+                    // Apply scene background
+                    applySceneBackground(templateCtx, preset.width, preset.height);
 
-                    // Resize AI result to preset dimensions
+                    // Draw the fixed display stand template
+                    drawDisplayStand(templateCtx, preset.width, preset.height, template);
+
+                    // Get template as base64
+                    const templateBase64 = templateCanvas.toDataURL('image/jpeg', 0.9);
+
+                    // Step 2: Get product image as base64
+                    const productCanvas = document.createElement('canvas');
+                    productCanvas.width = state.removedBgImage.width;
+                    productCanvas.height = state.removedBgImage.height;
+                    productCanvas.getContext('2d').drawImage(state.removedBgImage, 0, 0);
+                    const productBase64 = productCanvas.toDataURL('image/png');
+
+                    // Step 3: Use Gemini to intelligently place the product on the template
+                    const aiResult = await geminiInpaintProduct(templateBase64, productBase64, template);
+
+                    // Step 4: Resize and apply final adjustments
                     const finalCanvas = document.createElement('canvas');
                     finalCanvas.width = preset.width;
                     finalCanvas.height = preset.height;
@@ -1647,29 +1672,20 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
                     const aiImage = await loadImage(aiResult);
 
-                    // Apply scene background first
-                    applySceneBackground(finalCtx, preset.width, preset.height);
-
-                    // Calculate fit
-                    const scale = Math.min(preset.width / aiImage.width, preset.height / aiImage.height) * 0.9;
-                    const w = aiImage.width * scale;
-                    const h = aiImage.height * scale;
-                    const x = (preset.width - w) / 2;
-                    const y = (preset.height - h) / 2;
-
                     // Apply filters and draw
                     finalCtx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
-                    finalCtx.drawImage(aiImage, x, y, w, h);
+                    finalCtx.drawImage(aiImage, 0, 0, preset.width, preset.height);
                     finalCtx.filter = 'none';
 
                     return finalCanvas.toDataURL('image/jpeg', 0.95);
                 } catch (error) {
-                    console.warn('AI generation failed, falling back to canvas:', error.message);
-                    showToast('AI kullanılamadı, basit görsel oluşturuluyor...', 'error');
+                    console.warn('Gemini inpainting failed, falling back to canvas:', error.message);
+                    showToast('Gemini AI kullanılamadı: ' + error.message, 'error');
+                    // Fall back to canvas-based placement
                 }
             }
 
-            // Fallback: Canvas-based rendering
+            // Fallback or no AI: Canvas-based rendering
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
@@ -1681,14 +1697,14 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
             const img = state.removedBgImage;
 
-            if (mannequin !== 'none') {
-                // Draw canvas mannequin (fallback)
-                drawMannequin(ctx, canvas.width, canvas.height, mannequin, style);
+            if (aiPlacement) {
+                // Draw display stand template
+                drawDisplayStand(ctx, canvas.width, canvas.height, template);
 
-                // Get anchor point for product placement on mannequin
-                const anchor = getMannequinAnchor(mannequin, canvas.width, canvas.height);
+                // Get anchor point for product placement on template
+                const anchor = getTemplateAnchor(template, canvas.width, canvas.height);
 
-                // Calculate product size based on mannequin type
+                // Calculate product size based on template type
                 const maxSize = Math.min(canvas.width, canvas.height) * anchor.scale;
                 const productScale = Math.min(maxSize / img.width, maxSize / img.height);
                 const w = img.width * productScale;
@@ -1706,24 +1722,24 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
                 // Filters
                 ctx.filter = `brightness(${state.settings.brightness}%) contrast(${state.settings.contrast}%)`;
 
-                // Draw product on mannequin
+                // Draw product on template
                 ctx.drawImage(img, x, y, w, h);
 
                 ctx.shadowColor = 'transparent';
                 ctx.filter = 'none';
 
-                // Add info badge that this is canvas fallback
-                if (!hasAIApi) {
+                // Add info badge if no Gemini API
+                if (!hasGeminiApi) {
                     ctx.save();
                     ctx.globalAlpha = 0.8;
                     ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
                     ctx.beginPath();
-                    ctx.roundRect(10, canvas.height - 35, 200, 25, 5);
+                    ctx.roundRect(10, canvas.height - 35, 230, 25, 5);
                     ctx.fill();
                     ctx.fillStyle = '#fff';
                     ctx.font = 'bold 10px Inter, sans-serif';
                     ctx.textAlign = 'left';
-                    ctx.fillText('AI API ekleyin (Ayarlar)', 20, canvas.height - 18);
+                    ctx.fillText('Gemini API ekleyin (daha iyi sonuç)', 20, canvas.height - 18);
                     ctx.restore();
                 }
             } else {
@@ -1833,49 +1849,59 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.fillRect(0, 0, width, height);
         }
 
-        // ========== PROFESSIONAL JEWELRY DISPLAY SYSTEM ==========
-        // Elegant display props used by luxury jewelry brands (Tiffany, Cartier style)
+        // ========== FIXED DISPLAY STAND SYSTEM ==========
+        // Simple, elegant display stands for jewelry products
 
-        function drawMannequin(ctx, width, height, type, style) {
+        function drawDisplayStand(ctx, width, height, templateType) {
             ctx.save();
 
-            // Professional display colors - no skin tones
-            const styles = {
-                realistic: { main: '#2c2c2c', accent: '#1a1a1a', highlight: '#404040', base: '#1f1f1f' },
-                elegant: { main: '#f5f5f5', accent: '#e0e0e0', highlight: '#ffffff', base: '#d0d0d0' },
-                minimal: { main: '#ffffff', accent: '#f0f0f0', highlight: '#ffffff', base: '#e8e8e8' },
-                luxury: { main: '#1a1a2e', accent: '#16213e', highlight: '#0f3460', base: '#0d1b2a' }
+            // Elegant white/cream color palette
+            const colors = {
+                main: '#f5f5f5',
+                accent: '#e8e8e8',
+                highlight: '#ffffff',
+                shadow: '#d0d0d0'
             };
-            const colors = styles[style] || styles.elegant;
 
-            switch(type) {
-                case 'hand_female':
-                case 'hand_male':
-                    drawHandDisplay(ctx, width, height, colors);
+            switch(templateType) {
+                case 'ring_stand':
+                    drawRingConeStand(ctx, width, height, colors);
                     break;
-                case 'neck_bust':
-                    drawNecklaceStand(ctx, width, height, colors);
+                case 'necklace_tbar':
+                    drawNecklaceTBar(ctx, width, height, colors);
                     break;
-                case 'ear_display':
-                    drawEarringStand(ctx, width, height, colors);
+                case 'earring_card':
+                    drawEarringCard(ctx, width, height, colors);
                     break;
-                case 'wrist_display':
-                    drawBraceletPillow(ctx, width, height, colors);
-                    break;
-                case 'finger_ring':
-                    drawRingStand(ctx, width, height, colors);
-                    break;
-                case 'model_closeup':
-                case 'full_body':
-                    drawJewelryBust(ctx, width, height, colors);
+                case 'bracelet_cushion':
+                    drawBraceletCushion(ctx, width, height, colors);
                     break;
             }
 
             ctx.restore();
         }
 
-        // Ring cone/slit stand
-        function drawRingStand(ctx, width, height, colors) {
+        // Get anchor point for product placement on template
+        function getTemplateAnchor(templateType, width, height) {
+            const cx = width / 2;
+            const cy = height / 2;
+
+            switch(templateType) {
+                case 'ring_stand':
+                    return { x: cx, y: cy - height * 0.15, scale: 0.35 };
+                case 'necklace_tbar':
+                    return { x: cx, y: cy - height * 0.1, scale: 0.5 };
+                case 'earring_card':
+                    return { x: cx, y: cy - height * 0.05, scale: 0.4 };
+                case 'bracelet_cushion':
+                    return { x: cx, y: cy, scale: 0.45 };
+                default:
+                    return { x: cx, y: cy, scale: 0.5 };
+            }
+        }
+
+        // Ring cone stand - elegant vertical cone
+        function drawRingConeStand(ctx, width, height, colors) {
             const cx = width * 0.5;
             const cy = height * 0.55;
             const scale = Math.min(width, height) / 800;
@@ -1885,7 +1911,7 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.scale(scale, scale);
 
             // Shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
             ctx.shadowBlur = 40;
             ctx.shadowOffsetY = 20;
 
@@ -1893,21 +1919,20 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             const baseGrad = ctx.createLinearGradient(-150, 150, 150, 200);
             baseGrad.addColorStop(0, colors.highlight);
             baseGrad.addColorStop(0.5, colors.main);
-            baseGrad.addColorStop(1, colors.accent);
+            baseGrad.addColorStop(1, colors.shadow);
             ctx.fillStyle = baseGrad;
-
             ctx.beginPath();
             ctx.ellipse(0, 180, 150, 40, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Ring cone/finger stand
+            // Cone stand
             const coneGrad = ctx.createLinearGradient(-40, -200, 40, 100);
             coneGrad.addColorStop(0, colors.highlight);
             coneGrad.addColorStop(0.3, colors.main);
             coneGrad.addColorStop(1, colors.accent);
             ctx.fillStyle = coneGrad;
 
-            ctx.shadowBlur = 20;
+            ctx.shadowBlur = 15;
             ctx.beginPath();
             ctx.moveTo(-35, 150);
             ctx.quadraticCurveTo(-45, 50, -30, -100);
@@ -1917,88 +1942,11 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.closePath();
             ctx.fill();
 
-            // Highlight line
-            ctx.strokeStyle = colors.highlight;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(-5, -180);
-            ctx.quadraticCurveTo(-15, 0, -10, 140);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-
             ctx.restore();
         }
 
-        // Necklace T-stand or bust
-        function drawNecklaceStand(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.5;
-            const scale = Math.min(width, height) / 900;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.25)';
-            ctx.shadowBlur = 50;
-            ctx.shadowOffsetY = 25;
-
-            // Base
-            const baseGrad = ctx.createLinearGradient(-200, 300, 200, 380);
-            baseGrad.addColorStop(0, colors.main);
-            baseGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = baseGrad;
-            ctx.beginPath();
-            ctx.ellipse(0, 350, 180, 45, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Stand pole
-            ctx.fillStyle = colors.main;
-            ctx.fillRect(-20, 150, 40, 200);
-
-            // Bust shape - elegant curved form
-            const bustGrad = ctx.createRadialGradient(0, 0, 50, 0, 100, 350);
-            bustGrad.addColorStop(0, colors.highlight);
-            bustGrad.addColorStop(0.5, colors.main);
-            bustGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = bustGrad;
-
-            ctx.shadowBlur = 30;
-            ctx.beginPath();
-            // Shoulders and chest curve
-            ctx.moveTo(-280, 200);
-            ctx.quadraticCurveTo(-250, 100, -180, 50);
-            ctx.quadraticCurveTo(-120, 0, -80, -50);
-            // Neck
-            ctx.quadraticCurveTo(-60, -100, -50, -180);
-            ctx.quadraticCurveTo(-40, -250, 0, -280);
-            ctx.quadraticCurveTo(40, -250, 50, -180);
-            ctx.quadraticCurveTo(60, -100, 80, -50);
-            // Right shoulder
-            ctx.quadraticCurveTo(120, 0, 180, 50);
-            ctx.quadraticCurveTo(250, 100, 280, 200);
-            // Bottom curve
-            ctx.quadraticCurveTo(200, 180, 0, 150);
-            ctx.quadraticCurveTo(-200, 180, -280, 200);
-            ctx.closePath();
-            ctx.fill();
-
-            // Subtle neck line highlight
-            ctx.strokeStyle = colors.highlight;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.3;
-            ctx.beginPath();
-            ctx.moveTo(-50, -100);
-            ctx.quadraticCurveTo(0, -120, 50, -100);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-
-            ctx.restore();
-        }
-
-        // Earring card/stand display
-        function drawEarringStand(ctx, width, height, colors) {
+        // Necklace T-bar stand
+        function drawNecklaceTBar(ctx, width, height, colors) {
             const cx = width * 0.5;
             const cy = height * 0.5;
             const scale = Math.min(width, height) / 800;
@@ -2007,12 +1955,60 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.translate(cx, cy);
             ctx.scale(scale, scale);
 
-            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
             ctx.shadowBlur = 30;
             ctx.shadowOffsetY = 15;
 
-            // Card/panel back
-            const cardGrad = ctx.createLinearGradient(-120, -250, 120, 200);
+            // Base
+            const baseGrad = ctx.createLinearGradient(-150, 250, 150, 300);
+            baseGrad.addColorStop(0, colors.main);
+            baseGrad.addColorStop(1, colors.shadow);
+            ctx.fillStyle = baseGrad;
+            ctx.beginPath();
+            ctx.ellipse(0, 280, 150, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Vertical pole
+            ctx.fillStyle = colors.main;
+            ctx.fillRect(-15, 50, 30, 230);
+
+            // T-bar top
+            const tbarGrad = ctx.createLinearGradient(-200, -50, 200, 50);
+            tbarGrad.addColorStop(0, colors.accent);
+            tbarGrad.addColorStop(0.5, colors.highlight);
+            tbarGrad.addColorStop(1, colors.accent);
+            ctx.fillStyle = tbarGrad;
+
+            // Curved T-bar
+            ctx.beginPath();
+            ctx.moveTo(-200, 50);
+            ctx.quadraticCurveTo(-200, -100, -100, -150);
+            ctx.quadraticCurveTo(0, -180, 100, -150);
+            ctx.quadraticCurveTo(200, -100, 200, 50);
+            ctx.lineTo(180, 70);
+            ctx.quadraticCurveTo(0, 30, -180, 70);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // Earring card display
+        function drawEarringCard(ctx, width, height, colors) {
+            const cx = width * 0.5;
+            const cy = height * 0.5;
+            const scale = Math.min(width, height) / 800;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            ctx.shadowBlur = 25;
+            ctx.shadowOffsetY = 10;
+
+            // Card background
+            const cardGrad = ctx.createLinearGradient(-120, -200, 120, 150);
             cardGrad.addColorStop(0, colors.highlight);
             cardGrad.addColorStop(0.5, colors.main);
             cardGrad.addColorStop(1, colors.accent);
@@ -2020,90 +2016,36 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
 
             // Rounded rectangle card
             ctx.beginPath();
-            ctx.roundRect(-120, -250, 240, 350, 15);
+            ctx.roundRect(-120, -200, 240, 320, 12);
             ctx.fill();
 
-            // Earring holes/slots
-            ctx.fillStyle = colors.accent;
+            // Earring holes
+            ctx.fillStyle = colors.shadow;
             ctx.beginPath();
-            ctx.ellipse(-50, -80, 8, 12, 0, 0, Math.PI * 2);
+            ctx.ellipse(-50, -50, 6, 10, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(50, -80, 8, 12, 0, 0, Math.PI * 2);
+            ctx.ellipse(50, -50, 6, 10, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Stand base
+            // Small stand at bottom
             ctx.fillStyle = colors.main;
             ctx.beginPath();
-            ctx.moveTo(-30, 100);
-            ctx.lineTo(-40, 200);
-            ctx.lineTo(40, 200);
-            ctx.lineTo(30, 100);
+            ctx.moveTo(-60, 120);
+            ctx.lineTo(-40, 180);
+            ctx.lineTo(40, 180);
+            ctx.lineTo(60, 120);
             ctx.closePath();
             ctx.fill();
 
-            // Base plate
-            ctx.beginPath();
-            ctx.ellipse(0, 200, 80, 25, 0, 0, Math.PI * 2);
-            ctx.fill();
-
             ctx.restore();
         }
 
-        // Bracelet pillow/cylinder display
-        function drawBraceletPillow(ctx, width, height, colors) {
+        // Bracelet cushion/pillow display
+        function drawBraceletCushion(ctx, width, height, colors) {
             const cx = width * 0.5;
             const cy = height * 0.5;
             const scale = Math.min(width, height) / 800;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.25)';
-            ctx.shadowBlur = 40;
-            ctx.shadowOffsetY = 20;
-
-            // Base tray
-            const baseGrad = ctx.createLinearGradient(-250, 100, 250, 150);
-            baseGrad.addColorStop(0, colors.accent);
-            baseGrad.addColorStop(0.5, colors.main);
-            baseGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = baseGrad;
-
-            ctx.beginPath();
-            ctx.ellipse(0, 120, 250, 60, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Pillow/roll
-            const pillowGrad = ctx.createRadialGradient(0, 0, 20, 0, 0, 150);
-            pillowGrad.addColorStop(0, colors.highlight);
-            pillowGrad.addColorStop(0.6, colors.main);
-            pillowGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = pillowGrad;
-
-            ctx.shadowBlur = 25;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 200, 80, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Top highlight
-            ctx.strokeStyle = colors.highlight;
-            ctx.lineWidth = 3;
-            ctx.globalAlpha = 0.4;
-            ctx.beginPath();
-            ctx.ellipse(0, -20, 150, 40, 0, Math.PI * 1.2, Math.PI * 1.8);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-
-            ctx.restore();
-        }
-
-        // Acrylic hand display (stylized, not realistic)
-        function drawHandDisplay(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.55;
-            const scale = Math.min(width, height) / 900;
 
             ctx.save();
             ctx.translate(cx, cy);
@@ -2113,144 +2055,34 @@ GÖREV: Aşağıdaki JSON formatında yanıt ver (SADECE JSON, başka bir şey y
             ctx.shadowBlur = 35;
             ctx.shadowOffsetY = 15;
 
-            // Base
-            ctx.fillStyle = colors.main;
+            // Base tray
+            const trayGrad = ctx.createLinearGradient(-200, 100, 200, 150);
+            trayGrad.addColorStop(0, colors.main);
+            trayGrad.addColorStop(1, colors.shadow);
+            ctx.fillStyle = trayGrad;
             ctx.beginPath();
-            ctx.ellipse(0, 280, 120, 35, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 120, 200, 50, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Stylized acrylic hand form
-            const handGrad = ctx.createLinearGradient(-100, -200, 100, 250);
-            handGrad.addColorStop(0, colors.highlight);
-            handGrad.addColorStop(0.4, colors.main);
-            handGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = handGrad;
+            // Cushion pillow
+            const cushionGrad = ctx.createRadialGradient(0, 0, 20, 0, 0, 180);
+            cushionGrad.addColorStop(0, colors.highlight);
+            cushionGrad.addColorStop(0.7, colors.main);
+            cushionGrad.addColorStop(1, colors.accent);
+            ctx.fillStyle = cushionGrad;
 
+            ctx.shadowBlur = 20;
             ctx.beginPath();
-            // Simplified elegant hand shape
-            ctx.moveTo(-50, 250);
-            ctx.quadraticCurveTo(-60, 150, -55, 50);
-            ctx.quadraticCurveTo(-65, -30, -55, -80);
-            // Fingers - simplified
-            ctx.quadraticCurveTo(-70, -130, -65, -170);
-            ctx.quadraticCurveTo(-55, -185, -45, -170);
-            ctx.quadraticCurveTo(-40, -130, -35, -90);
+            ctx.ellipse(0, 0, 180, 100, 0, 0, Math.PI * 2);
+            ctx.fill();
 
-            ctx.quadraticCurveTo(-35, -150, -30, -200);
-            ctx.quadraticCurveTo(-20, -220, -10, -200);
-            ctx.quadraticCurveTo(-5, -150, 0, -90);
-
-            ctx.quadraticCurveTo(5, -160, 15, -210);
-            ctx.quadraticCurveTo(25, -230, 35, -210);
-            ctx.quadraticCurveTo(40, -160, 40, -90);
-
-            ctx.quadraticCurveTo(50, -140, 55, -180);
-            ctx.quadraticCurveTo(65, -195, 70, -180);
-            ctx.quadraticCurveTo(70, -130, 60, -80);
-
-            // Thumb
-            ctx.quadraticCurveTo(80, -50, 100, -70);
-            ctx.quadraticCurveTo(115, -75, 110, -55);
-            ctx.quadraticCurveTo(85, -20, 65, 20);
-
-            ctx.quadraticCurveTo(60, 150, 50, 250);
-            ctx.quadraticCurveTo(0, 280, -50, 250);
-            ctx.closePath();
+            // Cushion highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(-30, -30, 80, 40, -0.3, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.restore();
-        }
-
-        // Jewelry display bust
-        function drawJewelryBust(ctx, width, height, colors) {
-            const cx = width * 0.5;
-            const cy = height * 0.5;
-            const scale = Math.min(width, height) / 1000;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            ctx.shadowColor = 'rgba(0,0,0,0.25)';
-            ctx.shadowBlur = 45;
-            ctx.shadowOffsetY = 20;
-
-            // Base
-            const baseGrad = ctx.createLinearGradient(-150, 350, 150, 420);
-            baseGrad.addColorStop(0, colors.main);
-            baseGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = baseGrad;
-            ctx.beginPath();
-            ctx.ellipse(0, 400, 150, 40, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Pole
-            ctx.fillRect(-15, 250, 30, 150);
-
-            // Full bust with head
-            const bustGrad = ctx.createRadialGradient(0, -50, 50, 0, 150, 400);
-            bustGrad.addColorStop(0, colors.highlight);
-            bustGrad.addColorStop(0.5, colors.main);
-            bustGrad.addColorStop(1, colors.accent);
-            ctx.fillStyle = bustGrad;
-
-            ctx.shadowBlur = 30;
-            ctx.beginPath();
-            // Head - elegant oval
-            ctx.ellipse(0, -280, 70, 90, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Neck and shoulders
-            ctx.beginPath();
-            ctx.moveTo(-40, -200);
-            ctx.quadraticCurveTo(-50, -150, -60, -100);
-            ctx.quadraticCurveTo(-100, -50, -200, 50);
-            ctx.quadraticCurveTo(-280, 120, -300, 250);
-            ctx.quadraticCurveTo(-150, 260, 0, 250);
-            ctx.quadraticCurveTo(150, 260, 300, 250);
-            ctx.quadraticCurveTo(280, 120, 200, 50);
-            ctx.quadraticCurveTo(100, -50, 60, -100);
-            ctx.quadraticCurveTo(50, -150, 40, -200);
-            ctx.closePath();
-            ctx.fill();
-
-            // Neck highlight
-            ctx.strokeStyle = colors.highlight;
-            ctx.lineWidth = 2;
-            ctx.globalAlpha = 0.3;
-            ctx.beginPath();
-            ctx.moveTo(-35, -180);
-            ctx.quadraticCurveTo(0, -190, 35, -180);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-
-            ctx.restore();
-        }
-
-        // Get display anchor point for product placement
-        function getMannequinAnchor(type, width, height) {
-            const scale = Math.min(width, height) / 1000;
-            const cx = width / 2;
-            const cy = height / 2;
-
-            switch(type) {
-                case 'hand_female':
-                case 'hand_male':
-                    return { x: cx, y: cy - 30 * scale, scale: 0.4 };
-                case 'neck_bust':
-                    return { x: cx, y: cy - 100 * scale, scale: 0.5 };
-                case 'ear_display':
-                    return { x: cx, y: cy - 80 * scale, scale: 0.3 };
-                case 'wrist_display':
-                    return { x: cx, y: cy - 20 * scale, scale: 0.45 };
-                case 'finger_ring':
-                    return { x: cx, y: cy - 80 * scale, scale: 0.35 };
-                case 'model_closeup':
-                case 'full_body':
-                    return { x: cx, y: cy - 100 * scale, scale: 0.4 };
-                default:
-                    return { x: cx, y: cy, scale: 0.5 };
-            }
         }
 
         // ========== DOWNLOAD ==========
