@@ -1806,11 +1806,13 @@ ABSOLUTELY NO MANNEQUINS - only real human skin, real body, real photography.
 OUTPUT: A stunning product photo that looks like it was shot for Vogue or Tiffany.com - featuring a REAL person.`;
 
             try {
-                // Try Gemini 2.0 Flash with image generation capability
+                // Try multiple models - starting with most capable for image generation
                 const models = [
                     'gemini-2.0-flash-exp-image-generation',
+                    'gemini-exp-1206',
                     'gemini-2.0-flash-exp',
-                    'gemini-1.5-flash'
+                    'gemini-1.5-pro-latest',
+                    'gemini-1.5-pro'
                 ];
 
                 let lastError = null;
