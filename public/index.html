@@ -778,13 +778,13 @@
             }
         }
 
-        // ========== INPAINTING: MANKEN → GERÇEK İNSAN ==========
+        // ========== INPAINTING: MANKEN → GERÇEK İNSAN (HİBRİT YAKLAŞIM) ==========
         async function inpaintMannequinToHuman() {
             const falKey = localStorage.getItem('fal_api_key');
 
-            // STEP 1: BiRefNet ile takı maskesi oluştur
-            console.log('🔍 ADIM 1: BiRefNet ile takı segmentasyonu...');
-            showLoader('Manken → Gerçek İnsan...', '1/3 Takı maskesi oluşturuluyor');
+            // STEP 1: BiRefNet ile takıyı ayır (ORİJİNAL takı - şeffaf arka plan)
+            console.log('🔍 ADIM 1: BiRefNet ile takı çıkarılıyor...');
+            showLoader('Manken → Gerçek İnsan...', '1/4 Takı ayrıştırılıyor');
 
             const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
                 method: 'POST',
@@ -806,26 +806,21 @@
             }
 
             const birefnetData = await birefnetResponse.json();
-            console.log('✅ BiRefNet yanıtı:', birefnetData);
-
-            const jewelryMaskUrl = birefnetData.image?.url;
-            if (!jewelryMaskUrl) {
-                throw new Error('Takı maskesi oluşturulamadı');
+            const originalJewelryUrl = birefnetData.image?.url;
+            if (!originalJewelryUrl) {
+                throw new Error('Takı çıkarılamadı');
             }
-            console.log('🎭 Takı maskesi hazır');
+            console.log('💎 Orijinal takı çıkarıldı (şeffaf arka plan)');
 
-            // STEP 2: Maskeyi ters çevir + dilate (takı korunacak, cilt değişecek)
+            // STEP 2: Maske oluştur (inpainting için)
             console.log('🔄 ADIM 2: Maske hazırlanıyor...');
-            showLoader('Manken → Gerçek İnsan...', '2/3 Maske işleniyor');
-            const invertedMask = await createInpaintMask(jewelryMaskUrl);
-            console.log('✅ Ters maske hazır (takı korunacak)');
+            showLoader('Manken → Gerçek İnsan...', '2/4 Maske işleniyor');
+            const invertedMask = await createInpaintMask(originalJewelryUrl);
 
-            // STEP 3: Flux Inpainting - SADECE CİLDİ değiştir
+            // STEP 3: Flux Inpainting - TÜM görseli değiştir (takı dahil - sorun değil)
             console.log('🎨 ADIM 3: Flux Inpainting...');
-            showLoader('Manken → Gerçek İnsan...', '3/3 Cilt gerçekçileştiriliyor');
+            showLoader('Manken → Gerçek İnsan...', '3/4 Cilt gerçekçileştiriliyor');
 
-            // CRITICAL: Prompt'ta TAKI/JEWELRY kelimesi YOK!
-            // Sadece cilt tanımla, AI takı üretmesin
             const inpaintPrompt = `Hyper-realistic human skin texture.
 Natural female neck and collarbone area.
 Visible skin pores, subtle imperfections, natural skin tone.
@@ -833,8 +828,6 @@ Soft studio lighting, professional photography.
 Clean elegant decolletage, smooth natural skin.
 NO plastic, NO mannequin texture, NO artificial look.
 Real living human skin with natural warmth.`;
-
-            console.log('📝 Inpaint Prompt (TAKİ KELİMESİ YOK):', inpaintPrompt);
 
             const inpaintResponse = await fetch('https://fal.run/fal-ai/flux-lora/inpainting', {
                 method: 'POST',
@@ -846,33 +839,58 @@ Real living human skin with natural warmth.`;
                     prompt: inpaintPrompt,
                     image_url: state.originalBase64,
                     mask_url: invertedMask,
-                    strength: 0.75,  // Düşük strength = daha iyi blend
+                    strength: 0.80,
                     num_inference_steps: 30,
                     guidance_scale: 7.0,
                     num_images: 1,
                     enable_safety_checker: false,
-                    output_format: "jpeg"
+                    output_format: "png"  // PNG kalite kaybı yok
                 })
             });
 
             if (!inpaintResponse.ok) {
                 const err = await inpaintResponse.json();
-                console.error('Inpaint hatası:', err);
                 throw new Error('Inpainting hatası: ' + (err.detail || JSON.stringify(err)));
             }
 
             const inpaintData = await inpaintResponse.json();
-            console.log('✅ Inpainting yanıtı:', inpaintData);
-
-            const resultUrl = inpaintData.images?.[0]?.url;
-            if (!resultUrl) {
+            const inpaintedUrl = inpaintData.images?.[0]?.url;
+            if (!inpaintedUrl) {
                 throw new Error('Inpainting sonucu alınamadı');
             }
+            console.log('✅ Cilt gerçekçileştirildi');
 
-            console.log('🖼️ Sonuç hazır!');
+            // STEP 4: ORİJİNAL TAKIYI üzerine yapıştır (Canvas Composite)
+            // Bu adım kritik - takı %100 orijinal piksel olarak kalır!
+            console.log('🎯 ADIM 4: Orijinal takı yapıştırılıyor...');
+            showLoader('Manken → Gerçek İnsan...', '4/4 Orijinal takı monte ediliyor');
 
-            // URL'yi base64'e çevir
-            return await fetchImageAsBase64(resultUrl);
+            return await compositeOriginalJewelry(inpaintedUrl, originalJewelryUrl);
+        }
+
+        // ========== CANVAS COMPOSITE: ORİJİNAL TAKIYI YAPIŞTIR ==========
+        async function compositeOriginalJewelry(backgroundUrl, jewelryUrl) {
+            const [bgImg, jewelryImg] = await Promise.all([
+                loadImage(backgroundUrl),
+                loadImage(jewelryUrl)
+            ]);
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = bgImg.width;
+            canvas.height = bgImg.height;
+
+            // 1. Arka plan: Inpainted görsel (gerçekçi cilt)
+            ctx.drawImage(bgImg, 0, 0);
+
+            // 2. Üzerine: Orijinal takı (şeffaf arka planlı PNG)
+            // Takıyı aynı boyutta, aynı pozisyonda çiz (1:1 mapping)
+            // BiRefNet çıktısı orijinal görsel ile aynı boyutta
+            ctx.drawImage(jewelryImg, 0, 0, canvas.width, canvas.height);
+
+            console.log('✅ Hibrit kompozit tamamlandı: Gerçek cilt + Orijinal takı');
+
+            return canvas.toDataURL('image/png');  // PNG = kalite kaybı yok
         }
 
         // ========== INPAINT MASK: TAKI KORUNUR, CİLT DEĞİŞİR + FEATHERING ==========
