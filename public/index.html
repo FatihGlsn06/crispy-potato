@@ -822,16 +822,18 @@ SADECE JSON döndür.`;
             const invertedMask = await invertMask(jewelryMaskUrl);
             console.log('✅ Ters maske hazır');
 
-            // ========== STEP 3: Flux Inpainting - sadece cildi değiştir ==========
+            // ========== STEP 3: Flux Inpainting - SADECE CİLDİ değiştir ==========
             console.log('🎨 ADIM 3: Flux Inpainting ile cilt gerçekçileştiriliyor...');
 
-            const inpaintPrompt = `Photorealistic human skin for jewelry advertisement.
-Beautiful natural skin texture with visible pores and subtle details.
-Professional studio lighting creating soft shadows.
-${style.prompt}
-Elegant feminine neck and décolletage area.
-Real human skin, NOT mannequin, NOT plastic.
-High-end jewelry catalog photography style.`;
+            // ÖNEMLI: Prompt'ta JEWELRY/TAKI kelimesi OLMAMALI!
+            // Sadece cilt/insan tanımla, AI takı üretmesin
+            const inpaintPrompt = `Photorealistic human skin only.
+Natural skin texture with visible pores, subtle imperfections.
+Soft studio lighting on bare skin.
+Elegant feminine neck, collarbone and shoulder area.
+Clean smooth skin, natural skin tone.
+Professional portrait photography.
+NO accessories, NO objects on skin.`;
 
             console.log('📝 Inpaint Prompt:', inpaintPrompt);
 
@@ -845,9 +847,9 @@ High-end jewelry catalog photography style.`;
                     prompt: inpaintPrompt,
                     image_url: state.originalBase64,
                     mask_url: invertedMask,
-                    strength: 0.95,
+                    strength: 0.85,
                     num_inference_steps: 28,
-                    guidance_scale: 3.5,
+                    guidance_scale: 3.0,
                     num_images: 1,
                     enable_safety_checker: false,
                     output_format: "jpeg"
