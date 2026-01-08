@@ -846,9 +846,9 @@ Real living human skin with natural warmth.`;
                     prompt: inpaintPrompt,
                     image_url: state.originalBase64,
                     mask_url: invertedMask,
-                    strength: 0.85,
-                    num_inference_steps: 28,
-                    guidance_scale: 7.5,
+                    strength: 0.75,  // Düşük strength = daha iyi blend
+                    num_inference_steps: 30,
+                    guidance_scale: 7.0,
                     num_images: 1,
                     enable_safety_checker: false,
                     output_format: "jpeg"
@@ -875,7 +875,7 @@ Real living human skin with natural warmth.`;
             return await fetchImageAsBase64(resultUrl);
         }
 
-        // ========== INPAINT MASK: TAKI KORUNUR, CİLT DEĞİŞİR ==========
+        // ========== INPAINT MASK: TAKI KORUNUR, CİLT DEĞİŞİR + FEATHERING ==========
         async function createInpaintMask(birefnetUrl) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -894,45 +894,72 @@ Real living human skin with natural warmth.`;
                     const height = canvas.height;
 
                     // 1. Binary maske (alpha kanalından)
-                    // BiRefNet: takı=opak(alpha>128), arka plan=şeffaf(alpha<128)
                     const binaryMask = new Uint8Array(width * height);
                     for (let i = 0; i < data.length; i += 4) {
                         binaryMask[i / 4] = data[i + 3] > 128 ? 1 : 0;
                     }
 
-                    // 2. DILATION - takı maskesini 15px genişlet (kenar güvenliği)
-                    const radius = 15;
-                    const dilatedMask = new Uint8Array(width * height);
+                    // 2. Distance transform - her piksel için en yakın takı pikselinin mesafesi
+                    const protectRadius = 8;   // Takı etrafında tamamen korunan alan
+                    const featherRadius = 25;  // Yumuşak geçiş alanı
+                    const distanceMap = new Float32Array(width * height);
 
+                    // Önce tüm mesafeleri maksimuma set et
+                    distanceMap.fill(featherRadius + 1);
+
+                    // Takı piksellerinin mesafesi = 0
+                    for (let i = 0; i < binaryMask.length; i++) {
+                        if (binaryMask[i] === 1) distanceMap[i] = 0;
+                    }
+
+                    // Mesafe hesapla (basit brute force, küçük radius için OK)
                     for (let y = 0; y < height; y++) {
                         for (let x = 0; x < width; x++) {
                             const idx = y * width + x;
-                            let found = false;
+                            if (binaryMask[idx] === 1) continue; // Zaten takı pikseli
 
-                            for (let dy = -radius; dy <= radius && !found; dy++) {
-                                for (let dx = -radius; dx <= radius && !found; dx++) {
-                                    if (dx*dx + dy*dy <= radius*radius) {
-                                        const nx = x + dx, ny = y + dy;
-                                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                            if (binaryMask[ny * width + nx] === 1) found = true;
+                            let minDist = featherRadius + 1;
+                            const searchRadius = featherRadius;
+
+                            for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+                                for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+                                    const nx = x + dx, ny = y + dy;
+                                    if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                        if (binaryMask[ny * width + nx] === 1) {
+                                            const dist = Math.sqrt(dx*dx + dy*dy);
+                                            if (dist < minDist) minDist = dist;
                                         }
                                     }
                                 }
                             }
-                            dilatedMask[idx] = found ? 1 : 0;
+                            distanceMap[idx] = minDist;
                         }
                     }
 
-                    // 3. Final maske: SİYAH=korunur(takı), BEYAZ=değişir(cilt)
-                    // Flux inpainting: beyaz alanlar değiştirilir
+                    // 3. Feathered maske oluştur
+                    // mesafe < protectRadius → siyah (0) - tam koruma
+                    // mesafe > featherRadius → beyaz (255) - tam değişim
+                    // arada → gradyan geçiş
                     for (let i = 0; i < data.length; i += 4) {
-                        const isProtected = dilatedMask[i / 4] === 1;
-                        data[i] = data[i + 1] = data[i + 2] = isProtected ? 0 : 255;
+                        const dist = distanceMap[i / 4];
+                        let value;
+
+                        if (dist <= protectRadius) {
+                            value = 0; // Tam koruma (siyah)
+                        } else if (dist >= featherRadius) {
+                            value = 255; // Tam değişim (beyaz)
+                        } else {
+                            // Yumuşak geçiş (gradyan)
+                            const t = (dist - protectRadius) / (featherRadius - protectRadius);
+                            value = Math.round(t * 255);
+                        }
+
+                        data[i] = data[i + 1] = data[i + 2] = value;
                         data[i + 3] = 255;
                     }
 
                     ctx.putImageData(imageData, 0, 0);
-                    console.log('🎭 Maske: takı 15px buffer ile korunuyor');
+                    console.log('🎭 Feathered maske: ' + protectRadius + 'px koruma + ' + featherRadius + 'px yumuşak geçiş');
 
                     resolve(canvas.toDataURL('image/png'));
                 } catch (error) {
