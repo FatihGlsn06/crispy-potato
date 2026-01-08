@@ -426,11 +426,11 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Gemini 2.5 - Tek API -->
+                <!-- Gemini 2.5 -->
                 <div class="p-4 bg-slate-800/30 rounded-xl border border-purple-500/30">
                     <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
                         <i class="fa-solid fa-brain text-purple-400"></i> Gemini 2.5 Flash
-                        <span class="text-[10px] px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">TEK API</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">CİLT ÜRETİM</span>
                     </label>
                     <input type="password" id="geminiKeyInput"
                            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-purple-500 outline-none"
@@ -438,8 +438,19 @@
                     <p class="text-xs text-slate-500 mt-1">
                         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-purple-400 hover:underline">Gemini API key al →</a>
                     </p>
-                    <p class="text-xs text-slate-400 mt-2">
-                        <i class="fa-solid fa-magic-wand-sparkles mr-1"></i>Analiz + Görsel Üretim tek API ile
+                </div>
+
+                <!-- Fal.ai BiRefNet -->
+                <div class="p-4 bg-slate-800/30 rounded-xl border border-green-500/30">
+                    <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
+                        <i class="fa-solid fa-cut text-green-400"></i> Fal.ai BiRefNet
+                        <span class="text-[10px] px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">ARKA PLAN KALDIRMA</span>
+                    </label>
+                    <input type="password" id="falKeyInput"
+                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-green-500 outline-none"
+                           placeholder="Fal.ai API Key">
+                    <p class="text-xs text-slate-500 mt-1">
+                        <a href="https://fal.ai/dashboard/keys" target="_blank" class="text-green-400 hover:underline">Fal.ai API key al →</a>
                     </p>
                 </div>
 
@@ -592,22 +603,31 @@
         // ========== SETTINGS ==========
         function loadSettings() {
             const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
             if (geminiKey) {
                 document.getElementById('geminiKeyInput').value = geminiKey;
+            }
+            if (falKey) {
+                document.getElementById('falKeyInput').value = falKey;
             }
             updateApiStatus();
         }
 
         function updateApiStatus() {
             const hasGemini = localStorage.getItem('gemini_api_key');
+            const hasFal = localStorage.getItem('fal_api_key');
 
-            if (hasGemini) {
+            if (hasGemini && hasFal) {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-green-500';
-                document.getElementById('apiStatus').textContent = 'Gemini 2.5 Hazır';
+                document.getElementById('apiStatus').textContent = 'Hibrit Mod Hazır';
                 document.getElementById('apiStatus').className = 'text-xs text-green-400';
+            } else if (hasGemini || hasFal) {
+                document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-yellow-500';
+                document.getElementById('apiStatus').textContent = 'API Eksik';
+                document.getElementById('apiStatus').className = 'text-xs text-yellow-400';
             } else {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-red-500';
-                document.getElementById('apiStatus').textContent = 'Gemini Key Gerekli';
+                document.getElementById('apiStatus').textContent = 'API Key Gerekli';
                 document.getElementById('apiStatus').className = 'text-xs text-slate-400';
             }
         }
@@ -622,16 +642,18 @@
 
         function saveSettings() {
             const geminiKey = document.getElementById('geminiKeyInput').value.trim();
+            const falKey = document.getElementById('falKeyInput').value.trim();
 
-            if (!geminiKey) {
-                showToast('Lütfen Gemini API Key girin', 'error');
+            if (!geminiKey || !falKey) {
+                showToast('Lütfen her iki API Key girin', 'error');
                 return;
             }
 
             localStorage.setItem('gemini_api_key', geminiKey);
+            localStorage.setItem('fal_api_key', falKey);
             updateApiStatus();
             closeSettings();
-            showToast('Gemini 2.5 hazır!', 'success');
+            showToast('Hibrit mod hazır!', 'success');
         }
 
         // ========== FILE UPLOAD ==========
@@ -747,20 +769,55 @@
             }
         }
 
-        // ========== GEMINI 2.5 HİBRİT YAKLAŞIM ==========
-        // 1. Gemini: Takısız gerçekçi insan cildi üret
-        // 2. Gemini Vision: Takı pozisyonunu hesapla
-        // 3. Canvas: Orijinal takıyı üzerine yapıştır
+        // ========== GEMINI + BIREFNET HİBRİT YAKLAŞIM ==========
+        // 1. BiRefNet: Takının arka planını kaldır (şeffaf PNG)
+        // 2. Gemini: Takısız gerçekçi insan cildi üret
+        // 3. Gemini Vision: Takı pozisyonunu hesapla
+        // 4. Canvas: Şeffaf takıyı cildin üzerine yapıştır
         async function generateWithGemini25() {
             const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
 
-            // STEP 1: Takısız gerçekçi cilt üret
-            console.log('🎨 ADIM 1: Gemini ile gerçekçi cilt üretiliyor...');
-            showLoader('Hibrit Yaklaşım...', '1/3 Gerçekçi cilt üretiliyor');
+            if (!falKey) {
+                throw new Error('Fal.ai API key gerekli - Ayarlardan ekleyin');
+            }
 
-            // ÖNEMLI: Takı OLMADAN sadece cilt iste
+            // STEP 1: BiRefNet ile takının arka planını kaldır
+            console.log('✂️ ADIM 1: BiRefNet ile arka plan kaldırılıyor...');
+            showLoader('Hibrit Yaklaşım...', '1/4 Takı çıkarılıyor');
+
+            const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Key ${falKey}`
+                },
+                body: JSON.stringify({
+                    image_url: state.originalBase64,
+                    model: "General Use (Light)",
+                    operating_resolution: "1024x1024",
+                    output_format: "png"
+                })
+            });
+
+            if (!birefnetResponse.ok) {
+                const err = await birefnetResponse.json();
+                throw new Error('BiRefNet hatası: ' + (err.detail || 'Arka plan kaldırılamadı'));
+            }
+
+            const birefnetData = await birefnetResponse.json();
+            const transparentJewelryUrl = birefnetData.image?.url;
+            if (!transparentJewelryUrl) {
+                throw new Error('Takı çıkarılamadı');
+            }
+            console.log('✅ Takı şeffaf arka planla çıkarıldı');
+
+            // STEP 2: Gemini ile gerçekçi cilt üret
+            console.log('🎨 ADIM 2: Gemini ile gerçekçi cilt üretiliyor...');
+            showLoader('Hibrit Yaklaşım...', '2/4 Gerçekçi cilt üretiliyor');
+
             const skinPrompt = `Generate a professional jewelry product photography background.
 
 REQUIREMENTS:
@@ -772,8 +829,7 @@ REQUIREMENTS:
 6. Professional studio lighting, e-commerce quality
 7. The neck area should be clearly visible and well-lit for jewelry placement
 
-CRITICAL: Generate ONLY bare skin/neck area. NO necklace, NO jewelry, NO accessories.
-This image will be used as a background to overlay the original jewelry.`;
+CRITICAL: Generate ONLY bare skin/neck area. NO necklace, NO jewelry, NO accessories.`;
 
             const skinResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -811,12 +867,12 @@ This image will be used as a background to overlay the original jewelry.`;
             }
             console.log('✅ Gerçekçi cilt üretildi');
 
-            // STEP 2: Takı pozisyonunu hesapla
-            console.log('📍 ADIM 2: Takı pozisyonu hesaplanıyor...');
-            showLoader('Hibrit Yaklaşım...', '2/3 Pozisyon hesaplanıyor');
+            // STEP 3: Takı pozisyonunu hesapla
+            console.log('📍 ADIM 3: Takı pozisyonu hesaplanıyor...');
+            showLoader('Hibrit Yaklaşım...', '3/4 Pozisyon hesaplanıyor');
 
             const skinImg = await loadImage(skinBase64);
-            const jewelryImg = await loadImage(state.originalBase64);
+            const jewelryImg = await loadImage(transparentJewelryUrl);
 
             const position = await calculateSmartPosition(
                 skinBase64,
@@ -827,9 +883,9 @@ This image will be used as a background to overlay the original jewelry.`;
                 jewelryImg.height
             );
 
-            // STEP 3: Canvas ile orijinal takıyı yapıştır
-            console.log('🎯 ADIM 3: Orijinal takı yapıştırılıyor...');
-            showLoader('Hibrit Yaklaşım...', '3/3 Takı monte ediliyor');
+            // STEP 4: Canvas ile şeffaf takıyı yapıştır
+            console.log('🎯 ADIM 4: Şeffaf takı yapıştırılıyor...');
+            showLoader('Hibrit Yaklaşım...', '4/4 Takı monte ediliyor');
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -852,7 +908,7 @@ This image will be used as a background to overlay the original jewelry.`;
             const x = (canvas.width - jWidth) * (position.x / 100);
             const y = (canvas.height - jHeight) * (position.y / 100);
 
-            // Orijinal takıyı çiz - %100 orijinal piksel
+            // Şeffaf takıyı çiz - %100 orijinal piksel, arka plansız
             ctx.drawImage(jewelryImg, x, y, jWidth, jHeight);
 
             console.log(`✅ Hibrit tamamlandı: Pos(${position.x}%, ${position.y}%) Scale(${position.scale}%)`);
