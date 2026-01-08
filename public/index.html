@@ -806,45 +806,25 @@ SADECE JSON döndür.`;
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
 
-            // Detaylı takı açıklaması oluştur
-            const pendantDesc = productFeatures.pendant?.exists
-                ? `PENDANT: ${productFeatures.pendant.size} ${productFeatures.pendant.shape} shape, ${productFeatures.pendant.color} ${productFeatures.pendant.material}, ${productFeatures.pendant.setting} setting.`
-                : 'No pendant.';
-
-            const beadsDesc = productFeatures.beads?.exists
-                ? `BEADS: ${productFeatures.beads.types?.join(', ') || 'mixed beads'}, ${productFeatures.beads.sizes}, arranged in ${productFeatures.beads.arrangement} pattern, approximately ${productFeatures.beads.count_estimate} beads.`
-                : 'No beads.';
-
-            const generationPrompt = `Create a stunning jewelry advertisement photograph.
+            // IMAGE-TO-IMAGE prompt - orijinal takıyı koru, modeli değiştir
+            const editPrompt = `Professional jewelry advertisement photograph.
 
 ${profile.desc}
 
-===== THE EXACT JEWELRY TO RECREATE =====
-Type: ${productFeatures.product_type}
-Chain Style: ${productFeatures.chain_style || 'beaded'}
-${pendantDesc}
-${beadsDesc}
-Materials: ${productFeatures.materials?.join(', ') || productFeatures.material || 'mixed materials'}
-Colors: ${productFeatures.color_palette?.join(', ') || 'multicolor'}
-Metal: ${productFeatures.metal_color || 'silver tone'}
-Style: ${productFeatures.overall_style || 'bohemian'}
-
-ULTRA DETAILED DESCRIPTION (MUST FOLLOW EXACTLY):
-${productFeatures.ultra_detailed_description || productFeatures.visual_description || 'elegant handcrafted jewelry piece'}
-================================================
+IMPORTANT: Keep the EXACT same jewelry from the input image - same necklace, same beads, same pendant, same colors.
+Only transform the mannequin/model into a realistic human with natural skin.
 
 ${style.prompt}
 
 ${skinFix}
 
-CRITICAL REQUIREMENTS:
-- PHOTOREALISTIC - must look like actual photograph from Vogue or Elle magazine
-- Real human skin texture: visible pores, subtle freckles, natural shadows
-- NO mannequin, NO plastic, NO CGI, NO illustration, NO artificial look
-- The jewelry must be the HERO - prominently displayed and crystal clear
-- THE JEWELRY MUST MATCH THE DESCRIPTION EXACTLY - same colors, same beads, same pendant
-- Professional studio lighting with catch lights
-- 8K detail quality, sharp focus on jewelry`;
+CRITICAL:
+- PRESERVE the original jewelry EXACTLY as shown in the input image
+- Replace plastic/mannequin skin with realistic human skin texture
+- Add natural skin pores, subtle imperfections, realistic shadows
+- Professional studio lighting
+- 8K quality, photorealistic result
+- NO changes to the jewelry itself - keep it identical`;
 
             // Fal.ai key kontrolü
             const falKey = localStorage.getItem('fal_api_key');
@@ -852,19 +832,24 @@ CRITICAL REQUIREMENTS:
                 throw new Error('Fal.ai API key gerekli. Ayarlardan ekleyin.');
             }
 
-            // Fal.ai Flux ile görsel üretim
-            console.log('🎨 Fal.ai Flux kullanılıyor');
+            // Fal.ai Flux IMAGE-TO-IMAGE - orijinal görseli input olarak gönder
+            console.log('🎨 Fal.ai Flux Image-to-Image kullanılıyor');
+            console.log('📸 Orijinal görsel korunacak, sadece model değişecek');
 
-            const response = await fetch('https://fal.run/fal-ai/flux/dev', {
+            // Base64'ten data URL kısmını çıkar
+            const imageData = state.originalBase64.split(',')[1];
+
+            const response = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Key ${falKey}`
                 },
                 body: JSON.stringify({
-                    prompt: generationPrompt,
-                    image_size: "square_hd",
-                    num_inference_steps: 35,
+                    prompt: editPrompt,
+                    image_url: state.originalBase64,
+                    strength: 0.45,
+                    num_inference_steps: 40,
                     guidance_scale: 7.5,
                     num_images: 1,
                     enable_safety_checker: false
