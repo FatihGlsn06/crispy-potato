@@ -303,7 +303,7 @@
                             </h3>
                             <div class="flex items-center gap-2">
                                 <span id="engineBadge" class="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
-                                    <i class="fa-solid fa-layer-group mr-1"></i>Composite
+                                    <i class="fa-solid fa-magic-wand-sparkles mr-1"></i>Inpaint
                                 </span>
                             </div>
                         </div>
@@ -509,7 +509,7 @@
 
             if (hasFal) {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-green-500';
-                document.getElementById('apiStatus').textContent = 'Composite Hazır';
+                document.getElementById('apiStatus').textContent = 'Inpaint Hazır';
                 document.getElementById('apiStatus').className = 'text-xs text-green-400';
             } else {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-red-500';
@@ -537,7 +537,7 @@
             localStorage.setItem('fal_api_key', falKey);
             updateApiStatus();
             closeSettings();
-            showToast('Composite hazır! Görsel yükleyip deneyin.', 'success');
+            showToast('Inpaint hazır! Görsel yükleyip deneyin.', 'success');
         }
 
         // ========== FILE UPLOAD ==========
@@ -771,11 +771,11 @@ SADECE JSON döndür.`;
             };
         }
 
-        // ========== STEP 2: ZERO-HALLUCINATION COMPOSITE APPROACH ==========
-        // 1. BiRefNet ile takıyı ayır (arka plan kaldır)
-        // 2. Flux ile gerçek insan modeli oluştur (takısız)
-        // 3. Canvas'ta orijinal takıyı üstüne yerleştir
-        // Sonuç: Takı %100 orijinal pixel = Sıfır hallüsinasyon!
+        // ========== STEP 2: INPAINTING APPROACH ==========
+        // 1. BiRefNet ile takı maskesi oluştur
+        // 2. Maskeyi ters çevir (takı=siyah/korunur, cilt=beyaz/değişir)
+        // 3. Flux Inpainting ile SADECE cildi gerçekçi yap
+        // Sonuç: Takı YERİNDE kalır + çevresindeki cilt gerçekçi olur
 
         async function generateModelImage(apiKey, productFeatures) {
             const profile = modelProfiles[state.settings.modelProfile];
@@ -786,7 +786,7 @@ SADECE JSON döndür.`;
                 throw new Error('Fal.ai API key gerekli. Ayarlardan ekleyin.');
             }
 
-            // ========== STEP 1: BiRefNet ile takıyı ayır ==========
+            // ========== STEP 1: BiRefNet ile takı maskesi oluştur ==========
             console.log('🔍 ADIM 1: BiRefNet ile takı segmentasyonu...');
 
             const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
@@ -811,108 +811,111 @@ SADECE JSON döndür.`;
             const birefnetData = await birefnetResponse.json();
             console.log('✅ BiRefNet yanıtı:', birefnetData);
 
-            // Takı maskesi (şeffaf arka plan)
             const jewelryMaskUrl = birefnetData.image?.url;
             if (!jewelryMaskUrl) {
                 throw new Error('Takı maskesi oluşturulamadı');
             }
             console.log('🎭 Takı maskesi hazır:', jewelryMaskUrl);
 
-            // ========== STEP 2: Gerçek insan modeli oluştur (takısız) ==========
-            console.log('👤 ADIM 2: Gerçek insan modeli oluşturuluyor...');
+            // ========== STEP 2: Maskeyi ters çevir ==========
+            console.log('🔄 ADIM 2: Maske ters çevriliyor (takı korunacak, cilt değişecek)...');
+            const invertedMask = await invertMask(jewelryMaskUrl);
+            console.log('✅ Ters maske hazır');
 
-            const modelPrompt = `Professional jewelry advertisement photo of a ${profile.desc}
+            // ========== STEP 3: Flux Inpainting - sadece cildi değiştir ==========
+            console.log('🎨 ADIM 3: Flux Inpainting ile cilt gerçekçileştiriliyor...');
 
-IMPORTANT: Generate ONLY the human model WITHOUT any jewelry.
-The neck/chest area should be bare and ready for jewelry placement.
-
+            const inpaintPrompt = `Photorealistic human skin for jewelry advertisement.
+Beautiful natural skin texture with visible pores and subtle details.
+Professional studio lighting creating soft shadows.
 ${style.prompt}
+Elegant feminine neck and décolletage area.
+Real human skin, NOT mannequin, NOT plastic.
+High-end jewelry catalog photography style.`;
 
-Photo requirements:
-- Photorealistic human with natural skin texture
-- Visible skin pores, subtle imperfections
-- Professional studio lighting
-- Clean, elegant pose
-- Neutral or soft gradient background
-- 8K quality, sharp focus
-- NO jewelry, NO necklace, NO accessories on the model`;
+            console.log('📝 Inpaint Prompt:', inpaintPrompt);
 
-            const fluxResponse = await fetch('https://fal.run/fal-ai/flux/dev', {
+            const inpaintResponse = await fetch('https://fal.run/fal-ai/flux-lora/inpainting', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Key ${falKey}`
                 },
                 body: JSON.stringify({
-                    prompt: modelPrompt,
-                    image_size: "square_hd",
+                    prompt: inpaintPrompt,
+                    image_url: state.originalBase64,
+                    mask_url: invertedMask,
+                    strength: 0.95,
                     num_inference_steps: 28,
                     guidance_scale: 3.5,
                     num_images: 1,
-                    enable_safety_checker: false
+                    enable_safety_checker: false,
+                    output_format: "jpeg"
                 })
             });
 
-            if (!fluxResponse.ok) {
-                const err = await fluxResponse.json();
-                throw new Error('Flux hatası: ' + (err.detail || 'Model üretimi başarısız'));
+            console.log('📥 Inpaint Response status:', inpaintResponse.status);
+
+            if (!inpaintResponse.ok) {
+                const err = await inpaintResponse.json();
+                console.error('Inpaint hatası:', err);
+                throw new Error('Inpainting hatası: ' + (err.detail || JSON.stringify(err)));
             }
 
-            const fluxData = await fluxResponse.json();
-            console.log('✅ Flux yanıtı:', fluxData);
+            const inpaintData = await inpaintResponse.json();
+            console.log('✅ Inpainting yanıtı:', inpaintData);
 
-            const modelImageUrl = fluxData.images?.[0]?.url;
-            if (!modelImageUrl) {
-                throw new Error('Model görseli oluşturulamadı');
+            const resultUrl = inpaintData.images?.[0]?.url;
+            if (!resultUrl) {
+                throw new Error('Inpainting sonucu alınamadı');
             }
-            console.log('👤 Model görseli hazır:', modelImageUrl);
 
-            // ========== STEP 3: Canvas'ta birleştir ==========
-            console.log('🎨 ADIM 3: Orijinal takı + Model birleştiriliyor...');
+            console.log('🖼️ Sonuç URL:', resultUrl);
 
-            const compositeResult = await compositeImages(modelImageUrl, jewelryMaskUrl);
-            console.log('✅ Kompozit tamamlandı!');
-
-            return compositeResult;
+            // URL'yi base64'e çevir
+            const imageResponse = await fetch(resultUrl);
+            const imageBlob = await imageResponse.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(imageBlob);
+            });
         }
 
-        // ========== CANVAS COMPOSITE FUNCTION ==========
-        async function compositeImages(backgroundUrl, foregroundUrl) {
+        // ========== INVERT MASK FUNCTION ==========
+        // BiRefNet maskesini ters çevir: takı=siyah (korunur), cilt=beyaz (değişir)
+        async function invertMask(maskUrl) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    // Load both images
-                    const [bgImg, fgImg] = await Promise.all([
-                        loadImage(backgroundUrl),
-                        loadImage(foregroundUrl)
-                    ]);
+                    const img = await loadImage(maskUrl);
 
-                    // Create canvas
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
 
-                    // Use background image size
-                    canvas.width = bgImg.width;
-                    canvas.height = bgImg.height;
+                    // Önce beyaz arka plan
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw background (model without jewelry)
-                    ctx.drawImage(bgImg, 0, 0);
+                    // Maskeyi çiz
+                    ctx.drawImage(img, 0, 0);
 
-                    // Calculate foreground position (center it)
-                    const scale = Math.min(
-                        canvas.width / fgImg.width,
-                        canvas.height / fgImg.height
-                    ) * 0.8; // 80% size
+                    // Pixel verilerini al
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
 
-                    const fgWidth = fgImg.width * scale;
-                    const fgHeight = fgImg.height * scale;
-                    const x = (canvas.width - fgWidth) / 2;
-                    const y = (canvas.height - fgHeight) / 2;
+                    // Her pixeli ters çevir
+                    for (let i = 0; i < data.length; i += 4) {
+                        // RGB değerlerini ters çevir
+                        data[i] = 255 - data[i];       // R
+                        data[i + 1] = 255 - data[i + 1]; // G
+                        data[i + 2] = 255 - data[i + 2]; // B
+                        data[i + 3] = 255;             // Alpha = full opaque
+                    }
 
-                    // Draw foreground (original jewelry with transparency)
-                    ctx.drawImage(fgImg, x, y, fgWidth, fgHeight);
-
-                    // Return as base64
-                    resolve(canvas.toDataURL('image/jpeg', 0.95));
+                    ctx.putImageData(imageData, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
                 } catch (error) {
                     reject(error);
                 }
