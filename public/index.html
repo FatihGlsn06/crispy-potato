@@ -783,8 +783,9 @@
             // Gemini'ye orijinal görseli ver - manken→insan + profesyonel stüdyo kalitesi
             const editPrompt = `Transform this jewelry product photo into a professional e-commerce image.
 
-TASK 1 - MANNEQUIN TO HUMAN:
-Transform the mannequin/display stand into realistic human skin.
+TASK 1 - MANNEQUIN TO HUMAN (if applicable):
+- If there is a mannequin/display stand, transform it into realistic human skin
+- If there is already a real human, keep the human as-is, just enhance skin quality
 - Replace plastic/mannequin texture with realistic human skin
 - Add natural skin pores, subtle imperfections, natural warmth
 - ${profile.desc}
@@ -799,14 +800,20 @@ Enhance the image to look like it was shot in a professional photography studio.
 - Add subtle catch lights and reflections on metallic parts
 - ${style.prompt}
 
+IMPORTANT - FACE HANDLING:
+- If there is a MANNEQUIN head (plastic/fake), you may crop or blur it
+- If there is a REAL HUMAN face, KEEP IT - do not remove or crop real human faces
+- Only modify mannequin parts, preserve real human features
+
 ABSOLUTE RULES - DO NOT VIOLATE:
 1. DO NOT touch, move, modify, or regenerate the jewelry - keep it PIXEL PERFECT
 2. DO NOT change the jewelry's position, size, color, shape, or ANY detail
 3. The jewelry must remain in the EXACT same position
-4. Only change: skin texture, background, lighting quality
+4. Only change: skin texture (if mannequin), background, lighting quality
 5. Jewelry details (stones, metal, chain links) must be IDENTICAL to original
+6. If real human is present, enhance but do not remove any body parts
 
-OUTPUT: Professional e-commerce quality image with realistic human skin, studio lighting, and clean background. Jewelry 100% unchanged.`;
+OUTPUT: Professional e-commerce quality image. Jewelry 100% unchanged. Real humans preserved.`;
 
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
