@@ -887,6 +887,7 @@ NO accessories, NO objects on skin.`;
         // ========== CREATE INPAINT MASK FROM BIREFNET OUTPUT ==========
         // BiRefNet çıktısı: takı=opak (alpha=255), arka plan=şeffaf (alpha=0)
         // Inpaint maskesi: takı=SİYAH (korunur), cilt=BEYAZ (değişir)
+        // + DILATION: Takı maskesini genişlet, kenar güvenliği sağla
         async function invertMask(maskUrl) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -897,37 +898,54 @@ NO accessories, NO objects on skin.`;
                     canvas.width = img.width;
                     canvas.height = img.height;
 
-                    // BiRefNet çıktısını çiz
                     ctx.drawImage(img, 0, 0);
 
-                    // Pixel verilerini al
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imageData.data;
+                    const width = canvas.width;
+                    const height = canvas.height;
 
-                    // Alpha kanalına göre siyah/beyaz maske oluştur
+                    // 1. Binary maske oluştur (alpha'dan)
+                    const binaryMask = new Uint8Array(width * height);
                     for (let i = 0; i < data.length; i += 4) {
-                        const alpha = data[i + 3]; // Alpha değeri
+                        binaryMask[i / 4] = data[i + 3] > 128 ? 1 : 0;
+                    }
 
-                        if (alpha > 128) {
-                            // Takı alanı (opak) = SİYAH (KORUNACAK)
-                            data[i] = 0;       // R
-                            data[i + 1] = 0;   // G
-                            data[i + 2] = 0;   // B
-                        } else {
-                            // Arka plan (şeffaf) = BEYAZ (DEĞİŞECEK)
-                            data[i] = 255;     // R
-                            data[i + 1] = 255; // G
-                            data[i + 2] = 255; // B
+                    // 2. DILATION - takı maskesini 10px genişlet
+                    const radius = 10;
+                    const dilatedMask = new Uint8Array(width * height);
+
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x++) {
+                            const idx = y * width + x;
+                            let found = false;
+
+                            // Çevredeki pixelleri kontrol et
+                            for (let dy = -radius; dy <= radius && !found; dy++) {
+                                for (let dx = -radius; dx <= radius && !found; dx++) {
+                                    if (dx*dx + dy*dy <= radius*radius) {
+                                        const nx = x + dx, ny = y + dy;
+                                        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                            if (binaryMask[ny * width + nx] === 1) found = true;
+                                        }
+                                    }
+                                }
+                            }
+                            dilatedMask[idx] = found ? 1 : 0;
                         }
-                        data[i + 3] = 255;     // Alpha = tam opak
+                    }
+
+                    // 3. Final maske: siyah=korunur, beyaz=değişir
+                    for (let i = 0; i < data.length; i += 4) {
+                        const isProtected = dilatedMask[i / 4] === 1;
+                        data[i] = data[i + 1] = data[i + 2] = isProtected ? 0 : 255;
+                        data[i + 3] = 255;
                     }
 
                     ctx.putImageData(imageData, 0, 0);
+                    console.log('🎭 Maske: ' + radius + 'px dilation ile genişletildi');
 
-                    const maskDataUrl = canvas.toDataURL('image/png');
-                    console.log('🎭 Maske oluşturuldu - Siyah=takı(korunur), Beyaz=cilt(değişir)');
-
-                    resolve(maskDataUrl);
+                    resolve(canvas.toDataURL('image/png'));
                 } catch (error) {
                     reject(error);
                 }
