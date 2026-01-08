@@ -303,7 +303,7 @@
                             </h3>
                             <div class="flex items-center gap-2">
                                 <span id="engineBadge" class="text-[10px] px-2 py-1 bg-blue-500/20 text-blue-400 rounded-full">
-                                    <i class="fa-brands fa-google mr-1"></i>Gemini
+                                    <i class="fa-solid fa-lightbulb mr-1"></i>IC-Light
                                 </span>
                             </div>
                         </div>
@@ -396,30 +396,19 @@
 
             <div class="space-y-4">
                 <!-- Fal.ai (Flux) - Görsel üretim için -->
-                <div class="p-4 bg-slate-800/30 rounded-xl border border-purple-500/30">
+                <div class="p-4 bg-slate-800/30 rounded-xl border border-yellow-500/30">
                     <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
-                        <i class="fa-solid fa-bolt text-purple-400"></i> Fal.ai (Flux)
-                        <span class="text-[10px] px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full">GÖRSEL ÜRETİM</span>
+                        <i class="fa-solid fa-lightbulb text-yellow-400"></i> Fal.ai (IC-Light)
+                        <span class="text-[10px] px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded-full">STÜDYO KALİTESİ</span>
                     </label>
                     <input type="password" id="falKeyInput"
-                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-purple-500 outline-none"
-                           placeholder="fal_...">
+                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-yellow-500 outline-none"
+                           placeholder="Fal.ai API Key">
                     <p class="text-xs text-slate-500 mt-1">
-                        <a href="https://fal.ai/dashboard/keys" target="_blank" class="text-purple-400 hover:underline">Fal.ai API key al</a>
+                        <a href="https://fal.ai/dashboard/keys" target="_blank" class="text-yellow-400 hover:underline">Fal.ai API key al →</a>
                     </p>
-                </div>
-
-                <!-- Google AI (Gemini) - Analiz için -->
-                <div class="p-4 bg-slate-800/30 rounded-xl border border-blue-500/30">
-                    <label class="text-sm font-medium text-white mb-2 block flex items-center gap-2">
-                        <i class="fa-brands fa-google text-blue-400"></i> Gemini API (Analiz)
-                        <span class="text-[10px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full">ÜRÜN ANALİZ</span>
-                    </label>
-                    <input type="password" id="geminiKeyInput"
-                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 outline-none"
-                           placeholder="AIza...">
-                    <p class="text-xs text-slate-500 mt-1">
-                        <a href="https://aistudio.google.com/apikey" target="_blank" class="text-blue-400 hover:underline">Ücretsiz API key al</a>
+                    <p class="text-xs text-slate-400 mt-2">
+                        <i class="fa-solid fa-info-circle mr-1"></i>IC-Light: Ürününüzü değiştirmeden profesyonel stüdyo aydınlatması ekler
                     </p>
                 </div>
 
@@ -508,12 +497,7 @@
 
         // ========== SETTINGS ==========
         function loadSettings() {
-            const geminiKey = localStorage.getItem('gemini_api_key');
             const falKey = localStorage.getItem('fal_api_key');
-
-            if (geminiKey) {
-                document.getElementById('geminiKeyInput').value = geminiKey;
-            }
             if (falKey) {
                 document.getElementById('falKeyInput').value = falKey;
             }
@@ -521,24 +505,15 @@
         }
 
         function updateApiStatus() {
-            const hasGemini = localStorage.getItem('gemini_api_key');
             const hasFal = localStorage.getItem('fal_api_key');
 
-            if (hasFal && hasGemini) {
-                document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-purple-500';
-                document.getElementById('apiStatus').textContent = 'Fal.ai + Gemini';
-                document.getElementById('apiStatus').className = 'text-xs text-purple-400';
-            } else if (hasFal) {
-                document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-purple-500';
-                document.getElementById('apiStatus').textContent = 'Fal.ai Bağlı';
-                document.getElementById('apiStatus').className = 'text-xs text-purple-400';
-            } else if (hasGemini) {
+            if (hasFal) {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-green-500';
-                document.getElementById('apiStatus').textContent = 'Gemini Bağlı';
+                document.getElementById('apiStatus').textContent = 'IC-Light Hazır';
                 document.getElementById('apiStatus').className = 'text-xs text-green-400';
             } else {
                 document.getElementById('apiDot').className = 'w-2 h-2 rounded-full bg-red-500';
-                document.getElementById('apiStatus').textContent = 'API Bağlantısı Yok';
+                document.getElementById('apiStatus').textContent = 'Fal.ai Key Gerekli';
                 document.getElementById('apiStatus').className = 'text-xs text-slate-400';
             }
         }
@@ -552,18 +527,17 @@
         }
 
         function saveSettings() {
-            const geminiKey = document.getElementById('geminiKeyInput').value.trim();
             const falKey = document.getElementById('falKeyInput').value.trim();
 
-            if (geminiKey) {
-                localStorage.setItem('gemini_api_key', geminiKey);
+            if (!falKey) {
+                showToast('Lütfen Fal.ai API Key girin', 'error');
+                return;
             }
-            if (falKey) {
-                localStorage.setItem('fal_api_key', falKey);
-            }
+
+            localStorage.setItem('fal_api_key', falKey);
             updateApiStatus();
             closeSettings();
-            showToast('API ayarları kaydedildi', 'success');
+            showToast('IC-Light hazır! Görsel yükleyip deneyin.', 'success');
         }
 
         // ========== FILE UPLOAD ==========
@@ -641,10 +615,10 @@
 
         // ========== MAIN IMAGE GENERATION ==========
         async function generateImage() {
-            const apiKey = localStorage.getItem('gemini_api_key');
-            if (!apiKey) {
+            const falKey = localStorage.getItem('fal_api_key');
+            if (!falKey) {
                 openSettings();
-                showToast('Lütfen API Key girin', 'error');
+                showToast('Lütfen Fal.ai API Key girin', 'error');
                 return;
             }
 
@@ -653,19 +627,13 @@
                 return;
             }
 
-            showLoader('Ürün analiz ediliyor...', 'JSON özellikleri çıkarılıyor');
+            showLoader('Stüdyo kalitesine dönüştürülüyor...', 'IC-Light ile profesyonel aydınlatma uygulanıyor');
 
             try {
-                // STEP 1: Analyze product features (JSON)
-                const productFeatures = await analyzeProductFeatures(apiKey, state.originalBase64);
-                console.log('📋 Ürün özellikleri:', productFeatures);
-
-                showLoader('Model görseli oluşturuluyor...', 'Gerçekçi insan modeli render ediliyor');
-
-                // STEP 2: Generate realistic model image
-                // Anti-halüsinasyon: AI'a görsel GÖNDERMİYORUZ, sadece text!
-                // Bu sayede AI manken göremiyor = manken üretemez
-                state.processedImage = await generateModelImage(apiKey, productFeatures);
+                // IC-Light V2 - Sadece aydınlatmayı iyileştirir, içeriği KORUR!
+                // Gemini analizine gerek yok - görsel doğrudan işleniyor
+                console.log('💡 IC-Light ile stüdyo kalitesine dönüştürülüyor...');
+                state.processedImage = await generateModelImage(null, null);
 
                 // Show result
                 document.getElementById('previewPlaceholder').classList.add('hidden');
@@ -674,7 +642,7 @@
                 document.getElementById('downloadActions').classList.remove('hidden');
 
                 hideLoader();
-                showToast('Realistik görsel oluşturuldu!', 'success');
+                showToast('Stüdyo kalitesinde görsel hazır!', 'success');
 
             } catch (error) {
                 console.error('Generation error:', error);
@@ -801,30 +769,10 @@ SADECE JSON döndür.`;
             };
         }
 
-        // ========== STEP 2: GENERATE REALISTIC MODEL IMAGE ==========
+        // ========== STEP 2: ENHANCE IMAGE WITH IC-LIGHT (RELIGHTING) ==========
         async function generateModelImage(apiKey, productFeatures) {
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
-
-            // IMAGE-TO-IMAGE prompt - orijinal takıyı koru, modeli değiştir
-            const editPrompt = `Professional jewelry advertisement photograph.
-
-${profile.desc}
-
-IMPORTANT: Keep the EXACT same jewelry from the input image - same necklace, same beads, same pendant, same colors.
-Only transform the mannequin/model into a realistic human with natural skin.
-
-${style.prompt}
-
-${skinFix}
-
-CRITICAL:
-- PRESERVE the original jewelry EXACTLY as shown in the input image
-- Replace plastic/mannequin skin with realistic human skin texture
-- Add natural skin pores, subtle imperfections, realistic shadows
-- Professional studio lighting
-- 8K quality, photorealistic result
-- NO changes to the jewelry itself - keep it identical`;
 
             // Fal.ai key kontrolü
             const falKey = localStorage.getItem('fal_api_key');
@@ -832,32 +780,30 @@ CRITICAL:
                 throw new Error('Fal.ai API key gerekli. Ayarlardan ekleyin.');
             }
 
-            // Fal.ai Flux IMAGE-TO-IMAGE - orijinal görseli input olarak gönder
-            console.log('🎨 Fal.ai Flux Image-to-Image kullanılıyor');
-            console.log('📸 Orijinal görsel korunacak, sadece model değişecek');
-            console.log('📝 Edit Prompt:', editPrompt);
+            // IC-Light V2 - Sadece aydınlatmayı değiştirir, içeriği KORUR!
+            console.log('💡 IC-Light V2 Relighting kullanılıyor');
+            console.log('📸 Orijinal içerik korunacak, sadece aydınlatma iyileştirilecek');
 
-            // Request body hazırla
-            // strength: 0.95 = varsayılan, yüksek değer = daha fazla değişiklik
-            // guidance_scale: 3.5 = varsayılan
+            // Stüdyo kalitesi için prompt
+            const lightingPrompt = `Professional jewelry photography with perfect studio lighting.
+Soft diffused key light from above, subtle fill light to reduce shadows.
+Clean neutral background, professional product photography style.
+High-end jewelry catalog quality, sharp details on the jewelry.
+${style.prompt}`;
+
+            console.log('💡 Lighting Prompt:', lightingPrompt);
+
             const requestBody = {
-                prompt: editPrompt,
                 image_url: state.originalBase64,
-                strength: 0.85,
-                num_inference_steps: 40,
-                guidance_scale: 3.5,
-                num_images: 1,
-                enable_safety_checker: false
+                prompt: lightingPrompt,
+                num_inference_steps: 30,
+                guidance_scale: 4,
+                num_images: 1
             };
 
-            console.log('📤 Request gönderiliyor:', {
-                endpoint: 'flux/dev/image-to-image',
-                strength: requestBody.strength,
-                steps: requestBody.num_inference_steps,
-                imageSize: state.originalBase64.length + ' chars'
-            });
+            console.log('📤 IC-Light Request gönderiliyor...');
 
-            const response = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
+            const response = await fetch('https://fal.run/fal-ai/iclight-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
