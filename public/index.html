@@ -778,13 +778,13 @@
             }
         }
 
-        // ========== INPAINTING: MANKEN → GERÇEK İNSAN (HİBRİT YAKLAŞIM) ==========
+        // ========== INPAINTING: MANKEN → GERÇEK İNSAN (DÜŞÜK STRENGTH) ==========
         async function inpaintMannequinToHuman() {
             const falKey = localStorage.getItem('fal_api_key');
 
-            // STEP 1: BiRefNet ile takıyı ayır (ORİJİNAL takı - şeffaf arka plan)
-            console.log('🔍 ADIM 1: BiRefNet ile takı çıkarılıyor...');
-            showLoader('Manken → Gerçek İnsan...', '1/4 Takı ayrıştırılıyor');
+            // STEP 1: BiRefNet ile takı maskesi oluştur
+            console.log('🔍 ADIM 1: BiRefNet ile takı segmentasyonu...');
+            showLoader('Manken → Gerçek İnsan...', '1/3 Takı maskesi oluşturuluyor');
 
             const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
                 method: 'POST',
@@ -806,28 +806,29 @@
             }
 
             const birefnetData = await birefnetResponse.json();
-            const originalJewelryUrl = birefnetData.image?.url;
-            if (!originalJewelryUrl) {
-                throw new Error('Takı çıkarılamadı');
+            const jewelryMaskUrl = birefnetData.image?.url;
+            if (!jewelryMaskUrl) {
+                throw new Error('Takı maskesi oluşturulamadı');
             }
-            console.log('💎 Orijinal takı çıkarıldı (şeffaf arka plan)');
+            console.log('🎭 Takı maskesi hazır');
 
-            // STEP 2: Maske oluştur (inpainting için)
+            // STEP 2: Maske oluştur - DAHA KÜÇÜK koruma, DAHA BÜYÜK feather
             console.log('🔄 ADIM 2: Maske hazırlanıyor...');
-            showLoader('Manken → Gerçek İnsan...', '2/4 Maske işleniyor');
-            const invertedMask = await createInpaintMask(originalJewelryUrl);
+            showLoader('Manken → Gerçek İnsan...', '2/3 Maske işleniyor');
+            const invertedMask = await createInpaintMask(jewelryMaskUrl);
 
-            // STEP 3: Flux Inpainting - TÜM görseli değiştir (takı dahil - sorun değil)
-            console.log('🎨 ADIM 3: Flux Inpainting...');
-            showLoader('Manken → Gerçek İnsan...', '3/4 Cilt gerçekçileştiriliyor');
+            // STEP 3: Flux Inpainting - DÜŞÜK STRENGTH
+            // Takı korunur AMA kenarlar doğal blend olur
+            console.log('🎨 ADIM 3: Flux Inpainting (düşük strength)...');
+            showLoader('Manken → Gerçek İnsan...', '3/3 Doğal dönüşüm');
 
-            const inpaintPrompt = `Hyper-realistic human skin texture.
-Natural female neck and collarbone area.
-Visible skin pores, subtle imperfections, natural skin tone.
-Soft studio lighting, professional photography.
-Clean elegant decolletage, smooth natural skin.
-NO plastic, NO mannequin texture, NO artificial look.
-Real living human skin with natural warmth.`;
+            const inpaintPrompt = `Hyper-realistic human skin.
+Natural female neck, collarbone and chest area.
+Real skin texture with pores and subtle imperfections.
+Warm natural skin tone, soft studio lighting.
+Professional jewelry product photography.
+Skin looks alive and natural, not plastic.
+Seamless natural appearance.`;
 
             const inpaintResponse = await fetch('https://fal.run/fal-ai/flux-lora/inpainting', {
                 method: 'POST',
@@ -839,12 +840,12 @@ Real living human skin with natural warmth.`;
                     prompt: inpaintPrompt,
                     image_url: state.originalBase64,
                     mask_url: invertedMask,
-                    strength: 0.80,
-                    num_inference_steps: 30,
-                    guidance_scale: 7.0,
+                    strength: 0.55,  // DÜŞÜK - takı korunur, geçişler doğal
+                    num_inference_steps: 35,
+                    guidance_scale: 6.0,
                     num_images: 1,
                     enable_safety_checker: false,
-                    output_format: "png"  // PNG kalite kaybı yok
+                    output_format: "png"
                 })
             });
 
@@ -854,46 +855,16 @@ Real living human skin with natural warmth.`;
             }
 
             const inpaintData = await inpaintResponse.json();
-            const inpaintedUrl = inpaintData.images?.[0]?.url;
-            if (!inpaintedUrl) {
+            const resultUrl = inpaintData.images?.[0]?.url;
+            if (!resultUrl) {
                 throw new Error('Inpainting sonucu alınamadı');
             }
-            console.log('✅ Cilt gerçekçileştirildi');
 
-            // STEP 4: ORİJİNAL TAKIYI üzerine yapıştır (Canvas Composite)
-            // Bu adım kritik - takı %100 orijinal piksel olarak kalır!
-            console.log('🎯 ADIM 4: Orijinal takı yapıştırılıyor...');
-            showLoader('Manken → Gerçek İnsan...', '4/4 Orijinal takı monte ediliyor');
-
-            return await compositeOriginalJewelry(inpaintedUrl, originalJewelryUrl);
+            console.log('✅ Dönüşüm tamamlandı!');
+            return await fetchImageAsBase64(resultUrl);
         }
 
-        // ========== CANVAS COMPOSITE: ORİJİNAL TAKIYI YAPIŞTIR ==========
-        async function compositeOriginalJewelry(backgroundUrl, jewelryUrl) {
-            const [bgImg, jewelryImg] = await Promise.all([
-                loadImage(backgroundUrl),
-                loadImage(jewelryUrl)
-            ]);
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = bgImg.width;
-            canvas.height = bgImg.height;
-
-            // 1. Arka plan: Inpainted görsel (gerçekçi cilt)
-            ctx.drawImage(bgImg, 0, 0);
-
-            // 2. Üzerine: Orijinal takı (şeffaf arka planlı PNG)
-            // Takıyı aynı boyutta, aynı pozisyonda çiz (1:1 mapping)
-            // BiRefNet çıktısı orijinal görsel ile aynı boyutta
-            ctx.drawImage(jewelryImg, 0, 0, canvas.width, canvas.height);
-
-            console.log('✅ Hibrit kompozit tamamlandı: Gerçek cilt + Orijinal takı');
-
-            return canvas.toDataURL('image/png');  // PNG = kalite kaybı yok
-        }
-
-        // ========== INPAINT MASK: TAKI KORUNUR, CİLT DEĞİŞİR + FEATHERING ==========
+        // ========== INPAINT MASK: DAHA KÜÇÜK KORUMA, DAHA BÜYÜK FEATHER ==========
         async function createInpaintMask(birefnetUrl) {
             return new Promise(async (resolve, reject) => {
                 try {
@@ -917,24 +888,22 @@ Real living human skin with natural warmth.`;
                         binaryMask[i / 4] = data[i + 3] > 128 ? 1 : 0;
                     }
 
-                    // 2. Distance transform - her piksel için en yakın takı pikselinin mesafesi
-                    const protectRadius = 8;   // Takı etrafında tamamen korunan alan
-                    const featherRadius = 25;  // Yumuşak geçiş alanı
+                    // 2. AYARLAR: Küçük koruma + büyük feather = doğal geçiş
+                    const protectRadius = 3;   // Sadece takı merkezi korunur
+                    const featherRadius = 40;  // Geniş yumuşak geçiş alanı
                     const distanceMap = new Float32Array(width * height);
 
-                    // Önce tüm mesafeleri maksimuma set et
                     distanceMap.fill(featherRadius + 1);
 
-                    // Takı piksellerinin mesafesi = 0
                     for (let i = 0; i < binaryMask.length; i++) {
                         if (binaryMask[i] === 1) distanceMap[i] = 0;
                     }
 
-                    // Mesafe hesapla (basit brute force, küçük radius için OK)
+                    // Mesafe hesapla
                     for (let y = 0; y < height; y++) {
                         for (let x = 0; x < width; x++) {
                             const idx = y * width + x;
-                            if (binaryMask[idx] === 1) continue; // Zaten takı pikseli
+                            if (binaryMask[idx] === 1) continue;
 
                             let minDist = featherRadius + 1;
                             const searchRadius = featherRadius;
@@ -954,22 +923,21 @@ Real living human skin with natural warmth.`;
                         }
                     }
 
-                    // 3. Feathered maske oluştur
-                    // mesafe < protectRadius → siyah (0) - tam koruma
-                    // mesafe > featherRadius → beyaz (255) - tam değişim
-                    // arada → gradyan geçiş
+                    // 3. Feathered maske - geniş gradyan
                     for (let i = 0; i < data.length; i += 4) {
                         const dist = distanceMap[i / 4];
                         let value;
 
                         if (dist <= protectRadius) {
-                            value = 0; // Tam koruma (siyah)
+                            value = 0; // Tam koruma (siyah) - sadece merkez
                         } else if (dist >= featherRadius) {
                             value = 255; // Tam değişim (beyaz)
                         } else {
-                            // Yumuşak geçiş (gradyan)
+                            // Yumuşak geçiş - eased curve
                             const t = (dist - protectRadius) / (featherRadius - protectRadius);
-                            value = Math.round(t * 255);
+                            // Ease-in-out curve for smoother transition
+                            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                            value = Math.round(eased * 255);
                         }
 
                         data[i] = data[i + 1] = data[i + 2] = value;
@@ -977,7 +945,7 @@ Real living human skin with natural warmth.`;
                     }
 
                     ctx.putImageData(imageData, 0, 0);
-                    console.log('🎭 Feathered maske: ' + protectRadius + 'px koruma + ' + featherRadius + 'px yumuşak geçiş');
+                    console.log('🎭 Mask: ' + protectRadius + 'px koruma + ' + featherRadius + 'px smooth feather');
 
                     resolve(canvas.toDataURL('image/png'));
                 } catch (error) {
