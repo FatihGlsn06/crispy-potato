@@ -278,11 +278,39 @@
                             </div>
                         </div>
 
+                        <!-- Position Controls -->
+                        <div class="space-y-3 mt-3">
+                            <div>
+                                <label class="text-xs text-slate-400 flex justify-between">
+                                    <span>Dikey Pozisyon (Y)</span>
+                                    <span id="yOffsetValue" class="text-cyan-400">50%</span>
+                                </label>
+                                <input type="range" id="yOffsetSlider" min="20" max="80" value="50"
+                                       class="w-full" onchange="updatePositionValue('y')">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 flex justify-between">
+                                    <span>Yatay Pozisyon (X)</span>
+                                    <span id="xOffsetValue" class="text-cyan-400">50%</span>
+                                </label>
+                                <input type="range" id="xOffsetSlider" min="20" max="80" value="50"
+                                       class="w-full" onchange="updatePositionValue('x')">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 flex justify-between">
+                                    <span>Takı Boyutu</span>
+                                    <span id="scaleValue" class="text-cyan-400">60%</span>
+                                </label>
+                                <input type="range" id="scaleSlider" min="20" max="100" value="60"
+                                       class="w-full" onchange="updatePositionValue('scale')">
+                            </div>
+                        </div>
+
                         <!-- Quick tip -->
-                        <div class="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                        <div class="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg mt-3">
                             <p class="text-[10px] text-cyan-400">
                                 <i class="fa-solid fa-lightbulb mr-1"></i>
-                                İpucu: Benzer pozisyonda bir model fotoğrafı kullanın
+                                İpucu: Slider'larla takının pozisyonunu ayarlayın
                             </p>
                         </div>
                     </div>
@@ -442,8 +470,27 @@
             settings: {
                 modelProfile: 'neck_model',
                 style: 'studio'
+            },
+            position: {
+                x: 50,      // Yatay pozisyon (%)
+                y: 50,      // Dikey pozisyon (%)
+                scale: 60   // Takı boyutu (%)
             }
         };
+
+        // ========== POSITION CONTROLS ==========
+        function updatePositionValue(type) {
+            if (type === 'y') {
+                state.position.y = parseInt(document.getElementById('yOffsetSlider').value);
+                document.getElementById('yOffsetValue').textContent = state.position.y + '%';
+            } else if (type === 'x') {
+                state.position.x = parseInt(document.getElementById('xOffsetSlider').value);
+                document.getElementById('xOffsetValue').textContent = state.position.x + '%';
+            } else if (type === 'scale') {
+                state.position.scale = parseInt(document.getElementById('scaleSlider').value);
+                document.getElementById('scaleValue').textContent = state.position.scale + '%';
+            }
+        }
 
         // ========== MODEL PROFILES - REALISM BOOST ==========
         const modelProfiles = {
@@ -761,17 +808,26 @@
                     // Draw template (background - real model)
                     ctx.drawImage(templateImg, 0, 0);
 
-                    // Calculate jewelry position and scale
-                    // Takıyı şablonun ortasına yerleştir
-                    const scale = Math.min(
-                        (canvas.width * 0.85) / jewelryImg.width,
-                        (canvas.height * 0.85) / jewelryImg.height
+                    // Calculate jewelry position and scale from sliders
+                    // scale: 20-100% -> actual scale factor
+                    const scaleFactor = state.position.scale / 100;
+                    const maxScale = Math.min(
+                        (canvas.width * 0.9) / jewelryImg.width,
+                        (canvas.height * 0.9) / jewelryImg.height
                     );
+                    const finalScale = maxScale * scaleFactor;
 
-                    const jWidth = jewelryImg.width * scale;
-                    const jHeight = jewelryImg.height * scale;
-                    const x = (canvas.width - jWidth) / 2;
-                    const y = (canvas.height - jHeight) / 2.5; // Biraz yukarıda
+                    const jWidth = jewelryImg.width * finalScale;
+                    const jHeight = jewelryImg.height * finalScale;
+
+                    // Position from sliders (20-80% range)
+                    // X: 20% = sol, 50% = orta, 80% = sağ
+                    // Y: 20% = üst, 50% = orta, 80% = alt (boyun daha aşağıda)
+                    const x = (canvas.width - jWidth) * (state.position.x / 100);
+                    const y = (canvas.height - jHeight) * (state.position.y / 100);
+
+                    console.log(`📍 Pozisyon: X=${state.position.x}%, Y=${state.position.y}%, Scale=${state.position.scale}%`);
+                    console.log(`📐 Pixel: x=${Math.round(x)}, y=${Math.round(y)}, w=${Math.round(jWidth)}, h=${Math.round(jHeight)}`);
 
                     // Draw jewelry on top (original pixels - no AI modification!)
                     ctx.drawImage(jewelryImg, x, y, jWidth, jHeight);
