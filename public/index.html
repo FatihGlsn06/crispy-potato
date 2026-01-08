@@ -255,31 +255,34 @@
                         </div>
                     </div>
 
-                    <!-- How It Works -->
-                    <div class="glass rounded-2xl p-5 border border-green-500/30">
+                    <!-- Model Template Selection -->
+                    <div class="glass rounded-2xl p-5 border border-cyan-500/30">
                         <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-shield-check text-green-400"></i>
-                            Nasıl Çalışır?
-                            <span class="status-badge active ml-auto">Text-Only AI</span>
+                            <i class="fa-solid fa-user-plus text-cyan-400"></i>
+                            Model Şablonu
+                            <span class="text-[10px] px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full ml-auto">YENİ</span>
                         </h3>
-                        <div class="space-y-2 text-xs text-slate-400">
-                            <div class="flex items-start gap-2">
-                                <span class="text-green-400 font-bold">1.</span>
-                                <span>Ürün fotoğrafı analiz edilir → <b class="text-green-400">JSON metin</b> çıkarılır</span>
+                        <p class="text-xs text-slate-400 mb-3">Takının monte edileceği model şablonunu yükleyin veya seçin</p>
+
+                        <!-- Template Upload -->
+                        <div id="templateDropZone" class="border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-cyan-500 transition-colors cursor-pointer mb-3">
+                            <input type="file" id="templateInput" class="hidden" accept="image/*">
+                            <div id="templatePlaceholder">
+                                <i class="fa-solid fa-image text-2xl text-slate-500 mb-2"></i>
+                                <p class="text-xs text-slate-400">Model şablonu yükle</p>
+                                <p class="text-[10px] text-slate-500">(Takısız boyun/dekolte fotoğrafı)</p>
                             </div>
-                            <div class="flex items-start gap-2">
-                                <span class="text-green-400 font-bold">2.</span>
-                                <span>AI'a <b class="text-purple-400">sadece metin</b> gönderilir (görsel yok!)</span>
-                            </div>
-                            <div class="flex items-start gap-2">
-                                <span class="text-green-400 font-bold">3.</span>
-                                <span>AI manken <b class="text-green-400">göremez</b> = manken üretemez</span>
+                            <div id="templatePreview" class="hidden">
+                                <img id="templateImage" class="max-h-24 mx-auto rounded-lg">
+                                <p id="templateName" class="text-xs text-cyan-400 mt-2"></p>
                             </div>
                         </div>
-                        <div class="mt-3 p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                            <p class="text-[10px] text-green-400">
-                                <i class="fa-solid fa-check-circle mr-1"></i>
-                                Bu yöntemle AI, orijinal görseldeki manken/plastik görünümden etkilenmez
+
+                        <!-- Quick tip -->
+                        <div class="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                            <p class="text-[10px] text-cyan-400">
+                                <i class="fa-solid fa-lightbulb mr-1"></i>
+                                İpucu: Benzer pozisyonda bir model fotoğrafı kullanın
                             </p>
                         </div>
                     </div>
@@ -433,6 +436,7 @@
         let state = {
             originalImage: null,
             originalBase64: null,
+            templateBase64: null,  // Model şablonu
             processedImage: null,
             gallery: [],
             settings: {
@@ -484,7 +488,50 @@
         window.onload = () => {
             loadSettings();
             setupDragDrop();
+            setupTemplateUpload();
         };
+
+        // ========== TEMPLATE UPLOAD ==========
+        function setupTemplateUpload() {
+            const dropZone = document.getElementById('templateDropZone');
+            const input = document.getElementById('templateInput');
+
+            dropZone.onclick = () => input.click();
+
+            input.onchange = (e) => {
+                if (e.target.files[0]) handleTemplateFile(e.target.files[0]);
+            };
+
+            dropZone.ondragover = (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-cyan-500');
+            };
+
+            dropZone.ondragleave = () => {
+                dropZone.classList.remove('border-cyan-500');
+            };
+
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-cyan-500');
+                if (e.dataTransfer.files[0]) handleTemplateFile(e.dataTransfer.files[0]);
+            };
+        }
+
+        function handleTemplateFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                state.templateBase64 = e.target.result;
+
+                document.getElementById('templatePlaceholder').classList.add('hidden');
+                document.getElementById('templatePreview').classList.remove('hidden');
+                document.getElementById('templateImage').src = e.target.result;
+                document.getElementById('templateName').textContent = file.name;
+
+                showToast('Model şablonu yüklendi!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
 
         // ========== TAB SWITCHING ==========
         function switchTab(tab) {
@@ -627,15 +674,21 @@
                 return;
             }
 
+            // Template kontrolü
+            if (!state.templateBase64) {
+                showToast('Lütfen bir model şablonu yükleyin', 'error');
+                return;
+            }
+
             showLoader('Takı ayrıştırılıyor...', 'BiRefNet ile segmentasyon yapılıyor');
 
             try {
-                // ZERO-HALLUCINATION COMPOSITE APPROACH
-                // 1. BiRefNet: Takıyı ayır (segmentasyon)
-                // 2. Flux: Gerçek model oluştur (takısız)
-                // 3. Canvas: Orijinal takıyı üstüne koy
-                console.log('🎯 Zero-Hallucination Composite başlatılıyor...');
-                state.processedImage = await generateModelImage(null, null);
+                // TEMPLATE COMPOSITE APPROACH - SIFIR HALÜSINASYON
+                // 1. BiRefNet: Takıyı ayır (şeffaf arka plan)
+                // 2. Kullanıcının yüklediği şablon model
+                // 3. Canvas: Takıyı şablon üzerine monte et
+                console.log('🎯 Template Composite başlatılıyor...');
+                state.processedImage = await compositeWithTemplate();
 
                 // Show result
                 document.getElementById('previewPlaceholder').classList.add('hidden');
@@ -644,13 +697,91 @@
                 document.getElementById('downloadActions').classList.remove('hidden');
 
                 hideLoader();
-                showToast('Stüdyo kalitesinde görsel hazır!', 'success');
+                showToast('Takı şablona monte edildi!', 'success');
 
             } catch (error) {
                 console.error('Generation error:', error);
                 hideLoader();
                 showToast('Hata: ' + error.message, 'error');
             }
+        }
+
+        // ========== TEMPLATE COMPOSITE - SIFIR HALÜSINASYON ==========
+        async function compositeWithTemplate() {
+            const falKey = localStorage.getItem('fal_api_key');
+
+            // STEP 1: BiRefNet ile takıyı ayır
+            console.log('🔍 ADIM 1: BiRefNet ile takı çıkarılıyor...');
+
+            const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Key ${falKey}`
+                },
+                body: JSON.stringify({
+                    image_url: state.originalBase64,
+                    model: "General Use (Light)",
+                    operating_resolution: "1024x1024",
+                    output_format: "png"
+                })
+            });
+
+            if (!birefnetResponse.ok) {
+                const err = await birefnetResponse.json();
+                throw new Error('BiRefNet hatası: ' + (err.detail || 'Segmentasyon başarısız'));
+            }
+
+            const birefnetData = await birefnetResponse.json();
+            console.log('✅ BiRefNet yanıtı:', birefnetData);
+
+            const jewelryUrl = birefnetData.image?.url;
+            if (!jewelryUrl) {
+                throw new Error('Takı çıkarılamadı');
+            }
+            console.log('💎 Takı çıkarıldı (şeffaf arka plan):', jewelryUrl);
+
+            // STEP 2: Canvas'ta şablon + takı birleştir
+            console.log('🎨 ADIM 2: Takı şablona monte ediliyor...');
+
+            return new Promise(async (resolve, reject) => {
+                try {
+                    // Load template and jewelry images
+                    const [templateImg, jewelryImg] = await Promise.all([
+                        loadImage(state.templateBase64),
+                        loadImage(jewelryUrl)
+                    ]);
+
+                    // Create canvas with template size
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = templateImg.width;
+                    canvas.height = templateImg.height;
+
+                    // Draw template (background - real model)
+                    ctx.drawImage(templateImg, 0, 0);
+
+                    // Calculate jewelry position and scale
+                    // Takıyı şablonun ortasına yerleştir
+                    const scale = Math.min(
+                        (canvas.width * 0.85) / jewelryImg.width,
+                        (canvas.height * 0.85) / jewelryImg.height
+                    );
+
+                    const jWidth = jewelryImg.width * scale;
+                    const jHeight = jewelryImg.height * scale;
+                    const x = (canvas.width - jWidth) / 2;
+                    const y = (canvas.height - jHeight) / 2.5; // Biraz yukarıda
+
+                    // Draw jewelry on top (original pixels - no AI modification!)
+                    ctx.drawImage(jewelryImg, x, y, jWidth, jHeight);
+
+                    console.log('✅ Kompozit tamamlandı!');
+                    resolve(canvas.toDataURL('image/jpeg', 0.95));
+                } catch (error) {
+                    reject(error);
+                }
+            });
         }
 
         // ========== STEP 1: ANALYZE PRODUCT FEATURES (JSON) ==========
