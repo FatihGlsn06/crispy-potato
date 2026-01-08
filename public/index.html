@@ -769,150 +769,75 @@
             }
         }
 
-        // ========== GEMINI + BIREFNET HİBRİT YAKLAŞIM ==========
-        // 1. BiRefNet: Takının arka planını kaldır (şeffaf PNG)
-        // 2. Gemini: Takısız gerçekçi insan cildi üret
-        // 3. Gemini Vision: Takı pozisyonunu hesapla
-        // 4. Canvas: Şeffaf takıyı cildin üzerine yapıştır
+        // ========== GEMINI EDIT MODE - SADECE CİLDİ DEĞİŞTİR ==========
+        // Orijinal görseli Gemini'ye ver, sadece mankeni insana çevirmesini iste
+        // Takı, pozisyon, gölgeler - hepsi aynı kalır
         async function generateWithGemini25() {
             const geminiKey = localStorage.getItem('gemini_api_key');
-            const falKey = localStorage.getItem('fal_api_key');
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
 
-            if (!falKey) {
-                throw new Error('Fal.ai API key gerekli - Ayarlardan ekleyin');
-            }
+            console.log('🎨 Gemini Edit Mode başlatılıyor...');
+            showLoader('Gemini Edit Mode...', 'Manken → İnsan dönüşümü');
 
-            // STEP 1: BiRefNet ile takının arka planını kaldır
-            console.log('✂️ ADIM 1: BiRefNet ile arka plan kaldırılıyor...');
-            showLoader('Hibrit Yaklaşım...', '1/4 Takı çıkarılıyor');
+            // Gemini'ye orijinal görseli ver ve SADECE cildi değiştirmesini iste
+            const editPrompt = `Edit this jewelry product photo.
 
-            const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Key ${falKey}`
-                },
-                body: JSON.stringify({
-                    image_url: state.originalBase64,
-                    model: "General Use (Light)",
-                    operating_resolution: "1024x1024",
-                    output_format: "png"
-                })
-            });
+YOUR TASK:
+Transform the mannequin/display stand into realistic human skin.
 
-            if (!birefnetResponse.ok) {
-                const err = await birefnetResponse.json();
-                throw new Error('BiRefNet hatası: ' + (err.detail || 'Arka plan kaldırılamadı'));
-            }
+CRITICAL RULES - DO NOT VIOLATE:
+1. DO NOT touch, move, modify, or regenerate the jewelry/necklace - keep it EXACTLY as is
+2. DO NOT change the jewelry's position, size, color, or any detail
+3. ONLY transform the mannequin/plastic skin into realistic human skin
+4. Keep the EXACT same lighting, shadows, and composition
+5. The jewelry must remain in the EXACT same position
 
-            const birefnetData = await birefnetResponse.json();
-            const transparentJewelryUrl = birefnetData.image?.url;
-            if (!transparentJewelryUrl) {
-                throw new Error('Takı çıkarılamadı');
-            }
-            console.log('✅ Takı şeffaf arka planla çıkarıldı');
+SKIN TRANSFORMATION:
+- Replace plastic/mannequin texture with realistic human skin
+- Add natural skin pores, subtle imperfections
+- Natural skin tone with warmth
+- ${profile.desc}
+- ${style.prompt}
 
-            // STEP 2: Gemini ile gerçekçi cilt üret
-            console.log('🎨 ADIM 2: Gemini ile gerçekçi cilt üretiliyor...');
-            showLoader('Hibrit Yaklaşım...', '2/4 Gerçekçi cilt üretiliyor');
+OUTPUT: Same image but with realistic human skin instead of mannequin. Jewelry unchanged.`;
 
-            const skinPrompt = `Generate a professional jewelry product photography background.
-
-REQUIREMENTS:
-1. Show ONLY a realistic female model's neck/collarbone area (NO FACE, cropped at chin)
-2. NO JEWELRY - bare skin only, this will be used as background
-3. Natural human skin with visible pores, subtle imperfections, natural warmth
-4. ${profile.desc}
-5. ${style.prompt}
-6. Professional studio lighting, e-commerce quality
-7. The neck area should be clearly visible and well-lit for jewelry placement
-
-CRITICAL: Generate ONLY bare skin/neck area. NO necklace, NO jewelry, NO accessories.`;
-
-            const skinResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: skinPrompt }]
+                        parts: [
+                            { text: editPrompt },
+                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }
+                        ]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.7
+                        temperature: 0.3  // Düşük temperature = daha tutarlı
                     }
                 })
             });
 
-            if (!skinResponse.ok) {
-                const err = await skinResponse.json();
+            if (!response.ok) {
+                const err = await response.json();
                 console.error('Gemini hatası:', err);
-                throw new Error(err.error?.message || 'Cilt üretilemedi');
+                throw new Error(err.error?.message || 'Gemini yanıt vermedi');
             }
 
-            const skinData = await skinResponse.json();
-            let skinBase64 = null;
+            const data = await response.json();
+            console.log('Gemini yanıtı:', data);
 
-            const skinParts = skinData.candidates?.[0]?.content?.parts || [];
-            for (const part of skinParts) {
+            // Görsel yanıtı bul
+            const parts = data.candidates?.[0]?.content?.parts || [];
+            for (const part of parts) {
                 if (part.inlineData?.mimeType?.startsWith('image/')) {
-                    skinBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-                    break;
+                    console.log('✅ Edit tamamlandı!');
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
                 }
             }
 
-            if (!skinBase64) {
-                throw new Error('Cilt görseli üretilemedi');
-            }
-            console.log('✅ Gerçekçi cilt üretildi');
-
-            // STEP 3: Takı pozisyonunu hesapla
-            console.log('📍 ADIM 3: Takı pozisyonu hesaplanıyor...');
-            showLoader('Hibrit Yaklaşım...', '3/4 Pozisyon hesaplanıyor');
-
-            const skinImg = await loadImage(skinBase64);
-            const jewelryImg = await loadImage(transparentJewelryUrl);
-
-            const position = await calculateSmartPosition(
-                skinBase64,
-                state.originalBase64,
-                skinImg.width,
-                skinImg.height,
-                jewelryImg.width,
-                jewelryImg.height
-            );
-
-            // STEP 4: Canvas ile şeffaf takıyı yapıştır
-            console.log('🎯 ADIM 4: Şeffaf takı yapıştırılıyor...');
-            showLoader('Hibrit Yaklaşım...', '4/4 Takı monte ediliyor');
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = skinImg.width;
-            canvas.height = skinImg.height;
-
-            // Arka plan: AI üretimi gerçekçi cilt
-            ctx.drawImage(skinImg, 0, 0);
-
-            // Takı boyutu ve pozisyonu
-            const scaleFactor = position.scale / 100;
-            const maxScale = Math.min(
-                (canvas.width * 0.8) / jewelryImg.width,
-                (canvas.height * 0.8) / jewelryImg.height
-            );
-            const finalScale = maxScale * scaleFactor;
-
-            const jWidth = jewelryImg.width * finalScale;
-            const jHeight = jewelryImg.height * finalScale;
-            const x = (canvas.width - jWidth) * (position.x / 100);
-            const y = (canvas.height - jHeight) * (position.y / 100);
-
-            // Şeffaf takıyı çiz - %100 orijinal piksel, arka plansız
-            ctx.drawImage(jewelryImg, x, y, jWidth, jHeight);
-
-            console.log(`✅ Hibrit tamamlandı: Pos(${position.x}%, ${position.y}%) Scale(${position.scale}%)`);
-            return canvas.toDataURL('image/png');
+            throw new Error('Görsel üretilemedi - Gemini görsel döndürmedi');
         }
 
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
