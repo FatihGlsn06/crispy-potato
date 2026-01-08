@@ -835,27 +835,36 @@ CRITICAL:
             // Fal.ai Flux IMAGE-TO-IMAGE - orijinal görseli input olarak gönder
             console.log('🎨 Fal.ai Flux Image-to-Image kullanılıyor');
             console.log('📸 Orijinal görsel korunacak, sadece model değişecek');
+            console.log('📝 Edit Prompt:', editPrompt);
 
-            // strength: 0.65 = %35 orijinal korunur, %65 değişir
-            // Daha düşük = daha az değişiklik, daha yüksek = daha fazla değişiklik
+            // Request body hazırla
+            const requestBody = {
+                prompt: editPrompt,
+                image_url: state.originalBase64,
+                strength: 0.75,
+                num_inference_steps: 40,
+                guidance_scale: 7.5,
+                num_images: 1,
+                enable_safety_checker: false
+            };
+
+            console.log('📤 Request gönderiliyor:', {
+                endpoint: 'flux/dev/image-to-image',
+                strength: requestBody.strength,
+                steps: requestBody.num_inference_steps,
+                imageSize: state.originalBase64.length + ' chars'
+            });
+
             const response = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Key ${falKey}`
                 },
-                body: JSON.stringify({
-                    prompt: editPrompt,
-                    image_url: state.originalBase64,
-                    strength: 0.65,
-                    num_inference_steps: 40,
-                    guidance_scale: 7.5,
-                    num_images: 1,
-                    enable_safety_checker: false
-                })
+                body: JSON.stringify(requestBody)
             });
 
-            console.log('📤 API isteği gönderildi, yanıt bekleniyor...');
+            console.log('📥 Response status:', response.status, response.statusText);
 
             if (!response.ok) {
                 const errorData = await response.json();
