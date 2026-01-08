@@ -685,18 +685,40 @@
 
         // ========== STEP 1: ANALYZE PRODUCT FEATURES (JSON) ==========
         async function analyzeProductFeatures(apiKey, base64Image) {
-            const analysisPrompt = `Bu takı ürününü analiz et ve aşağıdaki JSON formatında yanıt ver:
+            const analysisPrompt = `Sen bir takı uzmanısın. Bu takı ürününü ÇOK DETAYLI analiz et.
+
+GÖREV: Başka bir AI'ın bu takıyı BIREBIR aynı şekilde üretebilmesi için gereken TÜM detayları çıkar.
+
+JSON formatında yanıt ver:
 
 {
-    "product_type": "necklace veya ring veya bracelet veya earrings veya set",
-    "material": "malzeme türü",
-    "gemstones": ["taş veya boncuk listesi"],
-    "design_details": "tasarım detayları",
-    "color_palette": ["ana renkler"],
-    "visual_description": "görsel üretim için 2-3 cümlelik detaylı açıklama"
+    "product_type": "necklace/ring/bracelet/earrings/set",
+    "chain_style": "zincir tipi (boncuklu, halka, yılan, vb.)",
+    "pendant": {
+        "exists": true/false,
+        "shape": "oval/yuvarlak/damla/kare/kalp/vb.",
+        "size": "küçük/orta/büyük/çok büyük",
+        "color": "renk",
+        "material": "taş türü veya malzeme",
+        "setting": "çerçeve stili (bezel, prong, vb.)"
+    },
+    "beads": {
+        "exists": true/false,
+        "types": ["boncuk türleri - her birini ayrı yaz"],
+        "sizes": "boyut varyasyonu açıklaması",
+        "arrangement": "diziliş paterni (rastgele, simetrik, gradyan, vb.)",
+        "count_estimate": "yaklaşık boncuk sayısı"
+    },
+    "materials": ["tüm malzemeler listesi"],
+    "color_palette": ["TÜM renkler - ana ve aksanlar"],
+    "metal_color": "gümüş/altın/rose gold/antik/yok",
+    "overall_style": "bohem/klasik/modern/vintage/etnik/minimalist",
+    "ultra_detailed_description": "Bu takıyı BIREBIR üretmek için 5-6 cümlelik SÜPER DETAYLI açıklama. Boncuk dizilişi, renk geçişleri, pendant detayları, zincir yapısı HER ŞEYİ yaz."
 }
 
-SADECE JSON döndür, başka bir şey yazma.`;
+ÖNEMLİ: ultra_detailed_description alanı ÇOK KRİTİK. Başka bir AI bu açıklamayı okuyup takıyı birebir üretebilmeli.
+
+SADECE JSON döndür.`;
 
             try {
                 // gemini-2.0-flash - en yeni ve hızlı model
@@ -711,8 +733,8 @@ SADECE JSON döndür, başka bir şey yazma.`;
                             ]
                         }],
                         generationConfig: {
-                            temperature: 0.1,
-                            maxOutputTokens: 1024
+                            temperature: 0.2,
+                            maxOutputTokens: 2048
                         }
                     })
                 });
@@ -755,11 +777,27 @@ SADECE JSON döndür, başka bir şey yazma.`;
             // Fallback - hata durumunda basit değerler
             return {
                 product_type: "necklace",
-                material: "beads",
-                gemstones: ["colorful beads"],
-                design_details: "beaded necklace with elegant design",
-                color_palette: ["multicolor"],
-                visual_description: "A beautiful handcrafted beaded necklace with vibrant colorful beads arranged in an elegant pattern"
+                chain_style: "beaded chain",
+                pendant: {
+                    exists: true,
+                    shape: "oval",
+                    size: "large",
+                    color: "turquoise",
+                    material: "natural stone",
+                    setting: "silver bezel"
+                },
+                beads: {
+                    exists: true,
+                    types: ["silver round beads", "colorful glass beads"],
+                    sizes: "mixed sizes from small to medium",
+                    arrangement: "alternating pattern",
+                    count_estimate: "30-40 beads"
+                },
+                materials: ["natural stone", "silver metal", "glass beads"],
+                color_palette: ["turquoise", "silver", "earth tones"],
+                metal_color: "antique silver",
+                overall_style: "bohemian",
+                ultra_detailed_description: "A handcrafted bohemian style beaded necklace featuring a large oval turquoise natural stone pendant set in an antique silver bezel frame. The chain consists of alternating silver round metal beads and colorful earth-toned glass beads in varying sizes. The beads are strung in a symmetrical pattern leading to the central pendant."
             };
         }
 
@@ -768,17 +806,32 @@ SADECE JSON döndür, başka bir şey yazma.`;
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
 
+            // Detaylı takı açıklaması oluştur
+            const pendantDesc = productFeatures.pendant?.exists
+                ? `PENDANT: ${productFeatures.pendant.size} ${productFeatures.pendant.shape} shape, ${productFeatures.pendant.color} ${productFeatures.pendant.material}, ${productFeatures.pendant.setting} setting.`
+                : 'No pendant.';
+
+            const beadsDesc = productFeatures.beads?.exists
+                ? `BEADS: ${productFeatures.beads.types?.join(', ') || 'mixed beads'}, ${productFeatures.beads.sizes}, arranged in ${productFeatures.beads.arrangement} pattern, approximately ${productFeatures.beads.count_estimate} beads.`
+                : 'No beads.';
+
             const generationPrompt = `Create a stunning jewelry advertisement photograph.
 
 ${profile.desc}
 
-THE JEWELRY (MUST MATCH EXACTLY):
-Product type: ${productFeatures.product_type}
-Material: ${productFeatures.material}
-Gemstones/Beads: ${productFeatures.gemstones.join(', ')}
-Design: ${productFeatures.design_details}
-Colors: ${productFeatures.color_palette.join(', ')}
-Description: ${productFeatures.visual_description}
+===== THE EXACT JEWELRY TO RECREATE =====
+Type: ${productFeatures.product_type}
+Chain Style: ${productFeatures.chain_style || 'beaded'}
+${pendantDesc}
+${beadsDesc}
+Materials: ${productFeatures.materials?.join(', ') || productFeatures.material || 'mixed materials'}
+Colors: ${productFeatures.color_palette?.join(', ') || 'multicolor'}
+Metal: ${productFeatures.metal_color || 'silver tone'}
+Style: ${productFeatures.overall_style || 'bohemian'}
+
+ULTRA DETAILED DESCRIPTION (MUST FOLLOW EXACTLY):
+${productFeatures.ultra_detailed_description || productFeatures.visual_description || 'elegant handcrafted jewelry piece'}
+================================================
 
 ${style.prompt}
 
@@ -789,6 +842,7 @@ CRITICAL REQUIREMENTS:
 - Real human skin texture: visible pores, subtle freckles, natural shadows
 - NO mannequin, NO plastic, NO CGI, NO illustration, NO artificial look
 - The jewelry must be the HERO - prominently displayed and crystal clear
+- THE JEWELRY MUST MATCH THE DESCRIPTION EXACTLY - same colors, same beads, same pendant
 - Professional studio lighting with catch lights
 - 8K detail quality, sharp focus on jewelry`;
 
@@ -810,8 +864,8 @@ CRITICAL REQUIREMENTS:
                 body: JSON.stringify({
                     prompt: generationPrompt,
                     image_size: "square_hd",
-                    num_inference_steps: 28,
-                    guidance_scale: 3.5,
+                    num_inference_steps: 35,
+                    guidance_scale: 7.5,
                     num_images: 1,
                     enable_safety_checker: false
                 })
