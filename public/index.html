@@ -436,6 +436,21 @@
                             <span class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full ml-auto">AI Optimized</span>
                         </h3>
 
+                        <!-- Özel Prompt Alanı -->
+                        <div class="mb-4">
+                            <label class="text-xs text-slate-400 mb-2 block">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1 text-purple-400"></i>
+                                Özel Yönergeler (opsiyonel)
+                            </label>
+                            <textarea id="seoCustomPrompt" rows="2"
+                                      class="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
+                                      placeholder="Örn: Genç hedef kitle, lüks vurgu, altın tonları öne çıkar, hediye paketi vurgula..."></textarea>
+                            <p class="text-[10px] text-slate-500 mt-1">
+                                <i class="fa-solid fa-lightbulb mr-1"></i>
+                                SEO içeriğinde vurgulanmasını istediğiniz özel detayları yazın
+                            </p>
+                        </div>
+
                         <div id="seoContent" class="space-y-3">
                             <div id="seoPlaceholder" class="text-center py-6 text-slate-500">
                                 <i class="fa-solid fa-sparkles text-2xl mb-2"></i>
@@ -791,6 +806,12 @@
 
             showToast('SEO Pro oluşturuluyor...', 'success');
 
+            // Kullanıcının özel yönergelerini al
+            const customPrompt = document.getElementById('seoCustomPrompt').value.trim();
+            const customSection = customPrompt
+                ? `\n\nKULLANICI ÖZEL YÖNERGELERİ (bu istekleri mutlaka uygula):\n${customPrompt}\n`
+                : '';
+
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
@@ -799,7 +820,7 @@
                         contents: [{
                             parts: [
                                 {
-                                    text: `Bu takı/aksesuar görselini analiz et ve Trendyol için KAPSAMLI Türkçe SEO içeriği oluştur.
+                                    text: `Bu takı/aksesuar görselini analiz et ve Trendyol için KAPSAMLI Türkçe SEO içeriği oluştur.${customSection}
 
 TRENDYOL SEO KURALLARI:
 - Başlık: MAX 65 karakter (çok önemli!)
