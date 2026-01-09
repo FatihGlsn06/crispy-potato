@@ -436,162 +436,25 @@
                             <span class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full ml-auto">AI Optimized</span>
                         </h3>
 
-                        <!-- ÜRÜN BİLGİLERİ FORMU -->
+                        <!-- ÜRÜN ÖZELLİKLERİ - BASİTLEŞTİRİLMİŞ -->
                         <div class="mb-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700">
                             <h4 class="text-xs font-semibold text-purple-400 mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-gem"></i>
-                                Ürün Bilgileri
-                                <span class="text-[9px] text-slate-500 font-normal">(SEO kalitesini artırır)</span>
+                                Ürün Özellikleri
+                                <span class="text-[9px] text-slate-500 font-normal">(AI görseli analiz edecek)</span>
                             </h4>
 
-                            <div class="grid grid-cols-2 gap-3">
-                                <!-- Ürün Türü -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Ürün Türü</label>
-                                    <select id="seoProductType" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="kolye">Kolye</option>
-                                        <option value="yuzuk">Yüzük</option>
-                                        <option value="bileklik">Bileklik</option>
-                                        <option value="kupe">Küpe</option>
-                                        <option value="set">Takı Seti</option>
-                                        <option value="bros">Broş</option>
-                                        <option value="halhal">Halhal</option>
-                                        <option value="piercing">Piercing</option>
-                                    </select>
-                                </div>
+                            <textarea id="seoProductFeatures" rows="4"
+                                      class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
+                                      placeholder="Ürün özelliklerini yazın...&#10;Örnek: 925 ayar gümüş kolye, zirkon taşlı, rose gold kaplama, 45cm zincir, ayarlanabilir, hediye kutulu"></textarea>
 
-                                <!-- Ana Malzeme -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Ana Malzeme</label>
-                                    <select id="seoMaterial" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="925 Ayar Gümüş">925 Ayar Gümüş</option>
-                                        <option value="14 Ayar Altın">14 Ayar Altın</option>
-                                        <option value="18 Ayar Altın">18 Ayar Altın</option>
-                                        <option value="22 Ayar Altın">22 Ayar Altın</option>
-                                        <option value="Rose Gold">Rose Gold</option>
-                                        <option value="Altın Kaplama">Altın Kaplama</option>
-                                        <option value="Gümüş Kaplama">Gümüş Kaplama</option>
-                                        <option value="Paslanmaz Çelik">Paslanmaz Çelik</option>
-                                        <option value="Pirinç">Pirinç</option>
-                                    </select>
-                                </div>
-
-                                <!-- Taş Türü -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Taş Türü</label>
-                                    <select id="seoStoneType" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="">Taş Yok / Seçiniz</option>
-                                        <option value="Pırlanta">Pırlanta</option>
-                                        <option value="Zirkon">Zirkon Taş</option>
-                                        <option value="Safir">Safir</option>
-                                        <option value="Yakut">Yakut</option>
-                                        <option value="Zümrüt">Zümrüt</option>
-                                        <option value="Akuamarin">Akuamarin</option>
-                                        <option value="Ametist">Ametist</option>
-                                        <option value="Turkuaz">Turkuaz</option>
-                                        <option value="İnci">İnci</option>
-                                        <option value="Opal">Opal</option>
-                                        <option value="Ay Taşı">Ay Taşı</option>
-                                        <option value="Lapis Lazuli">Lapis Lazuli</option>
-                                        <option value="Oniks">Oniks</option>
-                                        <option value="Sedef">Sedef</option>
-                                        <option value="Kristal">Kristal</option>
-                                    </select>
-                                </div>
-
-                                <!-- Stil -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Stil</label>
-                                    <select id="seoStyle" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="Minimal">Minimal</option>
-                                        <option value="Klasik">Klasik</option>
-                                        <option value="Modern">Modern</option>
-                                        <option value="Bohem">Bohem</option>
-                                        <option value="Vintage">Vintage</option>
-                                        <option value="Lüks">Lüks / Premium</option>
-                                        <option value="Günlük">Günlük / Casual</option>
-                                        <option value="Elegant">Elegant</option>
-                                        <option value="Etnik">Etnik</option>
-                                        <option value="Gotik">Gotik</option>
-                                    </select>
-                                </div>
-
-                                <!-- Hedef Kitle -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Hedef Kitle</label>
-                                    <select id="seoTarget" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="Kadın">Kadın</option>
-                                        <option value="Erkek">Erkek</option>
-                                        <option value="Unisex">Unisex</option>
-                                        <option value="Genç Kadın">Genç Kadın</option>
-                                        <option value="Çocuk">Çocuk</option>
-                                    </select>
-                                </div>
-
-                                <!-- Renk -->
-                                <div>
-                                    <label class="text-[10px] text-slate-400 mb-1 block">Ana Renk</label>
-                                    <select id="seoColor" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
-                                        <option value="">Seçiniz...</option>
-                                        <option value="Altın">Altın / Gold</option>
-                                        <option value="Gümüş">Gümüş / Silver</option>
-                                        <option value="Rose Gold">Rose Gold</option>
-                                        <option value="Beyaz">Beyaz</option>
-                                        <option value="Siyah">Siyah</option>
-                                        <option value="Mavi">Mavi</option>
-                                        <option value="Yeşil">Yeşil</option>
-                                        <option value="Kırmızı">Kırmızı</option>
-                                        <option value="Mor">Mor</option>
-                                        <option value="Turkuaz">Turkuaz</option>
-                                        <option value="Çok Renkli">Çok Renkli</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Özel Özellikler - Checkboxlar -->
-                            <div class="mt-3">
-                                <label class="text-[10px] text-slate-400 mb-2 block">Özel Özellikler</label>
-                                <div class="flex flex-wrap gap-2">
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoHandmade" class="w-3 h-3 accent-purple-500">
-                                        <span>El Yapımı</span>
-                                    </label>
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoAdjustable" class="w-3 h-3 accent-purple-500">
-                                        <span>Ayarlanabilir</span>
-                                    </label>
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoGiftBox" class="w-3 h-3 accent-purple-500">
-                                        <span>Hediye Kutulu</span>
-                                    </label>
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoHypoallergenic" class="w-3 h-3 accent-purple-500">
-                                        <span>Hipoalerjenik</span>
-                                    </label>
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoWaterproof" class="w-3 h-3 accent-purple-500">
-                                        <span>Su Geçirmez</span>
-                                    </label>
-                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
-                                        <input type="checkbox" id="seoCertified" class="w-3 h-3 accent-purple-500">
-                                        <span>Sertifikalı</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Ek Notlar -->
-                            <div class="mt-3">
-                                <label class="text-[10px] text-slate-400 mb-1 block">Ek Notlar / Özel İstekler</label>
-                                <textarea id="seoCustomPrompt" rows="2"
-                                          class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
-                                          placeholder="Örn: Anneler günü için, nişan hediyesi, X marka ilham..."></textarea>
-                            </div>
+                            <p class="text-[10px] text-slate-500 mt-2 mb-3">
+                                <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i>
+                                AI görseli analiz edip, yazdıklarınızı ve Google Trends verilerini kullanarak SEO oluşturacak
+                            </p>
 
                             <!-- SEO Oluştur Butonu -->
-                            <button onclick="generateSEO()" class="w-full mt-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-xs font-bold transition-all">
+                            <button onclick="generateSEO()" class="w-full py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-xs font-bold transition-all">
                                 <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
                                 SEO İçeriği Oluştur
                             </button>
@@ -599,8 +462,9 @@
 
                         <div id="seoContent" class="space-y-3">
                             <div id="seoPlaceholder" class="text-center py-4 text-slate-500">
-                                <i class="fa-solid fa-arrow-up text-xl mb-2"></i>
-                                <p class="text-xs">Ürün bilgilerini doldurup SEO oluşturun</p>
+                                <i class="fa-solid fa-robot text-xl mb-2"></i>
+                                <p class="text-xs">Görsel yükleyin, AI analiz edip SEO oluşturacak</p>
+                                <p class="text-[10px] text-slate-600 mt-1">İsterseniz ürün özelliklerini de yazabilirsiniz</p>
                             </div>
 
                             <div id="seoResults" class="hidden space-y-4">
@@ -693,6 +557,14 @@
                                         <i class="fa-solid fa-magnifying-glass mr-1"></i>Long-tail Aramalar
                                     </label>
                                     <div id="seoLongTail" class="space-y-1 text-xs"></div>
+                                </div>
+
+                                <!-- Trend Kelimeler -->
+                                <div>
+                                    <label class="text-xs text-slate-400 mb-1 block">
+                                        <i class="fa-solid fa-fire mr-1 text-orange-400"></i>Trend Kelimeler (2024-2025)
+                                    </label>
+                                    <div id="seoTrendingKeywords" class="flex flex-wrap gap-1"></div>
                                 </div>
 
                                 <!-- Sosyal Medya Hashtag'leri -->
@@ -966,43 +838,14 @@
                 return;
             }
 
-            showToast('SEO Pro oluşturuluyor...', 'success');
+            showToast('SEO Pro oluşturuluyor... AI analizi başlıyor', 'success');
 
-            // ===== FORM VERİLERİNİ TOPLA =====
-            const productType = document.getElementById('seoProductType').value;
-            const material = document.getElementById('seoMaterial').value;
-            const stoneType = document.getElementById('seoStoneType').value;
-            const style = document.getElementById('seoStyle').value;
-            const target = document.getElementById('seoTarget').value;
-            const color = document.getElementById('seoColor').value;
-            const customPrompt = document.getElementById('seoCustomPrompt').value.trim();
+            // ===== BASİTLEŞTİRİLMİŞ GİRDİ =====
+            const productFeatures = document.getElementById('seoProductFeatures').value.trim();
 
-            // Özel özellikler
-            const features = [];
-            if (document.getElementById('seoHandmade').checked) features.push('El Yapımı');
-            if (document.getElementById('seoAdjustable').checked) features.push('Ayarlanabilir');
-            if (document.getElementById('seoGiftBox').checked) features.push('Hediye Kutulu');
-            if (document.getElementById('seoHypoallergenic').checked) features.push('Hipoalerjenik');
-            if (document.getElementById('seoWaterproof').checked) features.push('Su Geçirmez');
-            if (document.getElementById('seoCertified').checked) features.push('Sertifikalı');
-
-            // Ürün bilgisi metni oluştur
-            let productInfo = '';
-            if (productType || material || stoneType || style || target || color || features.length > 0) {
-                productInfo = `\n\n===== KULLANICININ GİRDİĞİ ÜRÜN BİLGİLERİ (BUNLARI MUTLAKA KULLAN) =====`;
-                if (productType) productInfo += `\n• Ürün Türü: ${productType.toUpperCase()}`;
-                if (material) productInfo += `\n• Ana Malzeme: ${material}`;
-                if (stoneType) productInfo += `\n• Taş Türü: ${stoneType}`;
-                if (style) productInfo += `\n• Stil: ${style}`;
-                if (target) productInfo += `\n• Hedef Kitle: ${target}`;
-                if (color) productInfo += `\n• Ana Renk: ${color}`;
-                if (features.length > 0) productInfo += `\n• Özel Özellikler: ${features.join(', ')}`;
-                productInfo += `\n\nBu bilgileri SEO içeriğinde MUTLAKA kullan ve vurgula!`;
-            }
-
-            // Kullanıcı özel istekleri
-            const customSection = customPrompt
-                ? `\n\n===== KULLANICI ÖZEL İSTEKLERİ =====\n${customPrompt}\nBu istekleri SEO içeriğine yansıt!`
+            // Kullanıcının girdiği özellikler
+            const userInputSection = productFeatures
+                ? `\n\n===== KULLANICININ GİRDİĞİ ÜRÜN ÖZELLİKLERİ =====\n${productFeatures}\n\nBu özellikleri SEO içeriğinde MUTLAKA kullan ve vurgula!`
                 : '';
 
             try {
@@ -1013,12 +856,26 @@
                         contents: [{
                             parts: [
                                 {
-                                    text: `SEN BİR TRENDYOL SEO UZMANSIN.
+                                    text: `SEN BİR TRENDYOL SEO UZMANSIN + GÖRSEL ANALİZ AI'SISIN.
 Türkiye'nin en büyük e-ticaret platformu Trendyol için mükemmel, satış odaklı ürün listesi oluşturuyorsun.
-${productInfo}${customSection}
+${userInputSection}
 
-===== GÖRSEL ANALİZİ =====
-Ekteki takı görselini detaylı analiz et. Görsel + kullanıcı bilgileri birleştirilerek en iyi SEO içeriği oluşturulacak.
+===== GÖREV 1: GÖRSEL ANALİZİ =====
+Ekteki takı görselini detaylı analiz et:
+- Takı türü nedir? (kolye, yüzük, bileklik, küpe, set)
+- Malzeme ne gibi görünüyor? (gümüş, altın, rose gold)
+- Taş var mı? Türü ve rengi?
+- Stil nasıl? (minimal, bohem, klasik, modern)
+- Özel detaylar?
+
+===== GÖREV 2: TREND ANALİZİ =====
+Türkiye'deki takı trendlerini ve popüler arama terimlerini dikkate al:
+- Sezonsal trendler (yaz için hafif, kış için şık)
+- Popüler stiller (2024-2025: minimal, layered, vintage)
+- Yüksek arama hacimli kelimeler
+- Trendyol'da çok satan takı özellikleri
+
+Görsel analizi + kullanıcı bilgileri + trend verileri birleştirilerek en iyi SEO içeriği oluşturulacak.
 
 ===== KRİTİK KURALLAR =====
 🚫 YASAKLI KELİMELER (Trendyol'da yasak, ASLA kullanma):
@@ -1084,6 +941,7 @@ SADECE aşağıdaki JSON formatında döndür, başka hiçbir şey yazma:
         "altın kaplama bohem kolye günlük",
         "...5 adet 4-6 kelimelik arama sorgusu"
     ],
+    "trendingKeywords": ["2024-2025 trendlerinden 5 kelime", "popüler arama terimleri"],
     "hashtags": "#trendyol #takı #kolye #gümüşkolye #hediye #moda #aksesuar #kadın #şık #trend"
 }
 
@@ -1204,6 +1062,17 @@ SADECE JSON döndür!`
                         longTailContainer.appendChild(div);
                     });
 
+                    // 7.5. Trending Keywords
+                    const trendingContainer = document.getElementById('seoTrendingKeywords');
+                    trendingContainer.innerHTML = '';
+                    (seoData.trendingKeywords || []).forEach(kw => {
+                        const span = document.createElement('span');
+                        span.className = 'px-2 py-1 bg-orange-500/20 text-orange-300 rounded text-xs cursor-pointer hover:bg-orange-500/30';
+                        span.textContent = kw;
+                        span.onclick = () => copyText(kw);
+                        trendingContainer.appendChild(span);
+                    });
+
                     // 8. Hashtags
                     document.getElementById('seoHashtags').textContent = seoData.hashtags || '';
 
@@ -1296,6 +1165,9 @@ ${(seo.keywords || []).join(', ')}
 
 🔍 LONG-TAIL ARAMALAR:
 ${(seo.longTail || []).map(lt => `• ${lt}`).join('\n')}
+
+🔥 TREND KELİMELER (2024-2025):
+${(seo.trendingKeywords || []).join(' • ')}
 
 #️⃣ HASHTAG'LER:
 ${seo.hashtags || ''}
