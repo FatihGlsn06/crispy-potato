@@ -43,15 +43,15 @@
         .progress-line.completed { background: var(--success); }
 
         /* Cards */
-        .mode-card, .model-card, .style-card {
+        .mode-card, .model-card, .style-card, .jewelry-card {
             transition: all 0.2s ease;
             cursor: pointer;
         }
-        .mode-card:hover, .model-card:hover, .style-card:hover {
+        .mode-card:hover, .model-card:hover, .style-card:hover, .jewelry-card:hover {
             transform: translateY(-4px);
             border-color: rgba(242,122,26,0.5);
         }
-        .mode-card.selected, .model-card.selected, .style-card.selected {
+        .mode-card.selected, .model-card.selected, .style-card.selected, .jewelry-card.selected {
             border-color: var(--primary) !important;
             background: rgba(242,122,26,0.1) !important;
             box-shadow: 0 0 30px rgba(242,122,26,0.2);
@@ -304,6 +304,32 @@
                             <div class="style-card glass rounded-lg p-3 text-center" data-style="dramatic" onclick="selectStyle('dramatic')">
                                 <i class="fa-solid fa-moon text-purple-400 mb-1"></i>
                                 <span class="text-xs block">Dramatik</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jewelry Type (Flatlay Mode Only) -->
+                    <div id="jewelryTypeSection" class="glass rounded-xl p-4 hidden">
+                        <h3 class="font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-gem text-cyan-400"></i>
+                            Takı Tipi <span class="text-xs text-amber-400">(Düz zemin modu için)</span>
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="jewelry-card glass rounded-lg p-3 text-center selected" data-jewelry="necklace" onclick="selectJewelryType('necklace')">
+                                <div class="text-2xl mb-1">📿</div>
+                                <span class="text-xs">Kolye</span>
+                            </div>
+                            <div class="jewelry-card glass rounded-lg p-3 text-center" data-jewelry="earring" onclick="selectJewelryType('earring')">
+                                <div class="text-2xl mb-1">💎</div>
+                                <span class="text-xs">Küpe</span>
+                            </div>
+                            <div class="jewelry-card glass rounded-lg p-3 text-center" data-jewelry="ring" onclick="selectJewelryType('ring')">
+                                <div class="text-2xl mb-1">💍</div>
+                                <span class="text-xs">Yüzük</span>
+                            </div>
+                            <div class="jewelry-card glass rounded-lg p-3 text-center" data-jewelry="bracelet" onclick="selectJewelryType('bracelet')">
+                                <div class="text-2xl mb-1">⌚</div>
+                                <span class="text-xs">Bileklik</span>
                             </div>
                         </div>
                     </div>
@@ -662,8 +688,10 @@
             model: 'young',
             skin: 'light',
             style: 'studio',
+            jewelryType: 'necklace',
             originalImage: null,
             originalBase64: null,
+            cutoutBase64: null,
             processedImage: null,
             seo: {}
         };
@@ -765,6 +793,22 @@
             state.mode = mode;
             document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
             document.querySelector(`.mode-card[data-mode="${mode}"]`).classList.add('selected');
+
+            // Flatlay modunda takı tipi seçiciyi göster
+            const jewelrySection = document.getElementById('jewelryTypeSection');
+            if (jewelrySection) {
+                if (mode === 'flatlay') {
+                    jewelrySection.classList.remove('hidden');
+                } else {
+                    jewelrySection.classList.add('hidden');
+                }
+            }
+        }
+
+        function selectJewelryType(type) {
+            state.jewelryType = type;
+            document.querySelectorAll('.jewelry-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`.jewelry-card[data-jewelry="${type}"]`).classList.add('selected');
         }
 
         function selectModel(model) {
@@ -921,13 +965,42 @@ REMEMBER: The jewelry is the PRODUCT being sold. It must remain EXACTLY as photo
             }
         }
 
-        // ========== FLATLAY MODU - BiRefNet Kesim + Gemini Compose ==========
+        // ========== FLATLAY MODU - BiRefNet Kesim + Gemini Body + Canvas Compose ==========
+        // TAKİ HİÇ AI'YA GİTMEZ - SADECE KOD İLE ÜST ÜSTE KONUR
         async function generateFlatlay() {
             const geminiKey = localStorage.getItem('gemini_api_key');
             const falKey = localStorage.getItem('fal_api_key');
 
-            // ADIM 1: BiRefNet ile takıyı arka plandan ayır
-            showToast('Adım 1/2: Ürün kesiliyor...', 'success');
+            const skinTones = {
+                light: 'fair/light Caucasian skin',
+                medium: 'medium olive skin',
+                tan: 'tan/bronze skin',
+                dark: 'dark brown skin'
+            };
+
+            const modelTypes = {
+                young: 'young woman in her 20s',
+                mature: 'elegant woman in her 30s-40s',
+                elegant: 'sophisticated mature woman'
+            };
+
+            // Takı tipine göre vücut bölgesi
+            const bodyParts = {
+                necklace: 'neck, upper chest and shoulders area, collarbone visible',
+                earring: 'side of face showing ear, jawline and partial cheek',
+                ring: 'elegant hand with fingers extended, showing ring finger area',
+                bracelet: 'wrist and lower forearm in elegant pose'
+            };
+
+            const jewelryPositions = {
+                necklace: 'center-bottom area of the image, around neck/chest',
+                earring: 'side area where ear would be',
+                ring: 'on ring finger area',
+                bracelet: 'around wrist area'
+            };
+
+            // ========== ADIM 1: BiRefNet ile takıyı kes ==========
+            showToast('Adım 1/3: Takı kesiliyor...', 'success');
 
             const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
                 method: 'POST',
@@ -943,64 +1016,61 @@ REMEMBER: The jewelry is the PRODUCT being sold. It must remain EXACTLY as photo
             if (!birefnetResponse.ok) throw new Error('BiRefNet hatası');
 
             const birefnetData = await birefnetResponse.json();
-            const cutoutImage = birefnetData.image?.url;
+            const cutoutImageUrl = birefnetData.image?.url;
 
-            if (!cutoutImage) throw new Error('Ürün kesilemedi');
+            if (!cutoutImageUrl) throw new Error('Ürün kesilemedi');
 
-            // Kesilen görseli base64'e çevir
-            const cutoutResponse = await fetch(cutoutImage);
-            const cutoutBlob = await cutoutResponse.blob();
-            const cutoutBase64 = await new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(cutoutBlob);
+            // Kesilen görseli yükle
+            const cutoutImg = new Image();
+            cutoutImg.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+                cutoutImg.onload = resolve;
+                cutoutImg.onerror = reject;
+                cutoutImg.src = cutoutImageUrl;
             });
 
-            // ADIM 2: Gemini ile model üzerine yerleştir
-            showToast('Adım 2/2: Model oluşturuluyor...', 'success');
+            // Cutout'u state'e kaydet (base64)
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cutoutImg.width;
+            tempCanvas.height = cutoutImg.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(cutoutImg, 0, 0);
+            state.cutoutBase64 = tempCanvas.toDataURL('image/png');
 
-            const skinTones = {
-                light: 'fair/light Caucasian skin',
-                medium: 'medium olive skin',
-                tan: 'tan/bronze skin',
-                dark: 'dark brown skin'
-            };
+            // ========== ADIM 2: Gemini ile SADECE vücut bölgesi oluştur (TAKI YOK) ==========
+            showToast('Adım 2/3: Model oluşturuluyor...', 'success');
 
-            const modelTypes = {
-                young: 'young woman in her 20s',
-                mature: 'elegant woman in her 30s-40s',
-                elegant: 'sophisticated mature woman'
-            };
+            const bodyPrompt = `Generate a professional e-commerce photo showing ONLY a body part - NO JEWELRY.
 
-            const prompt = `Create a professional jewelry product photo for e-commerce.
+CREATE: A realistic ${modelTypes[state.model]} with ${skinTones[state.skin]}.
 
-I am providing you a TRANSPARENT PNG of jewelry that has been cut out from its background.
+BODY PART NEEDED: ${bodyParts[state.jewelryType]}
 
-YOUR TASK:
-1. Create a realistic ${modelTypes[state.model]} with ${skinTones[state.skin]}
-2. Place the jewelry EXACTLY as provided on the model
-3. Professional studio lighting, clean background
+CRITICAL REQUIREMENTS:
+✅ Show ONLY the body part (${bodyParts[state.jewelryType]})
+✅ Professional studio lighting, soft and even
+✅ Clean, neutral background (white or light gray gradient)
+✅ Realistic, smooth skin texture
+✅ The ${jewelryPositions[state.jewelryType]} should be clearly visible and unobstructed
 
-CRITICAL RULES:
-🚫 DO NOT modify, regenerate, or change the jewelry in ANY way
-🚫 DO NOT add reflections, shadows, or effects to the jewelry itself
-✅ The jewelry must appear EXACTLY as provided - pixel perfect
-✅ Only create the human model/skin around/behind the jewelry
-✅ Match the jewelry positioning naturally on the body part`;
+🚫 DO NOT include ANY jewelry
+🚫 DO NOT add necklaces, earrings, rings, bracelets, or any accessories
+🚫 The body part must be BARE - no accessories at all
+🚫 Keep the image clean and simple
+
+This is a BASE image - jewelry will be added separately by code.
+Image should be square format, centered composition.`;
 
             const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inlineData: { mimeType: 'image/png', data: cutoutBase64.split(',')[1] } }
-                        ]
+                        parts: [{ text: bodyPrompt }]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.2
+                        temperature: 0.3
                     }
                 })
             });
@@ -1011,17 +1081,73 @@ CRITICAL RULES:
             const parts = geminiData.candidates?.[0]?.content?.parts || [];
             const imagePart = parts.find(p => p.inlineData);
 
-            if (imagePart) {
-                state.processedImage = `data:image/png;base64,${imagePart.inlineData.data}`;
-                document.getElementById('step3After').src = state.processedImage;
-                document.getElementById('step3After').classList.remove('hidden');
-                document.getElementById('step3Loading').classList.add('hidden');
-                document.getElementById('retouchPanel').classList.remove('hidden');
-                document.getElementById('step3Next').disabled = false;
-                showToast('Görsel oluşturuldu!', 'success');
-            } else {
-                throw new Error('Görsel oluşturulamadı');
-            }
+            if (!imagePart) throw new Error('Model oluşturulamadı');
+
+            // Body görseli yükle
+            const bodyImg = new Image();
+            await new Promise((resolve, reject) => {
+                bodyImg.onload = resolve;
+                bodyImg.onerror = reject;
+                bodyImg.src = `data:image/png;base64,${imagePart.inlineData.data}`;
+            });
+
+            // ========== ADIM 3: Canvas ile birleştir (TAKI ORİJİNAL KALIR) ==========
+            showToast('Adım 3/3: Birleştiriliyor...', 'success');
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Canvas boyutu body görseli kadar
+            canvas.width = bodyImg.width;
+            canvas.height = bodyImg.height;
+
+            // 1. Önce body (arka plan olarak)
+            ctx.drawImage(bodyImg, 0, 0);
+
+            // 2. Takıyı pozisyonuna göre yerleştir
+            const jewelryScale = calculateJewelryScale(state.jewelryType, canvas.width, cutoutImg.width);
+            const jewelryPos = calculateJewelryPosition(state.jewelryType, canvas.width, canvas.height, cutoutImg.width * jewelryScale, cutoutImg.height * jewelryScale);
+
+            // Takıyı çiz (orijinal piksellerle)
+            ctx.drawImage(
+                cutoutImg,
+                jewelryPos.x,
+                jewelryPos.y,
+                cutoutImg.width * jewelryScale,
+                cutoutImg.height * jewelryScale
+            );
+
+            // Sonucu kaydet
+            state.processedImage = canvas.toDataURL('image/png');
+            document.getElementById('step3After').src = state.processedImage;
+            document.getElementById('step3After').classList.remove('hidden');
+            document.getElementById('step3Loading').classList.add('hidden');
+            document.getElementById('retouchPanel').classList.remove('hidden');
+            document.getElementById('step3Next').disabled = false;
+            showToast('Görsel oluşturuldu! Takı orijinal kalıyor.', 'success');
+        }
+
+        // Takı boyutunu hesapla
+        function calculateJewelryScale(type, canvasWidth, jewelryWidth) {
+            const targetRatios = {
+                necklace: 0.6,  // Kolye canvas'ın %60'ı
+                earring: 0.25,  // Küpe canvas'ın %25'i
+                ring: 0.35,     // Yüzük canvas'ın %35'i
+                bracelet: 0.45  // Bileklik canvas'ın %45'i
+            };
+            const targetWidth = canvasWidth * targetRatios[type];
+            return targetWidth / jewelryWidth;
+        }
+
+        // Takı pozisyonunu hesapla
+        function calculateJewelryPosition(type, canvasW, canvasH, jewW, jewH) {
+            const positions = {
+                necklace: { x: (canvasW - jewW) / 2, y: canvasH * 0.35 },
+                earring: { x: canvasW * 0.65, y: canvasH * 0.25 },
+                ring: { x: (canvasW - jewW) / 2, y: canvasH * 0.4 },
+                bracelet: { x: (canvasW - jewW) / 2, y: canvasH * 0.45 }
+            };
+            return positions[type];
         }
 
         // ==================== RETOUCH ====================
