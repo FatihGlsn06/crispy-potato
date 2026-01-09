@@ -158,6 +158,26 @@
                 <!-- Left Panel: Upload & Settings -->
                 <div class="lg:col-span-5 space-y-4">
 
+                    <!-- Mode Selector -->
+                    <div class="glass rounded-2xl p-4">
+                        <h3 class="font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-toggle-on text-cyan-400"></i>
+                            Çalışma Modu
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="setWorkMode('mannequin')" id="modeMannequin" class="mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all">
+                                <i class="fa-solid fa-person-dress text-2xl text-cyan-400 mb-2"></i>
+                                <p class="text-xs font-medium">Manken Fotoğrafı</p>
+                                <p class="text-[9px] text-slate-400">Takı mankende giyili</p>
+                            </button>
+                            <button onclick="setWorkMode('flatlay')" id="modeFlatlay" class="mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
+                                <i class="fa-solid fa-table-cells text-2xl text-slate-400 mb-2"></i>
+                                <p class="text-xs font-medium">Düz Zemin</p>
+                                <p class="text-[9px] text-slate-400">Takı masada/yerde</p>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Upload Area -->
                     <div class="glass rounded-2xl p-5">
                         <h3 class="font-semibold mb-4 flex items-center gap-2">
@@ -367,6 +387,104 @@
                                 <i class="fa-solid fa-plus mr-2"></i>Galeriye Ekle
                             </button>
                         </div>
+
+                        <!-- Manual Edit Panel -->
+                        <div id="editPanel" class="hidden mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+                            <h4 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-amber-400"></i>
+                                Manuel Rötuş
+                            </h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between">
+                                        <span>Parlaklık</span>
+                                        <span id="brightnessValue" class="text-amber-400">0</span>
+                                    </label>
+                                    <input type="range" id="brightnessSlider" min="-50" max="50" value="0" class="w-full" onchange="applyImageAdjustments()">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between">
+                                        <span>Kontrast</span>
+                                        <span id="contrastValue" class="text-amber-400">0</span>
+                                    </label>
+                                    <input type="range" id="contrastSlider" min="-50" max="50" value="0" class="w-full" onchange="applyImageAdjustments()">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between">
+                                        <span>Doygunluk</span>
+                                        <span id="saturationValue" class="text-amber-400">0</span>
+                                    </label>
+                                    <input type="range" id="saturationSlider" min="-50" max="50" value="0" class="w-full" onchange="applyImageAdjustments()">
+                                </div>
+                                <div class="flex gap-2 pt-2">
+                                    <button onclick="resetAdjustments()" class="flex-1 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-medium">
+                                        <i class="fa-solid fa-rotate-left mr-1"></i>Sıfırla
+                                    </button>
+                                    <button onclick="applyAndSaveAdjustments()" class="flex-1 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-medium">
+                                        <i class="fa-solid fa-check mr-1"></i>Uygula
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEO Generator Panel -->
+                    <div class="glass rounded-2xl p-5 border border-emerald-500/30">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass-chart text-emerald-400"></i>
+                            Trendyol SEO
+                            <span class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full ml-auto">AI Optimized</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-3">
+                            Ürün görseli yüklendikten sonra otomatik SEO önerileri oluşturulur
+                        </p>
+
+                        <div id="seoContent" class="space-y-3">
+                            <div id="seoPlaceholder" class="text-center py-6 text-slate-500">
+                                <i class="fa-solid fa-sparkles text-2xl mb-2"></i>
+                                <p class="text-xs">Ürün yükleyin, AI SEO oluştursun</p>
+                            </div>
+
+                            <div id="seoResults" class="hidden space-y-3">
+                                <!-- Title -->
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                                        <span><i class="fa-solid fa-heading mr-1"></i>Ürün Başlığı</span>
+                                        <button onclick="copySEO('title')" class="text-emerald-400 hover:text-emerald-300">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </button>
+                                    </label>
+                                    <input type="text" id="seoTitle" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm" readonly>
+                                </div>
+
+                                <!-- Description -->
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                                        <span><i class="fa-solid fa-align-left mr-1"></i>Açıklama</span>
+                                        <button onclick="copySEO('description')" class="text-emerald-400 hover:text-emerald-300">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </button>
+                                    </label>
+                                    <textarea id="seoDescription" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm resize-none" readonly></textarea>
+                                </div>
+
+                                <!-- Keywords -->
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                                        <span><i class="fa-solid fa-tags mr-1"></i>Anahtar Kelimeler</span>
+                                        <button onclick="copySEO('keywords')" class="text-emerald-400 hover:text-emerald-300">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </button>
+                                    </label>
+                                    <div id="seoKeywords" class="flex flex-wrap gap-1"></div>
+                                </div>
+
+                                <!-- Regenerate Button -->
+                                <button onclick="generateSEO()" class="w-full py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-medium mt-2">
+                                    <i class="fa-solid fa-rotate mr-1"></i>Yeniden Oluştur
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Mini Gallery (4 slots) -->
@@ -475,9 +593,11 @@
         let state = {
             originalImage: null,
             originalBase64: null,
+            originalProcessedImage: null, // Rötuş öncesi orijinal
             templateBase64: null,  // Model şablonu
             processedImage: null,
             gallery: [],
+            workMode: 'mannequin', // 'mannequin' veya 'flatlay'
             settings: {
                 modelProfile: 'neck_model',
                 style: 'studio'
@@ -486,8 +606,211 @@
                 x: 50,      // Yatay pozisyon (%)
                 y: 50,      // Dikey pozisyon (%)
                 scale: 60   // Takı boyutu (%)
+            },
+            seo: {
+                title: '',
+                description: '',
+                keywords: []
             }
         };
+
+        // ========== WORK MODE ==========
+        function setWorkMode(mode) {
+            state.workMode = mode;
+
+            // UI güncelle
+            document.getElementById('modeMannequin').className = mode === 'mannequin'
+                ? 'mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all'
+                : 'mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
+
+            document.getElementById('modeFlatlay').className = mode === 'flatlay'
+                ? 'mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all'
+                : 'mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
+
+            // İkon renklerini güncelle
+            document.querySelector('#modeMannequin i').className = mode === 'mannequin'
+                ? 'fa-solid fa-person-dress text-2xl text-cyan-400 mb-2'
+                : 'fa-solid fa-person-dress text-2xl text-slate-400 mb-2';
+
+            document.querySelector('#modeFlatlay i').className = mode === 'flatlay'
+                ? 'fa-solid fa-table-cells text-2xl text-cyan-400 mb-2'
+                : 'fa-solid fa-table-cells text-2xl text-slate-400 mb-2';
+
+            showToast(`${mode === 'mannequin' ? 'Manken' : 'Düz Zemin'} modu seçildi`, 'success');
+        }
+
+        // ========== MANUAL IMAGE ADJUSTMENTS ==========
+        function applyImageAdjustments() {
+            if (!state.processedImage) return;
+
+            const brightness = parseInt(document.getElementById('brightnessSlider').value);
+            const contrast = parseInt(document.getElementById('contrastSlider').value);
+            const saturation = parseInt(document.getElementById('saturationSlider').value);
+
+            // Değerleri göster
+            document.getElementById('brightnessValue').textContent = brightness;
+            document.getElementById('contrastValue').textContent = contrast;
+            document.getElementById('saturationValue').textContent = saturation;
+
+            // CSS filter uygula
+            const previewImg = document.getElementById('previewImage');
+            const brightnessVal = 100 + brightness;
+            const contrastVal = 100 + contrast;
+            const saturationVal = 100 + saturation;
+
+            previewImg.style.filter = `brightness(${brightnessVal}%) contrast(${contrastVal}%) saturate(${saturationVal}%)`;
+        }
+
+        function resetAdjustments() {
+            document.getElementById('brightnessSlider').value = 0;
+            document.getElementById('contrastSlider').value = 0;
+            document.getElementById('saturationSlider').value = 0;
+
+            document.getElementById('brightnessValue').textContent = '0';
+            document.getElementById('contrastValue').textContent = '0';
+            document.getElementById('saturationValue').textContent = '0';
+
+            document.getElementById('previewImage').style.filter = '';
+
+            // Orijinal görüntüyü geri yükle
+            if (state.originalProcessedImage) {
+                state.processedImage = state.originalProcessedImage;
+                document.getElementById('previewImage').src = state.processedImage;
+            }
+        }
+
+        function applyAndSaveAdjustments() {
+            if (!state.processedImage) return;
+
+            const brightness = parseInt(document.getElementById('brightnessSlider').value);
+            const contrast = parseInt(document.getElementById('contrastSlider').value);
+            const saturation = parseInt(document.getElementById('saturationSlider').value);
+
+            // Canvas ile kalıcı uygulama
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Filter uygula
+                ctx.filter = `brightness(${100 + brightness}%) contrast(${100 + contrast}%) saturate(${100 + saturation}%)`;
+                ctx.drawImage(img, 0, 0);
+
+                // Yeni base64 oluştur
+                state.processedImage = canvas.toDataURL('image/png');
+                state.originalProcessedImage = state.processedImage;
+
+                // UI güncelle
+                document.getElementById('previewImage').src = state.processedImage;
+                document.getElementById('previewImage').style.filter = '';
+
+                // Slider'ları sıfırla
+                document.getElementById('brightnessSlider').value = 0;
+                document.getElementById('contrastSlider').value = 0;
+                document.getElementById('saturationSlider').value = 0;
+                document.getElementById('brightnessValue').textContent = '0';
+                document.getElementById('contrastValue').textContent = '0';
+                document.getElementById('saturationValue').textContent = '0';
+
+                showToast('Rötuş uygulandı!', 'success');
+            };
+            img.src = state.processedImage;
+        }
+
+        // ========== SEO GENERATOR ==========
+        async function generateSEO() {
+            const geminiKey = localStorage.getItem('gemini_api_key');
+            if (!geminiKey) {
+                showToast('Gemini API key gerekli', 'error');
+                return;
+            }
+
+            if (!state.originalBase64) {
+                showToast('Önce ürün yükleyin', 'error');
+                return;
+            }
+
+            showToast('SEO oluşturuluyor...', 'success');
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                {
+                                    text: `Bu takı/aksesuar görselini analiz et ve Trendyol için Türkçe SEO içeriği oluştur.
+
+SADECE JSON DÖNDÜR (başka hiçbir şey yazma):
+{
+    "title": "Trendyol için optimize edilmiş ürün başlığı (max 100 karakter, anahtar kelimeler içermeli)",
+    "description": "Detaylı ürün açıklaması (150-200 karakter, özellikler ve faydalar)",
+    "keywords": ["anahtar1", "anahtar2", "anahtar3", "anahtar4", "anahtar5"]
+}
+
+KURALLAR:
+- Türkçe yaz
+- Trendyol SEO kurallarına uygun
+- Arama hacmi yüksek kelimeleri kullan
+- Ürün özelliklerini vurgula (renk, malzeme, stil)`
+                                },
+                                { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }
+                            ]
+                        }],
+                        generationConfig: { temperature: 0.3 }
+                    })
+                });
+
+                if (!response.ok) throw new Error('SEO oluşturulamadı');
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                // JSON parse
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const seoData = JSON.parse(jsonMatch[0]);
+                    state.seo = seoData;
+
+                    // UI güncelle
+                    document.getElementById('seoTitle').value = seoData.title || '';
+                    document.getElementById('seoDescription').value = seoData.description || '';
+
+                    // Keywords
+                    const keywordsContainer = document.getElementById('seoKeywords');
+                    keywordsContainer.innerHTML = '';
+                    (seoData.keywords || []).forEach(kw => {
+                        const tag = document.createElement('span');
+                        tag.className = 'px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-full';
+                        tag.textContent = kw;
+                        keywordsContainer.appendChild(tag);
+                    });
+
+                    // Sonuçları göster
+                    document.getElementById('seoPlaceholder').classList.add('hidden');
+                    document.getElementById('seoResults').classList.remove('hidden');
+
+                    showToast('SEO oluşturuldu!', 'success');
+                }
+            } catch (error) {
+                console.error('SEO error:', error);
+                showToast('SEO oluşturulamadı', 'error');
+            }
+        }
+
+        function copySEO(type) {
+            let text = '';
+            if (type === 'title') text = document.getElementById('seoTitle').value;
+            else if (type === 'description') text = document.getElementById('seoDescription').value;
+            else if (type === 'keywords') text = state.seo.keywords?.join(', ') || '';
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Kopyalandı!', 'success');
+            });
+        }
 
         // ========== POSITION CONTROLS ==========
         function updatePositionValue(type) {
@@ -746,12 +1069,17 @@
             showLoader('Gemini 2.5 ile dönüştürülüyor...', '1/2 Takı analiz ediliyor');
 
             try {
-                // GEMINI 2.5 YAKLAŞIMI
-                // 1. Gemini Vision ile takıyı analiz et
-                // 2. Gemini Image Generation ile gerçekçi model üret
-                // 3. Orijinal takıyı Canvas ile overlay et
-                console.log('🎯 Gemini 2.5 başlatılıyor...');
-                state.processedImage = await generateWithGemini25();
+                // Mod'a göre işlem yap
+                if (state.workMode === 'mannequin') {
+                    console.log('🎯 Manken Modu - Gemini Edit başlatılıyor...');
+                    state.processedImage = await generateWithGemini25();
+                } else {
+                    console.log('🎯 Düz Zemin Modu - Flatlay başlatılıyor...');
+                    state.processedImage = await generateFlatlayMode();
+                }
+
+                // Orijinal processed image'ı sakla (rötuş için)
+                state.originalProcessedImage = state.processedImage;
 
                 // Show result
                 document.getElementById('previewPlaceholder').classList.add('hidden');
@@ -759,14 +1087,129 @@
                 document.getElementById('previewImage').src = state.processedImage;
                 document.getElementById('downloadActions').classList.remove('hidden');
 
+                // Manuel düzenleme panelini göster
+                document.getElementById('editPanel').classList.remove('hidden');
+
                 hideLoader();
-                showToast('Manken gerçek insana dönüştürüldü!', 'success');
+                showToast(state.workMode === 'mannequin' ? 'Manken gerçek insana dönüştürüldü!' : 'Takı modele giydirildi!', 'success');
+
+                // Otomatik SEO oluştur
+                generateSEO();
 
             } catch (error) {
                 console.error('Generation error:', error);
                 hideLoader();
                 showToast('Hata: ' + error.message, 'error');
             }
+        }
+
+        // ========== FLATLAY MODE - DÜZ ZEMİNDEN MODELE ==========
+        async function generateFlatlayMode() {
+            const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
+            const profile = modelProfiles[state.settings.modelProfile];
+            const style = stylePresets[state.settings.style];
+
+            // STEP 1: BiRefNet ile takıyı arka plandan ayır
+            console.log('✂️ ADIM 1: BiRefNet ile takı çıkarılıyor...');
+            showLoader('Düz Zemin Modu...', '1/3 Takı çıkarılıyor');
+
+            if (!falKey) {
+                throw new Error('Fal.ai API key gerekli - Düz zemin modu için BiRefNet lazım');
+            }
+
+            const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Key ${falKey}`
+                },
+                body: JSON.stringify({
+                    image_url: state.originalBase64,
+                    model: "General Use (Light)",
+                    operating_resolution: "1024x1024",
+                    output_format: "png"
+                })
+            });
+
+            if (!birefnetResponse.ok) {
+                const err = await birefnetResponse.json();
+                throw new Error('BiRefNet hatası: ' + (err.detail || 'Arka plan kaldırılamadı'));
+            }
+
+            const birefnetData = await birefnetResponse.json();
+            const transparentJewelryUrl = birefnetData.image?.url;
+            if (!transparentJewelryUrl) {
+                throw new Error('Takı çıkarılamadı');
+            }
+            console.log('✅ Takı şeffaf arka planla çıkarıldı');
+
+            // STEP 2: Gemini ile model + takı görseli oluştur
+            console.log('🎨 ADIM 2: Gemini ile model oluşturuluyor...');
+            showLoader('Düz Zemin Modu...', '2/3 Model oluşturuluyor');
+
+            // Takıyı base64'e çevir
+            const jewelryBase64 = await fetchImageAsBase64(transparentJewelryUrl);
+
+            const flatlayPrompt = `Create a professional jewelry product photo.
+
+I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic human model.
+
+REQUIREMENTS:
+1. Show a realistic female model's neck/collarbone area (NO FACE, cropped at chin)
+2. Place the jewelry naturally on the model's neck
+3. The jewelry must look EXACTLY like the provided image - same design, colors, details
+4. ${profile.desc}
+5. ${style.prompt}
+6. Professional studio lighting, e-commerce quality
+7. Natural shadows and reflections from the jewelry
+
+CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the jewelry style.`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: flatlayPrompt },
+                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["IMAGE", "TEXT"],
+                        temperature: 0.4
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'Model oluşturulamadı');
+            }
+
+            const data = await response.json();
+            const parts = data.candidates?.[0]?.content?.parts || [];
+
+            for (const part of parts) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                    console.log('✅ Flatlay modu tamamlandı!');
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                }
+            }
+
+            throw new Error('Görsel üretilemedi');
+        }
+
+        // Helper: URL'den base64'e çevir
+        async function fetchImageAsBase64(url) {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
         }
 
         // ========== GEMINI EDIT MODE - SADECE CİLDİ DEĞİŞTİR ==========
