@@ -444,13 +444,13 @@
                                 <span class="text-[9px] text-slate-500 font-normal">(AI görseli analiz edecek)</span>
                             </h4>
 
-                            <textarea id="seoProductFeatures" rows="4"
+                            <textarea id="seoProductFeatures" rows="3"
                                       class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
-                                      placeholder="Ürün özelliklerini yazın...&#10;Örnek: 925 ayar gümüş kolye, zirkon taşlı, rose gold kaplama, 45cm zincir, ayarlanabilir, hediye kutulu"></textarea>
+                                      placeholder="Teknik özellikleri yazın (Trendyol alanları için):&#10;Örnek: 925 ayar gümüş, zirkon taş, rose gold kaplama, 45+5cm zincir"></textarea>
 
                             <p class="text-[10px] text-slate-500 mt-2 mb-3">
-                                <i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i>
-                                AI görseli analiz edip, yazdıklarınızı ve Google Trends verilerini kullanarak SEO oluşturacak
+                                <i class="fa-solid fa-info-circle text-blue-400 mr-1"></i>
+                                Teknik bilgiler → Trendyol özellikleri | Başlık → AI arama kelimeleri oluşturur
                             </p>
 
                             <!-- SEO Oluştur Butonu -->
@@ -532,14 +532,6 @@
                                     <div id="seoStoryDescription" class="bg-slate-800/50 border border-pink-500/30 rounded-lg px-3 py-2 text-sm text-pink-200"></div>
                                 </div>
 
-                                <!-- Satış Tetikleyicileri -->
-                                <div>
-                                    <label class="text-xs text-slate-400 mb-1 block">
-                                        <i class="fa-solid fa-bolt mr-1 text-yellow-400"></i>Satış Tetikleyicileri
-                                    </label>
-                                    <div id="seoTriggerWords" class="flex flex-wrap gap-1"></div>
-                                </div>
-
                                 <!-- Anahtar Kelimeler -->
                                 <div>
                                     <label class="text-xs text-slate-400 mb-1 block">
@@ -557,14 +549,6 @@
                                         <i class="fa-solid fa-magnifying-glass mr-1"></i>Long-tail Aramalar
                                     </label>
                                     <div id="seoLongTail" class="space-y-1 text-xs"></div>
-                                </div>
-
-                                <!-- Trend Kelimeler -->
-                                <div>
-                                    <label class="text-xs text-slate-400 mb-1 block">
-                                        <i class="fa-solid fa-fire mr-1 text-orange-400"></i>Trend Kelimeler (2024-2025)
-                                    </label>
-                                    <div id="seoTrendingKeywords" class="flex flex-wrap gap-1"></div>
                                 </div>
 
                                 <!-- Sosyal Medya Hashtag'leri -->
@@ -856,104 +840,86 @@
                         contents: [{
                             parts: [
                                 {
-                                    text: `SEN BİR TRENDYOL SEO UZMANSIN + GÖRSEL ANALİZ AI'SISIN.
-Türkiye'nin en büyük e-ticaret platformu Trendyol için mükemmel, satış odaklı ürün listesi oluşturuyorsun.
-${userInputSection}
+                                    text: `SEN BİR TRENDYOL SEO UZMANSIN.
 
-===== GÖREV 1: GÖRSEL ANALİZİ =====
-Ekteki takı görselini detaylı analiz et:
-- Takı türü nedir? (kolye, yüzük, bileklik, küpe, set)
-- Malzeme ne gibi görünüyor? (gümüş, altın, rose gold)
-- Taş var mı? Türü ve rengi?
-- Stil nasıl? (minimal, bohem, klasik, modern)
-- Özel detaylar?
+===== TRENDYOL ÜRÜN YAPISI (ÇOK ÖNEMLİ!) =====
+Trendyol'da ürün listelerken 3 farklı alan var:
 
-===== GÖREV 2: TREND ANALİZİ =====
-Türkiye'deki takı trendlerini ve popüler arama terimlerini dikkate al:
-- Sezonsal trendler (yaz için hafif, kış için şık)
-- Popüler stiller (2024-2025: minimal, layered, vintage)
-- Yüksek arama hacimli kelimeler
-- Trendyol'da çok satan takı özellikleri
+1️⃣ BAŞLIK (99 karakter) → SADECE ARAMA KELİMELERİ!
+   İnsanların Trendyol arama çubuğuna yazdığı kelimeler.
 
-Görsel analizi + kullanıcı bilgileri + trend verileri birleştirilerek en iyi SEO içeriği oluşturulacak.
+2️⃣ ÜRÜN ÖZELLİKLERİ → Trendyol'un AYRI dropdown/checkbox alanları:
+   • Malzeme (dropdown)
+   • Taş Türü (dropdown)
+   • Zincir Uzunluğu (dropdown)
+   • Renk (dropdown)
+   • Hediye Paketi Yapılabilir mi? (evet/hayır) ← AYRI ALAN!
+   • Ayarlanabilir mi? (evet/hayır) ← AYRI ALAN!
 
-===== KRİTİK KURALLAR =====
-🚫 YASAKLI KELİMELER (Trendyol'da yasak, ASLA kullanma):
-- "En ucuz", "En kaliteli", "En iyi", "Kampanya", "İndirim", "Fırsat"
-- "Süper", "Muhteşem", "Harika", "Mükemmel" (abartılı sıfatlar)
-- Rakip marka isimleri
+3️⃣ AÇIKLAMA → Detaylı bilgi ve hikaye
 
-✅ SATIŞ TETİKLEYİCİ KELİMELER (Uygunsa kullan):
-- "Kararmaz", "Alerji yapmaz", "Hipoalerjenik"
-- "Hediye paketli", "Hediye kutulu", "Özel kutu"
-- "Ayarlanabilir", "Her bedene uygun"
-- "El yapımı", "Özel tasarım", "Limited edition"
-- "Günlük kullanım", "Her kombine uygun"
-- "Hızlı kargo", "Aynı gün kargo"
+===== BAŞLIKTA KULLANILMAMASI GEREKEN KELİMELER =====
+🚫 Bu kelimeler Trendyol'da AYRI alanlar olduğu için başlıkta YER KAPLAYIP işe yaramaz:
+- "Hediye kutulu", "Hediye paketli" (ayrı checkbox)
+- "Ayarlanabilir" (ayrı checkbox)
+- "45cm", "50cm" vb uzunluklar (ayrı dropdown)
+- "Hipoalerjenik" (ayrı alan)
+- "Su geçirmez" (ayrı alan)
+- "Sertifikalı" (ayrı alan)
+- "Hızlı kargo" (Trendyol zaten gösteriyor)
 
-===== BAŞLIK KURALLARI (99 KARAKTER) =====
-📌 Format: [Marka/Kategori] + [Malzeme] + [Taş] + [Özellik] + [Renk/Stil]
-📌 99 karakteri TAM KULLAN - daha fazla anahtar kelime = daha fazla görünürlük
-📌 Örnek: "925 Ayar Gümüş Zirkon Taşlı Damla Kolye Kadın Zarif Günlük Şık Rose Gold Kaplama"
-📌 En önemli anahtar kelimeler BAŞTA olmalı
-📌 Gereksiz bağlaçlar kullanma (ve, ile, için, çok)
+===== BAŞLIKTA KULLANILMASI GEREKEN KELİMELER =====
+✅ Yüksek arama hacimli, insanların gerçekten aradığı kelimeler:
 
-===== AÇIKLAMA KURALLARI =====
-📝 HİKAYELEŞTİRİLMİŞ AÇIKLAMA (storyDescription):
-- Duygusal, samimi, kadınlara hitap eden ton
-- Ürünün yaşam tarzına nasıl uyduğunu anlat
-- Emoji kullan (✨💎🎁) ama abartma (max 3-4)
-- Hediye senaryoları ekle
-- 200-300 karakter
+ÜRÜN TİPİ (zorunlu): Kolye, Yüzük, Bileklik, Küpe, Set, Halhal, Broş
+CİNSİYET: Kadın, Erkek, Unisex, Kız Çocuk
+MALZEME: Gümüş, 925 Ayar, Altın, 14 Ayar, 22 Ayar
+KAPLAMA: Rose Gold, Altın Kaplama, Rodyum
+TAŞ: Zirkon, Pırlanta, Safir, Yakut, İnci, Turkuaz
+STİL: Minimal, Şık, Zarif, Günlük, Bohem, Vintage, Modern, Elegant
+TASARIM: Damla, Kalp, Yaprak, Kelebek, Yıldız, Ay, Sonsuzluk, İsim, Harf
+ÖZEL: Trend, Moda, Yeni Sezon, Özel Tasarım
 
-📋 TEKNİK AÇIKLAMA (description):
-- Sadece özellikler ve faydalar
-- Maddeler halinde, net bilgi
-- SEO anahtar kelimeleri doğal yerleştir
-- 200-300 karakter
+===== BAŞLIK FORMÜLÜ =====
+[Cinsiyet] + [Malzeme] + [Ürün Tipi] + [Taş] + [Tasarım] + [Stil kelimeleri]
+
+ÖRNEK İYİ BAŞLIKLAR:
+• "Kadın 925 Ayar Gümüş Kolye Zirkon Taşlı Damla Model Şık Zarif Günlük Rose Gold"
+• "Gümüş Yüzük Kadın 925 Ayar Minimal Taşlı Ayarlanabilir Şık Günlük Trend"
+• "Kadın Altın Kaplama Bileklik Zirkon Taşlı İnce Zarif Şık Günlük Kombin"
+
+===== KULLANICI BİLGİLERİ =====
+${userInputSection || 'Kullanıcı ek bilgi girmedi. Görseli analiz ederek ürünü tanımla.'}
+
+===== GÖREV =====
+1. Görseli analiz et - ürün türü, malzeme, taş, stil belirle
+2. Kullanıcının verdiği teknik bilgileri ATTRIBUTES alanına yaz (başlığa DEĞİL)
+3. Başlığı SADECE yüksek arama hacimli kelimelerle oluştur
+4. 99 karakteri DOLDUR ama geçme
 
 ===== JSON ÇIKTISI =====
-SADECE aşağıdaki JSON formatında döndür, başka hiçbir şey yazma:
-
 {
-    "title": "99 karaktere YAKIN başlık (kesinlikle geçme ama boşluk bırakma)",
-    "altTitles": [
-        "Alternatif 1 - farklı kelime sırası (99 kar)",
-        "Alternatif 2 - farklı özellik vurgusu (99 kar)",
-        "Alternatif 3 - farklı hedef kitle (99 kar)"
-    ],
-    "category": "Takı > Alt Kategori > Ürün Tipi",
+    "title": "SADECE arama kelimeleri içeren 99 karakterlik başlık",
+    "altTitles": ["3 farklı kelime sıralaması ile alternatif başlıklar"],
+    "category": "Takı > Kolye / Yüzük / Bileklik > Alt kategori",
     "attributes": {
-        "Materyal": "925 Ayar Gümüş / 14K Altın / vb",
-        "Taş": "Zirkon / Safir / Taş Yok / vb",
-        "Renk": "Gümüş / Altın / Rose Gold / vb",
-        "Kaplama": "Altın Kaplama / Rodyum / vb",
-        "Zincir Uzunluğu": "45 cm / Ayarlanabilir / vb",
-        "Tema": "Minimal / Bohem / Vintage / vb",
-        "Cinsiyet": "Kadın / Erkek / Unisex"
+        "Materyal": "925 Ayar Gümüş",
+        "Taş Türü": "Zirkon / Yok",
+        "Renk": "Rose Gold / Gümüş / Altın",
+        "Kaplama": "Altın Kaplama / Rodyum / Yok",
+        "Zincir Uzunluğu": "45 cm + 5 cm uzatma",
+        "Cinsiyet": "Kadın",
+        "Hediye Paketi": "Evet",
+        "Ayarlanabilir": "Evet/Hayır"
     },
-    "description": "Teknik açıklama - özellikler ve faydalar maddeler halinde (200-300 kar)",
-    "storyDescription": "✨ Hikayeleştirilmiş açıklama - duygusal, samimi ton, emoji ile (200-300 kar)",
-    "triggerWords": ["Kararmaz", "Alerji yapmaz", "Hediye kutulu", "...uygun olanlar"],
-    "keywords": ["anahtar1", "anahtar2", "...15 adet yüksek hacimli kelime"],
-    "longTail": [
-        "925 gümüş zirkon kolye kadın hediye",
-        "altın kaplama bohem kolye günlük",
-        "...5 adet 4-6 kelimelik arama sorgusu"
-    ],
-    "trendingKeywords": ["2024-2025 trendlerinden 5 kelime", "popüler arama terimleri"],
-    "hashtags": "#trendyol #takı #kolye #gümüşkolye #hediye #moda #aksesuar #kadın #şık #trend"
+    "description": "Teknik açıklama - ürün özellikleri maddeler halinde",
+    "storyDescription": "✨ Duygusal açıklama - kadınlara hitap eden samimi ton",
+    "keywords": ["15 adet yüksek hacimli arama kelimesi"],
+    "longTail": ["5 adet 4-6 kelimelik arama sorgusu"],
+    "hashtags": "#trendyol #kolye #gümüş #takı #moda"
 }
 
-===== SON KONTROLLER =====
-✅ Türkçe karakterler doğru mu? (ş, ğ, ü, ö, ç, ı, İ)
-✅ Başlık 99 karakteri geçmiyor mu?
-✅ Yasaklı kelime var mı?
-✅ Trigger words uygun mu?
-✅ 15 anahtar kelime var mı?
-✅ 5 long-tail sorgu var mı?
-
-SADECE JSON döndür!`
+SADECE JSON döndür, başka bir şey yazma!`
                                 },
                                 ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
                             ]
@@ -1024,17 +990,6 @@ SADECE JSON döndür!`
                     // 5b. Hikayeleştirilmiş Açıklama
                     document.getElementById('seoStoryDescription').textContent = seoData.storyDescription || '';
 
-                    // 5c. Satış Tetikleyicileri (Trigger Words)
-                    const triggerContainer = document.getElementById('seoTriggerWords');
-                    triggerContainer.innerHTML = '';
-                    (seoData.triggerWords || []).forEach(tw => {
-                        const tag = document.createElement('span');
-                        tag.className = 'px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full cursor-pointer hover:bg-yellow-500/30';
-                        tag.innerHTML = `<i class="fa-solid fa-bolt mr-1"></i>${tw}`;
-                        tag.onclick = () => copyText(tw);
-                        triggerContainer.appendChild(tag);
-                    });
-
                     // 6. Keywords
                     const keywordsContainer = document.getElementById('seoKeywords');
                     keywordsContainer.innerHTML = '';
@@ -1060,17 +1015,6 @@ SADECE JSON döndür!`
                             </button>
                         `;
                         longTailContainer.appendChild(div);
-                    });
-
-                    // 7.5. Trending Keywords
-                    const trendingContainer = document.getElementById('seoTrendingKeywords');
-                    trendingContainer.innerHTML = '';
-                    (seoData.trendingKeywords || []).forEach(kw => {
-                        const span = document.createElement('span');
-                        span.className = 'px-2 py-1 bg-orange-500/20 text-orange-300 rounded text-xs cursor-pointer hover:bg-orange-500/30';
-                        span.textContent = kw;
-                        span.onclick = () => copyText(kw);
-                        trendingContainer.appendChild(span);
                     });
 
                     // 8. Hashtags
@@ -1148,7 +1092,7 @@ ${(seo.altTitles || []).map((t, i) => `${i + 1}. ${t}`).join('\n')}
 📂 KATEGORİ:
 ${seo.category || '-'}
 
-🏷️ TEKNİK ÖZELLİKLER:
+🏷️ TRENDYOL ÖZELLİK ALANLARI:
 ${Object.entries(seo.attributes || {}).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
 📄 TEKNİK AÇIKLAMA:
@@ -1157,17 +1101,11 @@ ${seo.description}
 💕 HİKAYELEŞTİRİLMİŞ AÇIKLAMA:
 ${seo.storyDescription || '-'}
 
-⚡ SATIŞ TETİKLEYİCİLERİ:
-${(seo.triggerWords || []).join(' • ')}
-
 🔑 ANAHTAR KELİMELER (${(seo.keywords || []).length} adet):
 ${(seo.keywords || []).join(', ')}
 
 🔍 LONG-TAIL ARAMALAR:
 ${(seo.longTail || []).map(lt => `• ${lt}`).join('\n')}
-
-🔥 TREND KELİMELER (2024-2025):
-${(seo.trendingKeywords || []).join(' • ')}
 
 #️⃣ HASHTAG'LER:
 ${seo.hashtags || ''}
