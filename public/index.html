@@ -870,9 +870,17 @@
             document.getElementById('generateBtn').disabled = false;
         }
 
-        // ========== MANKEN MODU - Gemini Edit Mode (ESKİ ÇALIŞAN SİSTEM) ==========
+        // ========== MANKEN MODU - BiRefNet + Gemini Edit ==========
         async function generateMannequin() {
             const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
+
+            // Fal.ai key kontrolü
+            if (!falKey) {
+                showToast('BiRefNet için Fal.ai API key gerekli.', 'error');
+                openSettings();
+                return;
+            }
 
             const skinTones = {
                 light: 'fair/light Caucasian skin with natural warmth',
@@ -894,46 +902,70 @@
                 dramatic: 'Dramatic lighting with controlled shadows, moody atmosphere, high contrast'
             };
 
-            const prompt = `Transform this jewelry product photo into a professional e-commerce image.
+            // ========== ADIM 1: BiRefNet ile takıyı kes ==========
+            showToast('Adım 1/2: Takı kesiliyor...', 'success');
 
-TASK 1 - MANNEQUIN TO HUMAN (if applicable):
-- If there is a mannequin/display stand, transform it into realistic human skin
-- If there is already a real human, keep the human as-is, just enhance skin quality
-- Replace plastic/mannequin texture with realistic human skin
-- Add natural skin pores, subtle imperfections, natural warmth
-- Model type: ${modelTypes[state.model]}
-- Skin tone: ${skinTones[state.skin]}
+            const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Key ${falKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image_url: state.originalBase64,
+                    model: "General Use (Light)",
+                    operating_resolution: "1024x1024",
+                    output_format: "png"
+                })
+            });
 
-TASK 2 - PROFESSIONAL STUDIO QUALITY:
-${styleDesc[state.style]}
-- Crisp focus on the jewelry with natural depth
-- Remove any amateur lighting artifacts or harsh shadows
-- Add subtle catch lights and reflections on metallic parts
+            if (!birefnetResponse.ok) {
+                const err = await birefnetResponse.json();
+                throw new Error('BiRefNet hatası: ' + (err.detail || 'Arka plan kaldırılamadı'));
+            }
 
-CRITICAL - COMPOSITION RULES:
-- Keep the EXACT same cropping and framing as the original image
-- If body is partially visible in original, keep it partially visible (same crop)
-- Do NOT add or extend body parts that are not in the original
-- Do NOT change the image boundaries or aspect ratio
-- Match the original composition exactly
+            const birefnetData = await birefnetResponse.json();
+            const transparentJewelryUrl = birefnetData.image?.url;
 
-IMPORTANT - FACE HANDLING:
-- If there is a MANNEQUIN head (plastic/fake), you may crop or blur it
-- If there is a REAL HUMAN face, KEEP IT - do not remove or crop real human faces
-- Only modify mannequin parts, preserve real human features
+            if (!transparentJewelryUrl) throw new Error('Ürün kesilemedi');
 
-ABSOLUTE RULES - DO NOT VIOLATE:
-1. DO NOT touch, move, modify, or regenerate the jewelry - keep it PIXEL PERFECT
-2. DO NOT change the jewelry's position, size, color, shape, or ANY detail
-3. The jewelry must remain in the EXACT same position
-4. Only change: skin texture (if mannequin), background, lighting quality
-5. Jewelry details (stones, metal, chain links) must be IDENTICAL to original
-6. If real human is present, enhance but do not remove any body parts
-7. KEEP THE SAME CROP - do not extend or cut the image differently
+            console.log('✅ Takı şeffaf arka planla çıkarıldı');
 
-OUTPUT: Professional e-commerce quality image with same composition as original. Jewelry 100% unchanged.`;
+            // Kesilen görseli base64'e çevir
+            const jewelryResponse = await fetch(transparentJewelryUrl);
+            const jewelryBlob = await jewelryResponse.blob();
+            const jewelryBase64 = await new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(jewelryBlob);
+            });
 
-            // Gemini Edit Mode - DOĞRU MODEL
+            // ========== ADIM 2: Gemini Edit ile model oluştur ==========
+            showToast('Adım 2/2: Model oluşturuluyor...', 'success');
+
+            const prompt = `Create a professional jewelry product photo.
+
+I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic human model.
+
+REQUIREMENTS:
+1. Show a realistic ${modelTypes[state.model]}'s neck/collarbone area (NO FACE, cropped at chin)
+2. Skin tone: ${skinTones[state.skin]}
+3. Place the jewelry naturally on the model's neck
+4. The jewelry must look EXACTLY like the provided image - same design, colors, details
+5. ${styleDesc[state.style]}
+6. Professional e-commerce quality
+7. Natural shadows and reflections from the jewelry
+
+CRITICAL - JEWELRY PROTECTION:
+🚫 DO NOT modify, redesign, or change the jewelry in ANY way
+🚫 DO NOT change colors, shapes, or details of the jewelry
+🚫 The jewelry design must match the reference EXACTLY
+✅ Only add natural shadows/reflections where jewelry meets skin
+✅ Keep jewelry 100% identical to the provided image
+
+OUTPUT: Professional e-commerce photo with the exact same jewelry placed naturally on the model.`;
+
+            // Gemini Edit Mode
             let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -941,12 +973,12 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
                     contents: [{
                         parts: [
                             { text: prompt },
-                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }
+                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } }
                         ]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.3
+                        temperature: 0.4
                     }
                 })
             });
