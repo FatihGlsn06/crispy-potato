@@ -607,11 +607,11 @@
                                 <!-- Başlık Önerileri -->
                                 <div>
                                     <label class="text-xs text-slate-400 flex justify-between mb-1">
-                                        <span><i class="fa-solid fa-heading mr-1"></i>Ürün Başlığı (max 65 kar.)</span>
-                                        <span id="titleCharCount" class="text-emerald-400">0/65</span>
+                                        <span><i class="fa-solid fa-heading mr-1"></i>Ürün Başlığı (max 99 kar.)</span>
+                                        <span id="titleCharCount" class="text-emerald-400">0/99</span>
                                     </label>
                                     <input type="text" id="seoTitle" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm"
-                                           oninput="updateCharCount('title')" maxlength="70">
+                                           oninput="updateCharCount('title')" maxlength="105">
                                     <button onclick="copySEO('title')" class="text-[10px] text-emerald-400 hover:text-emerald-300 mt-1">
                                         <i class="fa-solid fa-copy mr-1"></i>Kopyala
                                     </button>
@@ -1000,8 +1000,9 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
 
 ===== TRENDYOL SEO ALTIN KURALLARI =====
 
-📌 BAŞLIK (65 KARAKTER LİMİTİ - ÇOK KRİTİK!)
-- Trendyol'da başlık 65 karakteri geçemez, geçerse kesilir
+📌 BAŞLIK (99 KARAKTER LİMİTİ)
+- Trendyol'da başlık 99 karakteri geçemez, geçerse kesilir
+- 99 karakteri TAM KULLAN - daha fazla anahtar kelime sığdır
 - Format: [Malzeme] [Ürün Türü] [Taş/Özellik] [Stil] [Hedef Kitle]
 - Örnek: "925 Ayar Gümüş Zirkon Taşlı Kolye Kadın Şık Günlük"
 - En önemli anahtar kelimeler başta olmalı
@@ -1030,11 +1031,11 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
 
 ===== JSON ÇIKTISI (SADECE BU FORMATTA DÖNDÜR) =====
 {
-    "title": "MAX 65 karakter başlık - karakter sayısını kontrol et!",
+    "title": "MAX 99 karakter başlık - tüm alanı kullan, anahtar kelime yoğunluğu artır!",
     "altTitles": [
-        "Alternatif 1 (max 65 kar) - farklı kelime sırası",
-        "Alternatif 2 (max 65 kar) - farklı vurgu",
-        "Alternatif 3 (max 65 kar) - farklı hedef kitle"
+        "Alternatif 1 (max 99 kar) - farklı kelime sırası",
+        "Alternatif 2 (max 99 kar) - farklı vurgu",
+        "Alternatif 3 (max 99 kar) - farklı hedef kitle"
     ],
     "category": "Takı > Alt Kategori > Ürün Tipi",
     "attributes": {
@@ -1059,7 +1060,7 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
 
 ÖNEMLİ:
 - Türkçe karakterleri doğru kullan (ş, ğ, ü, ö, ç, ı)
-- Başlık 65 karakteri ASLA geçmesin
+- Başlık 99 karakteri ASLA geçmesin, ama 99'a yakın olsun (daha fazla SEO değeri)
 - Sadece JSON döndür, başka açıklama yazma`
                                 },
                                 ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
@@ -1176,8 +1177,8 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
                 const title = document.getElementById('seoTitle').value;
                 const count = title.length;
                 const counter = document.getElementById('titleCharCount');
-                counter.textContent = `${count}/65`;
-                counter.className = count > 65 ? 'text-red-400' : 'text-emerald-400';
+                counter.textContent = `${count}/99`;
+                counter.className = count > 99 ? 'text-red-400' : 'text-emerald-400';
             } else if (type === 'desc') {
                 const desc = document.getElementById('seoDescription').value;
                 const count = desc.length;
