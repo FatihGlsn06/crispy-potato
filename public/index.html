@@ -1654,13 +1654,15 @@ ${seo.hashtags || ''}
 I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic human model.
 
 REQUIREMENTS:
-1. Show a realistic female model's neck/collarbone area (NO FACE, cropped at chin)
+1. Show a realistic female model from shoulders to lower face (lips and chin visible, eyes can be partially visible or cropped out of frame)
 2. Place the jewelry naturally on the model's neck
 3. The jewelry must look EXACTLY like the provided image - same design, colors, details
 4. ${profile.desc}
 5. ${style.prompt}
 6. Professional studio lighting, e-commerce quality
 7. Natural shadows and reflections from the jewelry
+
+IMPORTANT: Do NOT blur or distort any part of the image. If face is visible, show it naturally. Frame the shot so focus is on the jewelry.
 
 CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the jewelry style.`;
 
@@ -1749,8 +1751,9 @@ CRITICAL - COMPOSITION RULES:
 - Match the original composition exactly
 
 IMPORTANT - FACE HANDLING:
-- If there is a MANNEQUIN head (plastic/fake), you may crop or blur it
-- If there is a REAL HUMAN face, KEEP IT - do not remove or crop real human faces
+- If there is a MANNEQUIN head (plastic/fake), transform it to realistic human or crop it out of frame
+- Do NOT blur any part of the image - everything should be sharp and clear
+- If there is a REAL HUMAN face, KEEP IT naturally - do not remove, crop, or blur real human faces
 - Only modify mannequin parts, preserve real human features
 
 ABSOLUTE RULES - DO NOT VIOLATE:
