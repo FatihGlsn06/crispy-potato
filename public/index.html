@@ -970,8 +970,7 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
             }
         }
 
-        // ========== FLATLAY MODU - ESKİ ÇALIŞAN SİSTEM ==========
-        // BiRefNet ile kes + Gemini ile model üzerine yerleştir
+        // ========== FLATLAY MODU - BiRefNet + Gemini Edit ==========
         async function generateFlatlay() {
             const geminiKey = localStorage.getItem('gemini_api_key');
             const falKey = localStorage.getItem('fal_api_key');
@@ -990,19 +989,21 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
             };
 
             const styleDesc = {
-                studio: 'Professional soft box lighting with subtle rim light. Clean gradient background.',
-                natural: 'Natural daylight, soft diffused shadows',
-                soft: 'Soft diffused lighting, dreamy atmosphere',
-                dramatic: 'Dramatic lighting with controlled shadows'
+                studio: 'Professional soft box lighting with subtle rim light on edges. Clean, gradient background (light gray to white).',
+                natural: 'Natural daylight, soft diffused shadows, warm color temperature',
+                soft: 'Soft diffused lighting, dreamy atmosphere, gentle highlights',
+                dramatic: 'Dramatic lighting with controlled shadows, moody atmosphere'
             };
 
-            // Takı tipine göre vücut bölgesi açıklaması
+            // Takı tipine göre vücut bölgesi
             const bodyPartDesc = {
                 necklace: "neck/collarbone area (NO FACE, cropped at chin)",
                 earring: "side of face showing ear (partial face, focused on ear area)",
                 ring: "elegant hand with fingers extended",
                 bracelet: "wrist and forearm in elegant pose"
             };
+
+            const jewelryType = state.jewelryType || 'necklace';
 
             // ========== ADIM 1: BiRefNet ile takıyı kes ==========
             showToast('Adım 1/2: Takı kesiliyor...', 'success');
@@ -1042,7 +1043,7 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
                 reader.readAsDataURL(jewelryBlob);
             });
 
-            // ========== ADIM 2: Gemini ile model + takı yerleştir ==========
+            // ========== ADIM 2: Gemini Edit ile model + takı ==========
             showToast('Adım 2/2: Model oluşturuluyor...', 'success');
 
             const flatlayPrompt = `Create a professional jewelry product photo.
@@ -1050,7 +1051,7 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
 I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic human model.
 
 REQUIREMENTS:
-1. Show a realistic ${modelTypes[state.model]}'s ${bodyPartDesc[state.jewelryType]}
+1. Show a realistic ${modelTypes[state.model]}'s ${bodyPartDesc[jewelryType]}
 2. Skin tone: ${skinTones[state.skin]}
 3. Place the jewelry naturally on the model
 4. The jewelry must look EXACTLY like the provided image - same design, colors, details
