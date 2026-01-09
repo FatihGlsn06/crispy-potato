@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v18.0 - SEO PRO Edition -->
+<!-- Trendyol Pro Studio v18.1 - SEO PRO Edition -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trendyol Pro Studio v18.0 - SEO PRO</title>
+    <title>Trendyol Pro Studio v18.1 - SEO PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -120,7 +120,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">v18.0 SEO PRO Edition</p>
+                    <p class="text-[10px] text-slate-400">v18.1 SEO PRO Edition</p>
                 </div>
             </div>
 
@@ -436,25 +436,171 @@
                             <span class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full ml-auto">AI Optimized</span>
                         </h3>
 
-                        <!-- Özel Prompt Alanı -->
-                        <div class="mb-4">
-                            <label class="text-xs text-slate-400 mb-2 block">
-                                <i class="fa-solid fa-wand-magic-sparkles mr-1 text-purple-400"></i>
-                                Özel Yönergeler (opsiyonel)
-                            </label>
-                            <textarea id="seoCustomPrompt" rows="2"
-                                      class="w-full bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
-                                      placeholder="Örn: Genç hedef kitle, lüks vurgu, altın tonları öne çıkar, hediye paketi vurgula..."></textarea>
-                            <p class="text-[10px] text-slate-500 mt-1">
-                                <i class="fa-solid fa-lightbulb mr-1"></i>
-                                SEO içeriğinde vurgulanmasını istediğiniz özel detayları yazın
-                            </p>
+                        <!-- ÜRÜN BİLGİLERİ FORMU -->
+                        <div class="mb-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700">
+                            <h4 class="text-xs font-semibold text-purple-400 mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-gem"></i>
+                                Ürün Bilgileri
+                                <span class="text-[9px] text-slate-500 font-normal">(SEO kalitesini artırır)</span>
+                            </h4>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Ürün Türü -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Ürün Türü</label>
+                                    <select id="seoProductType" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="kolye">Kolye</option>
+                                        <option value="yuzuk">Yüzük</option>
+                                        <option value="bileklik">Bileklik</option>
+                                        <option value="kupe">Küpe</option>
+                                        <option value="set">Takı Seti</option>
+                                        <option value="bros">Broş</option>
+                                        <option value="halhal">Halhal</option>
+                                        <option value="piercing">Piercing</option>
+                                    </select>
+                                </div>
+
+                                <!-- Ana Malzeme -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Ana Malzeme</label>
+                                    <select id="seoMaterial" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="925 Ayar Gümüş">925 Ayar Gümüş</option>
+                                        <option value="14 Ayar Altın">14 Ayar Altın</option>
+                                        <option value="18 Ayar Altın">18 Ayar Altın</option>
+                                        <option value="22 Ayar Altın">22 Ayar Altın</option>
+                                        <option value="Rose Gold">Rose Gold</option>
+                                        <option value="Altın Kaplama">Altın Kaplama</option>
+                                        <option value="Gümüş Kaplama">Gümüş Kaplama</option>
+                                        <option value="Paslanmaz Çelik">Paslanmaz Çelik</option>
+                                        <option value="Pirinç">Pirinç</option>
+                                    </select>
+                                </div>
+
+                                <!-- Taş Türü -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Taş Türü</label>
+                                    <select id="seoStoneType" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="">Taş Yok / Seçiniz</option>
+                                        <option value="Pırlanta">Pırlanta</option>
+                                        <option value="Zirkon">Zirkon Taş</option>
+                                        <option value="Safir">Safir</option>
+                                        <option value="Yakut">Yakut</option>
+                                        <option value="Zümrüt">Zümrüt</option>
+                                        <option value="Akuamarin">Akuamarin</option>
+                                        <option value="Ametist">Ametist</option>
+                                        <option value="Turkuaz">Turkuaz</option>
+                                        <option value="İnci">İnci</option>
+                                        <option value="Opal">Opal</option>
+                                        <option value="Ay Taşı">Ay Taşı</option>
+                                        <option value="Lapis Lazuli">Lapis Lazuli</option>
+                                        <option value="Oniks">Oniks</option>
+                                        <option value="Sedef">Sedef</option>
+                                        <option value="Kristal">Kristal</option>
+                                    </select>
+                                </div>
+
+                                <!-- Stil -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Stil</label>
+                                    <select id="seoStyle" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="Minimal">Minimal</option>
+                                        <option value="Klasik">Klasik</option>
+                                        <option value="Modern">Modern</option>
+                                        <option value="Bohem">Bohem</option>
+                                        <option value="Vintage">Vintage</option>
+                                        <option value="Lüks">Lüks / Premium</option>
+                                        <option value="Günlük">Günlük / Casual</option>
+                                        <option value="Elegant">Elegant</option>
+                                        <option value="Etnik">Etnik</option>
+                                        <option value="Gotik">Gotik</option>
+                                    </select>
+                                </div>
+
+                                <!-- Hedef Kitle -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Hedef Kitle</label>
+                                    <select id="seoTarget" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="Kadın">Kadın</option>
+                                        <option value="Erkek">Erkek</option>
+                                        <option value="Unisex">Unisex</option>
+                                        <option value="Genç Kadın">Genç Kadın</option>
+                                        <option value="Çocuk">Çocuk</option>
+                                    </select>
+                                </div>
+
+                                <!-- Renk -->
+                                <div>
+                                    <label class="text-[10px] text-slate-400 mb-1 block">Ana Renk</label>
+                                    <select id="seoColor" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:border-purple-500 outline-none">
+                                        <option value="">Seçiniz...</option>
+                                        <option value="Altın">Altın / Gold</option>
+                                        <option value="Gümüş">Gümüş / Silver</option>
+                                        <option value="Rose Gold">Rose Gold</option>
+                                        <option value="Beyaz">Beyaz</option>
+                                        <option value="Siyah">Siyah</option>
+                                        <option value="Mavi">Mavi</option>
+                                        <option value="Yeşil">Yeşil</option>
+                                        <option value="Kırmızı">Kırmızı</option>
+                                        <option value="Mor">Mor</option>
+                                        <option value="Turkuaz">Turkuaz</option>
+                                        <option value="Çok Renkli">Çok Renkli</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Özel Özellikler - Checkboxlar -->
+                            <div class="mt-3">
+                                <label class="text-[10px] text-slate-400 mb-2 block">Özel Özellikler</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoHandmade" class="w-3 h-3 accent-purple-500">
+                                        <span>El Yapımı</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoAdjustable" class="w-3 h-3 accent-purple-500">
+                                        <span>Ayarlanabilir</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoGiftBox" class="w-3 h-3 accent-purple-500">
+                                        <span>Hediye Kutulu</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoHypoallergenic" class="w-3 h-3 accent-purple-500">
+                                        <span>Hipoalerjenik</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoWaterproof" class="w-3 h-3 accent-purple-500">
+                                        <span>Su Geçirmez</span>
+                                    </label>
+                                    <label class="flex items-center gap-1 text-[10px] bg-slate-700/50 px-2 py-1 rounded cursor-pointer hover:bg-slate-700">
+                                        <input type="checkbox" id="seoCertified" class="w-3 h-3 accent-purple-500">
+                                        <span>Sertifikalı</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Ek Notlar -->
+                            <div class="mt-3">
+                                <label class="text-[10px] text-slate-400 mb-1 block">Ek Notlar / Özel İstekler</label>
+                                <textarea id="seoCustomPrompt" rows="2"
+                                          class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1.5 text-xs resize-none placeholder-slate-500 focus:border-purple-500 outline-none"
+                                          placeholder="Örn: Anneler günü için, nişan hediyesi, X marka ilham..."></textarea>
+                            </div>
+
+                            <!-- SEO Oluştur Butonu -->
+                            <button onclick="generateSEO()" class="w-full mt-3 py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-xs font-bold transition-all">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
+                                SEO İçeriği Oluştur
+                            </button>
                         </div>
 
                         <div id="seoContent" class="space-y-3">
-                            <div id="seoPlaceholder" class="text-center py-6 text-slate-500">
-                                <i class="fa-solid fa-sparkles text-2xl mb-2"></i>
-                                <p class="text-xs">Görsel oluşturun, AI SEO hazırlasın</p>
+                            <div id="seoPlaceholder" class="text-center py-4 text-slate-500">
+                                <i class="fa-solid fa-arrow-up text-xl mb-2"></i>
+                                <p class="text-xs">Ürün bilgilerini doldurup SEO oluşturun</p>
                             </div>
 
                             <div id="seoResults" class="hidden space-y-4">
@@ -799,17 +945,43 @@
                 return;
             }
 
-            if (!state.originalBase64) {
-                showToast('Önce ürün yükleyin', 'error');
-                return;
-            }
-
             showToast('SEO Pro oluşturuluyor...', 'success');
 
-            // Kullanıcının özel yönergelerini al
+            // ===== FORM VERİLERİNİ TOPLA =====
+            const productType = document.getElementById('seoProductType').value;
+            const material = document.getElementById('seoMaterial').value;
+            const stoneType = document.getElementById('seoStoneType').value;
+            const style = document.getElementById('seoStyle').value;
+            const target = document.getElementById('seoTarget').value;
+            const color = document.getElementById('seoColor').value;
             const customPrompt = document.getElementById('seoCustomPrompt').value.trim();
+
+            // Özel özellikler
+            const features = [];
+            if (document.getElementById('seoHandmade').checked) features.push('El Yapımı');
+            if (document.getElementById('seoAdjustable').checked) features.push('Ayarlanabilir');
+            if (document.getElementById('seoGiftBox').checked) features.push('Hediye Kutulu');
+            if (document.getElementById('seoHypoallergenic').checked) features.push('Hipoalerjenik');
+            if (document.getElementById('seoWaterproof').checked) features.push('Su Geçirmez');
+            if (document.getElementById('seoCertified').checked) features.push('Sertifikalı');
+
+            // Ürün bilgisi metni oluştur
+            let productInfo = '';
+            if (productType || material || stoneType || style || target || color || features.length > 0) {
+                productInfo = `\n\n===== KULLANICININ GİRDİĞİ ÜRÜN BİLGİLERİ (BUNLARI MUTLAKA KULLAN) =====`;
+                if (productType) productInfo += `\n• Ürün Türü: ${productType.toUpperCase()}`;
+                if (material) productInfo += `\n• Ana Malzeme: ${material}`;
+                if (stoneType) productInfo += `\n• Taş Türü: ${stoneType}`;
+                if (style) productInfo += `\n• Stil: ${style}`;
+                if (target) productInfo += `\n• Hedef Kitle: ${target}`;
+                if (color) productInfo += `\n• Ana Renk: ${color}`;
+                if (features.length > 0) productInfo += `\n• Özel Özellikler: ${features.join(', ')}`;
+                productInfo += `\n\nBu bilgileri SEO içeriğinde MUTLAKA kullan ve vurgula!`;
+            }
+
+            // Kullanıcı özel istekleri
             const customSection = customPrompt
-                ? `\n\nKULLANICI ÖZEL YÖNERGELERİ (bu istekleri mutlaka uygula):\n${customPrompt}\n`
+                ? `\n\n===== KULLANICI ÖZEL İSTEKLERİ =====\n${customPrompt}\nBu istekleri SEO içeriğine yansıt!`
                 : '';
 
             try {
@@ -820,80 +992,80 @@
                         contents: [{
                             parts: [
                                 {
-                                    text: `Bu takı/aksesuar görselini analiz et ve Trendyol için KAPSAMLI Türkçe SEO içeriği oluştur.${customSection}
+                                    text: `Sen bir Trendyol SEO uzmanısın. Türkiye'nin en büyük e-ticaret platformu Trendyol için mükemmel SEO içeriği oluşturuyorsun.
+${productInfo}${customSection}
 
-TRENDYOL SEO KURALLARI:
-- Başlık: MAX 65 karakter (çok önemli!)
-- Açıklama: 200-300 karakter arası ideal
-- Anahtar kelimeler aramada yüksek hacimli olmalı
-- Long-tail keywords dönüşüm oranını artırır
+===== GÖRSEL ANALİZİ =====
+Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştirilerek en iyi SEO içeriği oluşturulacak.
 
-SADECE JSON DÖNDÜR (başka hiçbir şey yazma):
+===== TRENDYOL SEO ALTIN KURALLARI =====
+
+📌 BAŞLIK (65 KARAKTER LİMİTİ - ÇOK KRİTİK!)
+- Trendyol'da başlık 65 karakteri geçemez, geçerse kesilir
+- Format: [Malzeme] [Ürün Türü] [Taş/Özellik] [Stil] [Hedef Kitle]
+- Örnek: "925 Ayar Gümüş Zirkon Taşlı Kolye Kadın Şık Günlük"
+- En önemli anahtar kelimeler başta olmalı
+- Gereksiz kelimeler kullanma (ve, ile, için)
+
+📌 AÇIKLAMA (200-300 KARAKTER İDEAL)
+- İlk 150 karakter arama sonuçlarında görünür
+- Özellikler + faydalar + kullanım alanları
+- Anahtar kelimeleri doğal şekilde yerleştir
+- Emoji kullanma
+
+📌 ANAHTAR KELİMELER
+- Trendyol'da en çok aranan kelimeler
+- Hem genel hem spesifik kelimeler
+- Rakip ürünlerde kullanılan kelimeler
+- Sezonsal trendler (yaz koleksiyonu, yılbaşı hediyesi)
+
+📌 LONG-TAIL ARAMALAR
+- 3-5 kelimelik spesifik sorgular
+- Dönüşüm oranı daha yüksek
+- Örn: "925 gümüş zirkon kolye hediye", "altın kaplama bohem bileklik"
+
+📌 KATEGORİ YOLU
+- Trendyol kategori yapısına tam uyumlu
+- Örn: "Takı > Kolye > Taşlı Kolye" veya "Takı > Yüzük > Tek Taş Yüzük"
+
+===== JSON ÇIKTISI (SADECE BU FORMATTA DÖNDÜR) =====
 {
-    "title": "Ana başlık (MUTLAKA 65 karakter veya altında)",
+    "title": "MAX 65 karakter başlık - karakter sayısını kontrol et!",
     "altTitles": [
-        "Alternatif başlık 1 (max 65 kar)",
-        "Alternatif başlık 2 (max 65 kar)",
-        "Alternatif başlık 3 (max 65 kar)"
+        "Alternatif 1 (max 65 kar) - farklı kelime sırası",
+        "Alternatif 2 (max 65 kar) - farklı vurgu",
+        "Alternatif 3 (max 65 kar) - farklı hedef kitle"
     ],
     "category": "Takı > Alt Kategori > Ürün Tipi",
     "attributes": {
-        "Malzeme": "Gümüş/Altın/vb",
-        "Renk": "ürün rengi",
-        "Stil": "Bohem/Klasik/Modern/vb",
+        "Malzeme": "değer",
+        "Taş Türü": "değer veya Yok",
+        "Renk": "değer",
+        "Stil": "değer",
         "Cinsiyet": "Kadın/Erkek/Unisex",
-        "Uzunluk": "varsa cm cinsinden"
+        "Özel Özellik": "varsa"
     },
-    "description": "Detaylı ürün açıklaması (200-300 karakter). Özellikler, faydalar, kullanım alanları.",
-    "keywords": ["anahtar1", "anahtar2", "anahtar3", "anahtar4", "anahtar5", "anahtar6", "anahtar7", "anahtar8"],
+    "description": "200-300 karakter açıklama. Özellikler, faydalar, kullanım önerileri içermeli.",
+    "keywords": ["kelime1", "kelime2", "kelime3", "kelime4", "kelime5", "kelime6", "kelime7", "kelime8", "kelime9", "kelime10"],
     "longTail": [
-        "uzun kuyruklu arama 1 (örn: altın kaplama bohem kolye)",
-        "uzun kuyruklu arama 2",
-        "uzun kuyruklu arama 3",
-        "uzun kuyruklu arama 4"
+        "3-5 kelimelik arama 1",
+        "3-5 kelimelik arama 2",
+        "3-5 kelimelik arama 3",
+        "3-5 kelimelik arama 4",
+        "3-5 kelimelik arama 5"
     ],
-    "hashtags": "#hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5"
+    "hashtags": "#trendyol #takı #moda #aksesuar #hediye + ürüne özel 5 hashtag daha"
 }
 
-DETAYLI KURALLAR:
-1. BAŞLIK (title):
-   - MUTLAKA 65 karakter veya altında
-   - En önemli anahtar kelime başta
-   - Ürün tipi + özellik + stil formatı
-
-2. ALTERNATİF BAŞLIKLAR (altTitles):
-   - Farklı anahtar kelime kombinasyonları
-   - A/B test için varyasyonlar
-
-3. KATEGORİ (category):
-   - Trendyol kategori yapısına uygun
-   - Örn: "Takı > Kolye > Bohem Kolye"
-
-4. ÖZELLİKLER (attributes):
-   - Trendyol filtrelerine uygun
-   - Malzeme, Renk, Stil zorunlu
-
-5. AÇIKLAMA (description):
-   - 200-300 karakter ideal
-   - SEO anahtar kelimeleri doğal şekilde içermeli
-   - Ürün faydalarını vurgula
-
-6. ANAHTAR KELİMELER (keywords):
-   - Yüksek arama hacimli
-   - 8 adet farklı kelime
-
-7. LONG-TAIL (longTail):
-   - 3-5 kelimelik arama sorguları
-   - Daha spesifik, dönüşüm odaklı
-
-8. HASHTAG'LER (hashtags):
-   - Instagram/sosyal medya için
-   - Türkçe ve trend hashtagler`
+ÖNEMLİ:
+- Türkçe karakterleri doğru kullan (ş, ğ, ü, ö, ç, ı)
+- Başlık 65 karakteri ASLA geçmesin
+- Sadece JSON döndür, başka açıklama yazma`
                                 },
-                                { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }
+                                ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
                             ]
                         }],
-                        generationConfig: { temperature: 0.4 }
+                        generationConfig: { temperature: 0.3 }
                     })
                 });
 
