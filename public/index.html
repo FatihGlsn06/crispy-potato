@@ -933,8 +933,8 @@ ABSOLUTE RULES - DO NOT VIOLATE:
 
 OUTPUT: Professional e-commerce quality image with same composition as original. Jewelry 100% unchanged.`;
 
-            // Önce gemini-2.0-flash-exp-image-generation dene
-            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${geminiKey}`, {
+            // Gemini Edit Mode
+            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1067,7 +1067,7 @@ CRITICAL - JEWELRY PROTECTION:
 
 OUTPUT: Professional e-commerce photo with the exact same jewelry placed naturally on the model.`;
 
-            const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${geminiKey}`, {
+            const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
