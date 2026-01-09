@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v18.1 - SEO PRO Edition -->
+<!-- Trendyol Pro Studio v18.2 - SEO PRO+ Edition -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trendyol Pro Studio v18.1 - SEO PRO</title>
+    <title>Trendyol Pro Studio v18.2 - SEO PRO+</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -120,7 +120,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[10px] text-slate-400">v18.1 SEO PRO Edition</p>
+                    <p class="text-[10px] text-slate-400">v18.2 SEO PRO+ Edition</p>
                 </div>
             </div>
 
@@ -644,17 +644,36 @@
                                     <div id="seoAttributes" class="grid grid-cols-2 gap-2 text-xs"></div>
                                 </div>
 
-                                <!-- Açıklama -->
+                                <!-- Teknik Açıklama -->
                                 <div>
                                     <label class="text-xs text-slate-400 flex justify-between mb-1">
-                                        <span><i class="fa-solid fa-align-left mr-1"></i>Ürün Açıklaması</span>
+                                        <span><i class="fa-solid fa-align-left mr-1"></i>Teknik Açıklama</span>
                                         <span id="descCharCount" class="text-emerald-400">0/500</span>
                                     </label>
-                                    <textarea id="seoDescription" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm resize-none"
+                                    <textarea id="seoDescription" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm resize-none"
                                               oninput="updateCharCount('desc')" maxlength="500"></textarea>
                                     <button onclick="copySEO('description')" class="text-[10px] text-emerald-400 hover:text-emerald-300">
                                         <i class="fa-solid fa-copy mr-1"></i>Kopyala
                                     </button>
+                                </div>
+
+                                <!-- Hikayeleştirilmiş Açıklama -->
+                                <div>
+                                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                                        <span><i class="fa-solid fa-heart mr-1 text-pink-400"></i>Hikayeleştirilmiş Açıklama</span>
+                                        <button onclick="copySEO('story')" class="text-emerald-400 hover:text-emerald-300">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </button>
+                                    </label>
+                                    <div id="seoStoryDescription" class="bg-slate-800/50 border border-pink-500/30 rounded-lg px-3 py-2 text-sm text-pink-200"></div>
+                                </div>
+
+                                <!-- Satış Tetikleyicileri -->
+                                <div>
+                                    <label class="text-xs text-slate-400 mb-1 block">
+                                        <i class="fa-solid fa-bolt mr-1 text-yellow-400"></i>Satış Tetikleyicileri
+                                    </label>
+                                    <div id="seoTriggerWords" class="flex flex-wrap gap-1"></div>
                                 </div>
 
                                 <!-- Anahtar Kelimeler -->
@@ -826,6 +845,8 @@
                 category: '',
                 attributes: {},
                 description: '',
+                storyDescription: '',
+                triggerWords: [],
                 keywords: [],
                 longTail: [],
                 hashtags: ''
@@ -992,76 +1013,89 @@
                         contents: [{
                             parts: [
                                 {
-                                    text: `Sen bir Trendyol SEO uzmanısın. Türkiye'nin en büyük e-ticaret platformu Trendyol için mükemmel SEO içeriği oluşturuyorsun.
+                                    text: `SEN BİR TRENDYOL SEO UZMANSIN.
+Türkiye'nin en büyük e-ticaret platformu Trendyol için mükemmel, satış odaklı ürün listesi oluşturuyorsun.
 ${productInfo}${customSection}
 
 ===== GÖRSEL ANALİZİ =====
-Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştirilerek en iyi SEO içeriği oluşturulacak.
+Ekteki takı görselini detaylı analiz et. Görsel + kullanıcı bilgileri birleştirilerek en iyi SEO içeriği oluşturulacak.
 
-===== TRENDYOL SEO ALTIN KURALLARI =====
+===== KRİTİK KURALLAR =====
+🚫 YASAKLI KELİMELER (Trendyol'da yasak, ASLA kullanma):
+- "En ucuz", "En kaliteli", "En iyi", "Kampanya", "İndirim", "Fırsat"
+- "Süper", "Muhteşem", "Harika", "Mükemmel" (abartılı sıfatlar)
+- Rakip marka isimleri
 
-📌 BAŞLIK (99 KARAKTER LİMİTİ)
-- Trendyol'da başlık 99 karakteri geçemez, geçerse kesilir
-- 99 karakteri TAM KULLAN - daha fazla anahtar kelime sığdır
-- Format: [Malzeme] [Ürün Türü] [Taş/Özellik] [Stil] [Hedef Kitle]
-- Örnek: "925 Ayar Gümüş Zirkon Taşlı Kolye Kadın Şık Günlük"
-- En önemli anahtar kelimeler başta olmalı
-- Gereksiz kelimeler kullanma (ve, ile, için)
+✅ SATIŞ TETİKLEYİCİ KELİMELER (Uygunsa kullan):
+- "Kararmaz", "Alerji yapmaz", "Hipoalerjenik"
+- "Hediye paketli", "Hediye kutulu", "Özel kutu"
+- "Ayarlanabilir", "Her bedene uygun"
+- "El yapımı", "Özel tasarım", "Limited edition"
+- "Günlük kullanım", "Her kombine uygun"
+- "Hızlı kargo", "Aynı gün kargo"
 
-📌 AÇIKLAMA (200-300 KARAKTER İDEAL)
-- İlk 150 karakter arama sonuçlarında görünür
-- Özellikler + faydalar + kullanım alanları
-- Anahtar kelimeleri doğal şekilde yerleştir
-- Emoji kullanma
+===== BAŞLIK KURALLARI (99 KARAKTER) =====
+📌 Format: [Marka/Kategori] + [Malzeme] + [Taş] + [Özellik] + [Renk/Stil]
+📌 99 karakteri TAM KULLAN - daha fazla anahtar kelime = daha fazla görünürlük
+📌 Örnek: "925 Ayar Gümüş Zirkon Taşlı Damla Kolye Kadın Zarif Günlük Şık Rose Gold Kaplama"
+📌 En önemli anahtar kelimeler BAŞTA olmalı
+📌 Gereksiz bağlaçlar kullanma (ve, ile, için, çok)
 
-📌 ANAHTAR KELİMELER
-- Trendyol'da en çok aranan kelimeler
-- Hem genel hem spesifik kelimeler
-- Rakip ürünlerde kullanılan kelimeler
-- Sezonsal trendler (yaz koleksiyonu, yılbaşı hediyesi)
+===== AÇIKLAMA KURALLARI =====
+📝 HİKAYELEŞTİRİLMİŞ AÇIKLAMA (storyDescription):
+- Duygusal, samimi, kadınlara hitap eden ton
+- Ürünün yaşam tarzına nasıl uyduğunu anlat
+- Emoji kullan (✨💎🎁) ama abartma (max 3-4)
+- Hediye senaryoları ekle
+- 200-300 karakter
 
-📌 LONG-TAIL ARAMALAR
-- 3-5 kelimelik spesifik sorgular
-- Dönüşüm oranı daha yüksek
-- Örn: "925 gümüş zirkon kolye hediye", "altın kaplama bohem bileklik"
+📋 TEKNİK AÇIKLAMA (description):
+- Sadece özellikler ve faydalar
+- Maddeler halinde, net bilgi
+- SEO anahtar kelimeleri doğal yerleştir
+- 200-300 karakter
 
-📌 KATEGORİ YOLU
-- Trendyol kategori yapısına tam uyumlu
-- Örn: "Takı > Kolye > Taşlı Kolye" veya "Takı > Yüzük > Tek Taş Yüzük"
+===== JSON ÇIKTISI =====
+SADECE aşağıdaki JSON formatında döndür, başka hiçbir şey yazma:
 
-===== JSON ÇIKTISI (SADECE BU FORMATTA DÖNDÜR) =====
 {
-    "title": "MAX 99 karakter başlık - tüm alanı kullan, anahtar kelime yoğunluğu artır!",
+    "title": "99 karaktere YAKIN başlık (kesinlikle geçme ama boşluk bırakma)",
     "altTitles": [
-        "Alternatif 1 (max 99 kar) - farklı kelime sırası",
-        "Alternatif 2 (max 99 kar) - farklı vurgu",
-        "Alternatif 3 (max 99 kar) - farklı hedef kitle"
+        "Alternatif 1 - farklı kelime sırası (99 kar)",
+        "Alternatif 2 - farklı özellik vurgusu (99 kar)",
+        "Alternatif 3 - farklı hedef kitle (99 kar)"
     ],
     "category": "Takı > Alt Kategori > Ürün Tipi",
     "attributes": {
-        "Malzeme": "değer",
-        "Taş Türü": "değer veya Yok",
-        "Renk": "değer",
-        "Stil": "değer",
-        "Cinsiyet": "Kadın/Erkek/Unisex",
-        "Özel Özellik": "varsa"
+        "Materyal": "925 Ayar Gümüş / 14K Altın / vb",
+        "Taş": "Zirkon / Safir / Taş Yok / vb",
+        "Renk": "Gümüş / Altın / Rose Gold / vb",
+        "Kaplama": "Altın Kaplama / Rodyum / vb",
+        "Zincir Uzunluğu": "45 cm / Ayarlanabilir / vb",
+        "Tema": "Minimal / Bohem / Vintage / vb",
+        "Cinsiyet": "Kadın / Erkek / Unisex"
     },
-    "description": "200-300 karakter açıklama. Özellikler, faydalar, kullanım önerileri içermeli.",
-    "keywords": ["kelime1", "kelime2", "kelime3", "kelime4", "kelime5", "kelime6", "kelime7", "kelime8", "kelime9", "kelime10"],
+    "description": "Teknik açıklama - özellikler ve faydalar maddeler halinde (200-300 kar)",
+    "storyDescription": "✨ Hikayeleştirilmiş açıklama - duygusal, samimi ton, emoji ile (200-300 kar)",
+    "triggerWords": ["Kararmaz", "Alerji yapmaz", "Hediye kutulu", "...uygun olanlar"],
+    "keywords": ["anahtar1", "anahtar2", "...15 adet yüksek hacimli kelime"],
     "longTail": [
-        "3-5 kelimelik arama 1",
-        "3-5 kelimelik arama 2",
-        "3-5 kelimelik arama 3",
-        "3-5 kelimelik arama 4",
-        "3-5 kelimelik arama 5"
+        "925 gümüş zirkon kolye kadın hediye",
+        "altın kaplama bohem kolye günlük",
+        "...5 adet 4-6 kelimelik arama sorgusu"
     ],
-    "hashtags": "#trendyol #takı #moda #aksesuar #hediye + ürüne özel 5 hashtag daha"
+    "hashtags": "#trendyol #takı #kolye #gümüşkolye #hediye #moda #aksesuar #kadın #şık #trend"
 }
 
-ÖNEMLİ:
-- Türkçe karakterleri doğru kullan (ş, ğ, ü, ö, ç, ı)
-- Başlık 99 karakteri ASLA geçmesin, ama 99'a yakın olsun (daha fazla SEO değeri)
-- Sadece JSON döndür, başka açıklama yazma`
+===== SON KONTROLLER =====
+✅ Türkçe karakterler doğru mu? (ş, ğ, ü, ö, ç, ı, İ)
+✅ Başlık 99 karakteri geçmiyor mu?
+✅ Yasaklı kelime var mı?
+✅ Trigger words uygun mu?
+✅ 15 anahtar kelime var mı?
+✅ 5 long-tail sorgu var mı?
+
+SADECE JSON döndür!`
                                 },
                                 ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
                             ]
@@ -1125,9 +1159,23 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
                         attrsContainer.appendChild(div);
                     });
 
-                    // 5. Açıklama
+                    // 5. Teknik Açıklama
                     document.getElementById('seoDescription').value = seoData.description || '';
                     updateCharCount('desc');
+
+                    // 5b. Hikayeleştirilmiş Açıklama
+                    document.getElementById('seoStoryDescription').textContent = seoData.storyDescription || '';
+
+                    // 5c. Satış Tetikleyicileri (Trigger Words)
+                    const triggerContainer = document.getElementById('seoTriggerWords');
+                    triggerContainer.innerHTML = '';
+                    (seoData.triggerWords || []).forEach(tw => {
+                        const tag = document.createElement('span');
+                        tag.className = 'px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full cursor-pointer hover:bg-yellow-500/30';
+                        tag.innerHTML = `<i class="fa-solid fa-bolt mr-1"></i>${tw}`;
+                        tag.onclick = () => copyText(tw);
+                        triggerContainer.appendChild(tag);
+                    });
 
                     // 6. Keywords
                     const keywordsContainer = document.getElementById('seoKeywords');
@@ -1200,9 +1248,11 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
             let text = '';
             if (type === 'title') text = document.getElementById('seoTitle').value;
             else if (type === 'description') text = document.getElementById('seoDescription').value;
+            else if (type === 'story') text = state.seo.storyDescription || '';
             else if (type === 'keywords') text = state.seo.keywords?.join(', ') || '';
             else if (type === 'category') text = document.getElementById('seoCategory').value;
             else if (type === 'hashtags') text = state.seo.hashtags || '';
+            else if (type === 'triggers') text = state.seo.triggerWords?.join(', ') || '';
 
             navigator.clipboard.writeText(text).then(() => {
                 showToast('Kopyalandı!', 'success');
@@ -1217,10 +1267,10 @@ Ekteki ürün görselini analiz et. Görsel + kullanıcı bilgileri birleştiril
                 return;
             }
 
-            const allText = `📦 ÜRÜN SEO BİLGİLERİ
-━━━━━━━━━━━━━━━━━━━━
+            const allText = `📦 TRENDYOL ÜRÜN SEO BİLGİLERİ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📌 BAŞLIK:
+📌 BAŞLIK (${(seo.title || '').length}/99 karakter):
 ${seo.title}
 
 📝 ALTERNATİF BAŞLIKLAR:
@@ -1229,13 +1279,19 @@ ${(seo.altTitles || []).map((t, i) => `${i + 1}. ${t}`).join('\n')}
 📂 KATEGORİ:
 ${seo.category || '-'}
 
-🏷️ ÖZELLİKLER:
+🏷️ TEKNİK ÖZELLİKLER:
 ${Object.entries(seo.attributes || {}).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
-📄 AÇIKLAMA:
+📄 TEKNİK AÇIKLAMA:
 ${seo.description}
 
-🔑 ANAHTAR KELİMELER:
+💕 HİKAYELEŞTİRİLMİŞ AÇIKLAMA:
+${seo.storyDescription || '-'}
+
+⚡ SATIŞ TETİKLEYİCİLERİ:
+${(seo.triggerWords || []).join(' • ')}
+
+🔑 ANAHTAR KELİMELER (${(seo.keywords || []).length} adet):
 ${(seo.keywords || []).join(', ')}
 
 🔍 LONG-TAIL ARAMALAR:
