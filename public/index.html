@@ -1572,6 +1572,10 @@ ${seo.hashtags || ''}
                     state.processedImage = await generateFlatlayMode();
                 }
 
+                // STUDIO ENHANCE - Fal.ai ile kalite artırma
+                console.log('🎬 Stüdyo kalitesi uygulanıyor...');
+                state.processedImage = await studioEnhance(state.processedImage);
+
                 // Orijinal processed image'ı sakla (rötuş için)
                 state.originalProcessedImage = state.processedImage;
 
@@ -1585,7 +1589,7 @@ ${seo.hashtags || ''}
                 document.getElementById('editPanel').classList.remove('hidden');
 
                 hideLoader();
-                showToast(state.workMode === 'mannequin' ? 'Manken gerçek insana dönüştürüldü!' : 'Takı modele giydirildi!', 'success');
+                showToast('Stüdyo kalitesinde görsel hazır!', 'success');
 
                 // Otomatik SEO oluştur
                 generateSEO();
@@ -1830,6 +1834,127 @@ OUTPUT: Professional e-commerce quality image with same composition as original.
             }
 
             throw new Error('Görsel üretilemedi - Gemini görsel döndürmedi');
+        }
+
+        // ========== STUDIO ENHANCE - FAL.AI POST-PROCESSING ==========
+        async function studioEnhance(imageBase64) {
+            const falKey = localStorage.getItem('fal_api_key');
+            if (!falKey) {
+                console.warn('⚠️ Fal.ai key yok, enhancement atlanıyor');
+                return imageBase64;
+            }
+
+            let currentImage = imageBase64;
+
+            try {
+                // ADIM 1: IC-Light V2 - Stüdyo Aydınlatma
+                console.log('💡 ADIM 1: IC-Light V2 ile stüdyo aydınlatma...');
+                showLoader('Stüdyo Kalitesi...', '1/3 Profesyonel ışık');
+
+                const iclightResponse = await fetch('https://fal.run/fal-ai/iclight-v2', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Key ${falKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_url: currentImage,
+                        prompt: "professional studio photography, soft box lighting, clean white background, commercial jewelry photography, high-end e-commerce",
+                        light_source: "studio",
+                        light_source_strength: 0.8
+                    })
+                });
+
+                if (iclightResponse.ok) {
+                    const iclightData = await iclightResponse.json();
+                    if (iclightData.image?.url) {
+                        // URL'yi base64'e çevir
+                        const imgResponse = await fetch(iclightData.image.url);
+                        const imgBlob = await imgResponse.blob();
+                        currentImage = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(imgBlob);
+                        });
+                        console.log('✅ IC-Light tamamlandı');
+                    }
+                } else {
+                    console.warn('⚠️ IC-Light başarısız, devam ediliyor');
+                }
+
+                // ADIM 2: Face Enhancement - Cilt Kalitesi
+                console.log('✨ ADIM 2: Face Enhancement ile cilt kalitesi...');
+                showLoader('Stüdyo Kalitesi...', '2/3 Cilt iyileştirme');
+
+                const faceResponse = await fetch('https://fal.run/fal-ai/image-editing/face-enhancement', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Key ${falKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_url: currentImage
+                    })
+                });
+
+                if (faceResponse.ok) {
+                    const faceData = await faceResponse.json();
+                    if (faceData.image?.url) {
+                        const imgResponse = await fetch(faceData.image.url);
+                        const imgBlob = await imgResponse.blob();
+                        currentImage = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(imgBlob);
+                        });
+                        console.log('✅ Face Enhancement tamamlandı');
+                    }
+                } else {
+                    console.warn('⚠️ Face Enhancement başarısız, devam ediliyor');
+                }
+
+                // ADIM 3: Clarity Upscaler - Yüksek Çözünürlük
+                console.log('🔍 ADIM 3: Clarity Upscaler ile yüksek çözünürlük...');
+                showLoader('Stüdyo Kalitesi...', '3/3 HD kalite');
+
+                const upscaleResponse = await fetch('https://fal.run/fal-ai/clarity-upscaler', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Key ${falKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_url: currentImage,
+                        prompt: "professional jewelry photography, sharp details, high quality, studio lighting",
+                        scale: 2,
+                        resemblance: 0.9,
+                        creativity: 0.2
+                    })
+                });
+
+                if (upscaleResponse.ok) {
+                    const upscaleData = await upscaleResponse.json();
+                    if (upscaleData.image?.url) {
+                        const imgResponse = await fetch(upscaleData.image.url);
+                        const imgBlob = await imgResponse.blob();
+                        currentImage = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(imgBlob);
+                        });
+                        console.log('✅ Upscale tamamlandı');
+                    }
+                } else {
+                    console.warn('⚠️ Upscaler başarısız, devam ediliyor');
+                }
+
+                console.log('🎉 Stüdyo enhancement tamamlandı!');
+                return currentImage;
+
+            } catch (error) {
+                console.error('Enhancement hatası:', error);
+                return currentImage; // Hata olursa orijinal görsel döner
+            }
         }
 
         // ========== SMART POSITION - GEMINI ILE AKILLI KONUMLANDIRMA ==========
