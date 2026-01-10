@@ -396,11 +396,16 @@
                     </p>
                 </div>
 
-                <!-- Right Panel: Preview & Gallery -->
+                <!-- Right Panel: Preview & SEO -->
                 <div class="lg:col-span-7 space-y-4">
 
-                    <!-- Main Preview -->
-                    <div class="glass rounded-2xl p-6">
+                    <!-- Preview + SEO Grid -->
+                    <div class="grid xl:grid-cols-2 gap-4">
+
+                        <!-- Preview Column -->
+                        <div class="space-y-4">
+                            <!-- Main Preview -->
+                            <div class="glass rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-semibold flex items-center gap-2">
                                 <i class="fa-solid fa-eye text-slate-400"></i>
@@ -476,48 +481,6 @@
 
                         <!-- Download Actions -->
                         <div id="downloadActions" class="hidden mt-4 space-y-3">
-                            <!-- Pozisyon Ayarı (Sadece Flatlay modunda gösterilir) -->
-                            <div id="positionAdjustment" class="p-3 bg-slate-800/50 rounded-xl border border-purple-500/30">
-                                <p class="text-xs text-purple-400 mb-2">
-                                    <i class="fa-solid fa-arrows-up-down-left-right mr-1"></i>
-                                    Takı pozisyonunu ayarla ve yeniden oluştur
-                                </p>
-                                <div class="flex items-center justify-center gap-2 mb-2">
-                                    <!-- Sol -->
-                                    <button onclick="adjustOutputPosition('left')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Sola kaydır">
-                                        <i class="fa-solid fa-arrow-left"></i>
-                                    </button>
-                                    <!-- Yukarı/Aşağı -->
-                                    <div class="flex flex-col gap-1">
-                                        <button onclick="adjustOutputPosition('up')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Yukarı kaydır">
-                                            <i class="fa-solid fa-arrow-up"></i>
-                                        </button>
-                                        <button onclick="adjustOutputPosition('down')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Aşağı kaydır">
-                                            <i class="fa-solid fa-arrow-down"></i>
-                                        </button>
-                                    </div>
-                                    <!-- Sağ -->
-                                    <button onclick="adjustOutputPosition('right')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Sağa kaydır">
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                    </button>
-                                    <!-- Boyut -->
-                                    <div class="flex flex-col gap-1 ml-4">
-                                        <button onclick="adjustOutputPosition('bigger')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Büyüt">
-                                            <i class="fa-solid fa-plus"></i>
-                                        </button>
-                                        <button onclick="adjustOutputPosition('smaller')" class="w-10 h-10 rounded-lg bg-slate-700 hover:bg-purple-600 flex items-center justify-center transition-colors" title="Küçült">
-                                            <i class="fa-solid fa-minus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="positionHint" class="text-center text-xs text-slate-500 mb-2">
-                                    Mevcut: Orta
-                                </div>
-                                <button onclick="regenerateWithPosition()" class="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-sm font-semibold transition-colors">
-                                    <i class="fa-solid fa-rotate mr-2"></i>Bu Pozisyonla Yeniden Oluştur
-                                </button>
-                            </div>
-
                             <!-- İndirme Butonları -->
                             <div class="flex flex-wrap gap-3">
                                 <button onclick="downloadImage('jpeg')" class="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-500 font-semibold transition-colors">
@@ -571,9 +534,13 @@
                             </div>
                         </div>
                     </div>
+                        </div>
+                        <!-- END Preview Column -->
 
-                    <!-- SEO Generator Panel - ADVANCED -->
-                    <div class="glass rounded-2xl p-5 border border-emerald-500/30">
+                        <!-- SEO Column -->
+                        <div>
+                            <!-- SEO Generator Panel -->
+                            <div class="glass rounded-2xl p-5 border border-emerald-500/30 h-full">
                         <h3 class="font-semibold mb-4 flex items-center gap-2">
                             <i class="fa-solid fa-magnifying-glass-chart text-emerald-400"></i>
                             Trendyol SEO Pro
@@ -717,7 +684,11 @@
                                 </div>
                             </div>
                         </div>
+                            </div>
+                        </div>
+                        <!-- END SEO Column -->
                     </div>
+                    <!-- END Preview + SEO Grid -->
 
                     <!-- Mini Gallery (4 slots) -->
                     <div class="glass rounded-2xl p-5">
@@ -842,11 +813,6 @@
                 rotation: 0 // Döndürme (derece)
             },
             extractedJewelry: null, // BiRefNet ile çıkarılan takı (şeffaf arka plan)
-            outputPosition: {
-                horizontal: 'center', // left, center, right
-                vertical: 'center',   // up, center, down
-                size: 'normal'        // smaller, normal, bigger
-            },
             seo: {
                 title: '',
                 altTitles: [],
@@ -864,9 +830,6 @@
         // ========== WORK MODE ==========
         function setWorkMode(mode) {
             state.workMode = mode;
-
-            // Pozisyon ayarını sıfırla
-            resetOutputPosition();
 
             // UI güncelle
             document.getElementById('modeMannequin').className = mode === 'mannequin'
@@ -1568,101 +1531,6 @@ ${seo.hashtags || ''}
             }
         }
 
-        // ========== ÇIKTI POZİSYON AYARI ==========
-        function adjustOutputPosition(direction) {
-            const pos = state.outputPosition;
-
-            switch(direction) {
-                case 'left':
-                    pos.horizontal = pos.horizontal === 'right' ? 'center' : 'left';
-                    break;
-                case 'right':
-                    pos.horizontal = pos.horizontal === 'left' ? 'center' : 'right';
-                    break;
-                case 'up':
-                    pos.vertical = pos.vertical === 'down' ? 'center' : 'up';
-                    break;
-                case 'down':
-                    pos.vertical = pos.vertical === 'up' ? 'center' : 'down';
-                    break;
-                case 'bigger':
-                    pos.size = pos.size === 'smaller' ? 'normal' : 'bigger';
-                    break;
-                case 'smaller':
-                    pos.size = pos.size === 'bigger' ? 'normal' : 'smaller';
-                    break;
-            }
-
-            updatePositionHint();
-        }
-
-        function updatePositionHint() {
-            const pos = state.outputPosition;
-            let hint = '';
-
-            // Dikey
-            if (pos.vertical === 'up') hint += 'Yukarı';
-            else if (pos.vertical === 'down') hint += 'Aşağı';
-            else hint += 'Orta';
-
-            hint += ' / ';
-
-            // Yatay
-            if (pos.horizontal === 'left') hint += 'Sol';
-            else if (pos.horizontal === 'right') hint += 'Sağ';
-            else hint += 'Merkez';
-
-            // Boyut
-            if (pos.size === 'bigger') hint += ' (Büyük)';
-            else if (pos.size === 'smaller') hint += ' (Küçük)';
-
-            document.getElementById('positionHint').textContent = 'Mevcut: ' + hint;
-        }
-
-        function getPositionPrompt() {
-            const pos = state.outputPosition;
-            let instructions = [];
-
-            // Yatay pozisyon
-            if (pos.horizontal === 'left') {
-                instructions.push('Position the jewelry slightly to the LEFT side of the neck/chest');
-            } else if (pos.horizontal === 'right') {
-                instructions.push('Position the jewelry slightly to the RIGHT side of the neck/chest');
-            }
-
-            // Dikey pozisyon
-            if (pos.vertical === 'up') {
-                instructions.push('Position the jewelry HIGHER on the neck, closer to the collarbone');
-            } else if (pos.vertical === 'down') {
-                instructions.push('Position the jewelry LOWER on the chest, further from the neck');
-            }
-
-            // Boyut
-            if (pos.size === 'bigger') {
-                instructions.push('Make the jewelry appear LARGER/more prominent in the frame');
-            } else if (pos.size === 'smaller') {
-                instructions.push('Make the jewelry appear SMALLER/more subtle in the frame');
-            }
-
-            return instructions.length > 0
-                ? '\n\nPOSITION ADJUSTMENTS:\n' + instructions.join('\n')
-                : '';
-        }
-
-        async function regenerateWithPosition() {
-            showToast('Yeni pozisyonla oluşturuluyor...', 'success');
-            await generateImage();
-        }
-
-        function resetOutputPosition() {
-            state.outputPosition = {
-                horizontal: 'center',
-                vertical: 'center',
-                size: 'normal'
-            };
-            updatePositionHint();
-        }
-
         // ========== MODEL PROFILES - REALISM BOOST ==========
         const modelProfiles = {
             'neck_model': {
@@ -1887,9 +1755,6 @@ ${seo.hashtags || ''}
                     document.getElementById('uploadPreview').src = state.originalBase64;
                     document.getElementById('fileName').textContent = `${file.name} (${img.width}x${img.height})`;
 
-                    // Yeni görsel yüklendiğinde pozisyonu sıfırla
-                    resetOutputPosition();
-
                     showToast('Ürün yüklendi', 'success');
                 };
                 img.src = state.originalBase64;
@@ -1969,14 +1834,6 @@ ${seo.hashtags || ''}
                 document.getElementById('previewImage').classList.remove('hidden');
                 document.getElementById('previewImage').src = state.processedImage;
                 document.getElementById('downloadActions').classList.remove('hidden');
-
-                // Pozisyon ayarı sadece flatlay modunda gösterilir
-                const positionDiv = document.getElementById('positionAdjustment');
-                if (state.workMode === 'flatlay') {
-                    positionDiv.classList.remove('hidden');
-                } else {
-                    positionDiv.classList.add('hidden');
-                }
 
                 // Manuel düzenleme panelini göster
                 document.getElementById('editPanel').classList.remove('hidden');
@@ -2104,8 +1961,6 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             }
 
             // ========== ŞABLON YOK: Eski AI modu (basitleştirilmiş) ==========
-            const positionInstructions = getPositionPrompt();
-
             const flatlayPrompt = `Create a professional jewelry product photo.
 
 I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic female model.
@@ -2117,7 +1972,6 @@ REQUIREMENTS:
 4. ${profile.desc}
 5. ${style.prompt}
 6. Professional studio lighting, e-commerce quality
-${positionInstructions}
 
 CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the jewelry style.`;
 
@@ -2725,8 +2579,6 @@ SADECE JSON döndür.`;
                 document.getElementById('previewPlaceholder').classList.add('hidden');
                 state.processedImage = state.gallery[index];
                 document.getElementById('downloadActions').classList.remove('hidden');
-                // Galeriden seçilenlerde pozisyon ayarı gizle
-                document.getElementById('positionAdjustment').classList.add('hidden');
             }
         }
 
