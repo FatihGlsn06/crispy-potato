@@ -379,10 +379,21 @@
                     </div>
 
                     <!-- Generate Button -->
-                    <button onclick="generateImage()" id="generateBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 font-bold text-lg transition-all glow-purple">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
-                        Realistik Görsel Oluştur
-                    </button>
+                    <!-- Önizle + Oluştur Butonları -->
+                    <div class="flex gap-2">
+                        <button onclick="previewJewelryPlacement()" id="previewBtn" class="flex-1 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold transition-all">
+                            <i class="fa-solid fa-eye mr-2"></i>
+                            Önizle
+                        </button>
+                        <button onclick="generateImage()" id="generateBtn" class="flex-[2] py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 font-bold text-lg transition-all glow-purple">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
+                            Oluştur
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 text-center mt-1">
+                        <i class="fa-solid fa-info-circle mr-1"></i>
+                        Şablon varsa: Önizle → pozisyonu ayarla → Oluştur
+                    </p>
                 </div>
 
                 <!-- Right Panel: Preview & Gallery -->
@@ -410,12 +421,57 @@
                                 <p id="loaderSubtext" class="text-xs text-slate-500 mt-1">Lütfen bekleyin</p>
                             </div>
 
-                            <!-- Preview Image -->
+                            <!-- Interactive Canvas Preview (Şablon + Takı) -->
+                            <canvas id="interactiveCanvas" class="hidden max-w-full max-h-[500px] rounded-lg shadow-2xl cursor-move"></canvas>
+
+                            <!-- Preview Image (Sonuç) -->
                             <div id="previewPlaceholder" class="text-center text-slate-500">
                                 <i class="fa-solid fa-image text-4xl mb-3"></i>
                                 <p class="text-sm">Ürün yükleyin ve AI görsel oluşturun</p>
                             </div>
                             <img id="previewImage" class="hidden max-w-full max-h-[500px] rounded-lg shadow-2xl">
+
+                            <!-- Interactive Position Controls (Şablon modunda görünür) -->
+                            <div id="positionControls" class="hidden absolute inset-0 pointer-events-none">
+                                <!-- Yukarı -->
+                                <button onclick="moveJewelry('up')" class="pointer-events-auto absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </button>
+                                <!-- Aşağı -->
+                                <button onclick="moveJewelry('down')" class="pointer-events-auto absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </button>
+                                <!-- Sol -->
+                                <button onclick="moveJewelry('left')" class="pointer-events-auto absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <!-- Sağ -->
+                                <button onclick="moveJewelry('right')" class="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                                <!-- Döndürme Kontrolleri -->
+                                <div class="pointer-events-auto absolute bottom-2 right-2 flex gap-1">
+                                    <button onclick="rotateJewelry(-15)" class="w-8 h-8 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center text-xs transition-colors" title="Sola döndür">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                    <button onclick="rotateJewelry(15)" class="w-8 h-8 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center text-xs transition-colors" title="Sağa döndür">
+                                        <i class="fa-solid fa-rotate-right"></i>
+                                    </button>
+                                </div>
+                                <!-- Boyut Kontrolleri -->
+                                <div class="pointer-events-auto absolute bottom-2 left-2 flex gap-1">
+                                    <button onclick="scaleJewelry(-5)" class="w-8 h-8 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center text-xs transition-colors" title="Küçült">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <button onclick="scaleJewelry(5)" class="w-8 h-8 rounded-full bg-black/50 hover:bg-purple-600 border border-white/30 flex items-center justify-center text-xs transition-colors" title="Büyüt">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <!-- Bilgi -->
+                                <div class="pointer-events-auto absolute top-2 left-2 px-2 py-1 bg-black/70 rounded text-[10px] text-white/70">
+                                    <i class="fa-solid fa-arrows-up-down-left-right mr-1"></i>Sürükle veya ok tuşları
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Download Actions -->
@@ -740,6 +796,7 @@
                 scale: 60,  // Takı boyutu (%)
                 rotation: 0 // Döndürme (derece)
             },
+            extractedJewelry: null, // BiRefNet ile çıkarılan takı (şeffaf arka plan)
             seo: {
                 title: '',
                 altTitles: [],
@@ -1190,6 +1247,271 @@ ${seo.hashtags || ''}
             } else if (type === 'rotation') {
                 state.position.rotation = parseInt(document.getElementById('rotationSlider').value);
                 document.getElementById('rotationValue').textContent = state.position.rotation + '°';
+            }
+            // İnteraktif önizlemeyi güncelle
+            updateInteractivePreview();
+        }
+
+        // ========== İNTERAKTİF ÖNİZLEME SİSTEMİ ==========
+        let interactiveImages = { template: null, jewelry: null };
+
+        // Takıyı hareket ettir
+        function moveJewelry(direction) {
+            const step = 2; // Her adımda %2
+            if (direction === 'up') state.position.y = Math.max(0, state.position.y - step);
+            else if (direction === 'down') state.position.y = Math.min(100, state.position.y + step);
+            else if (direction === 'left') state.position.x = Math.max(0, state.position.x - step);
+            else if (direction === 'right') state.position.x = Math.min(100, state.position.x + step);
+
+            syncSlidersWithState();
+            updateInteractivePreview();
+        }
+
+        // Takıyı döndür
+        function rotateJewelry(degrees) {
+            state.position.rotation += degrees;
+            if (state.position.rotation > 180) state.position.rotation -= 360;
+            if (state.position.rotation < -180) state.position.rotation += 360;
+
+            syncSlidersWithState();
+            updateInteractivePreview();
+        }
+
+        // Takı boyutunu değiştir
+        function scaleJewelry(delta) {
+            state.position.scale = Math.max(10, Math.min(150, state.position.scale + delta));
+
+            syncSlidersWithState();
+            updateInteractivePreview();
+        }
+
+        // Slider'ları state ile senkronize et
+        function syncSlidersWithState() {
+            document.getElementById('xOffsetSlider').value = state.position.x;
+            document.getElementById('xOffsetValue').textContent = state.position.x + '%';
+            document.getElementById('yOffsetSlider').value = state.position.y;
+            document.getElementById('yOffsetValue').textContent = state.position.y + '%';
+            document.getElementById('scaleSlider').value = state.position.scale;
+            document.getElementById('scaleValue').textContent = state.position.scale + '%';
+            document.getElementById('rotationSlider').value = state.position.rotation;
+            document.getElementById('rotationValue').textContent = state.position.rotation + '°';
+        }
+
+        // İnteraktif önizlemeyi güncelle
+        function updateInteractivePreview() {
+            if (!state.templateBase64 || !state.extractedJewelry) return;
+
+            const canvas = document.getElementById('interactiveCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Eğer resimler yüklenmediyse yükle
+            if (!interactiveImages.template || !interactiveImages.jewelry) {
+                loadInteractiveImages();
+                return;
+            }
+
+            const templateImg = interactiveImages.template;
+            const jewelryImg = interactiveImages.jewelry;
+
+            // Canvas boyutunu ayarla
+            canvas.width = templateImg.width;
+            canvas.height = templateImg.height;
+
+            // 1. Şablonu çiz
+            ctx.drawImage(templateImg, 0, 0);
+
+            // 2. Takıyı pozisyon ayarlarına göre çiz
+            const pos = state.position;
+            const jewelryWidth = templateImg.width * (pos.scale / 100);
+            const jewelryHeight = (jewelryImg.height / jewelryImg.width) * jewelryWidth;
+
+            const x = (templateImg.width * (pos.x / 100)) - (jewelryWidth / 2);
+            const y = (templateImg.height * (pos.y / 100)) - (jewelryHeight / 2);
+
+            const rotation = (pos.rotation || 0) * Math.PI / 180;
+
+            ctx.save();
+            ctx.translate(x + jewelryWidth / 2, y + jewelryHeight / 2);
+            ctx.rotate(rotation);
+            ctx.drawImage(jewelryImg, -jewelryWidth / 2, -jewelryHeight / 2, jewelryWidth, jewelryHeight);
+            ctx.restore();
+        }
+
+        // İnteraktif resimları yükle
+        function loadInteractiveImages() {
+            if (!state.templateBase64 || !state.extractedJewelry) return;
+
+            const templateImg = new Image();
+            const jewelryImg = new Image();
+            let loaded = 0;
+
+            const onLoad = () => {
+                loaded++;
+                if (loaded === 2) {
+                    interactiveImages.template = templateImg;
+                    interactiveImages.jewelry = jewelryImg;
+                    updateInteractivePreview();
+                }
+            };
+
+            templateImg.onload = onLoad;
+            jewelryImg.onload = onLoad;
+            templateImg.src = state.templateBase64;
+            jewelryImg.src = state.extractedJewelry;
+        }
+
+        // İnteraktif modu aç
+        function showInteractivePreview() {
+            if (!state.templateBase64 || !state.extractedJewelry) return;
+
+            document.getElementById('previewPlaceholder').classList.add('hidden');
+            document.getElementById('previewImage').classList.add('hidden');
+            document.getElementById('interactiveCanvas').classList.remove('hidden');
+            document.getElementById('positionControls').classList.remove('hidden');
+
+            loadInteractiveImages();
+        }
+
+        // İnteraktif modu kapat
+        function hideInteractivePreview() {
+            document.getElementById('interactiveCanvas').classList.add('hidden');
+            document.getElementById('positionControls').classList.add('hidden');
+        }
+
+        // Canvas sürükleme desteği
+        function setupCanvasDrag() {
+            const canvas = document.getElementById('interactiveCanvas');
+            let isDragging = false;
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const rect = canvas.getBoundingClientRect();
+                state.position.x = Math.round((e.clientX - rect.left) / rect.width * 100);
+                state.position.y = Math.round((e.clientY - rect.top) / rect.height * 100);
+                state.position.x = Math.max(0, Math.min(100, state.position.x));
+                state.position.y = Math.max(0, Math.min(100, state.position.y));
+                syncSlidersWithState();
+                updateInteractivePreview();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+                canvas.style.cursor = 'move';
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                isDragging = false;
+                canvas.style.cursor = 'move';
+            });
+
+            // Mouse wheel ile zoom
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -3 : 3;
+                scaleJewelry(delta);
+            });
+        }
+
+        // Klavye ok tuşları desteği
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                // Sadece canvas görünürse çalış
+                const canvas = document.getElementById('interactiveCanvas');
+                if (canvas.classList.contains('hidden')) return;
+
+                // Input alanlarında çalışmasın
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                switch(e.key) {
+                    case 'ArrowUp': moveJewelry('up'); e.preventDefault(); break;
+                    case 'ArrowDown': moveJewelry('down'); e.preventDefault(); break;
+                    case 'ArrowLeft': moveJewelry('left'); e.preventDefault(); break;
+                    case 'ArrowRight': moveJewelry('right'); e.preventDefault(); break;
+                    case 'q': case 'Q': rotateJewelry(-5); e.preventDefault(); break;
+                    case 'e': case 'E': rotateJewelry(5); e.preventDefault(); break;
+                    case '+': case '=': scaleJewelry(3); e.preventDefault(); break;
+                    case '-': case '_': scaleJewelry(-3); e.preventDefault(); break;
+                }
+            });
+        }
+
+        // Init interactive controls
+        window.addEventListener('load', () => {
+            setupCanvasDrag();
+            setupKeyboardControls();
+        });
+
+        // ========== ÖNİZLEME FONKSİYONU ==========
+        async function previewJewelryPlacement() {
+            // Kontroller
+            if (!state.originalBase64) {
+                showToast('Önce bir ürün fotoğrafı yükleyin', 'error');
+                return;
+            }
+
+            if (!state.templateBase64) {
+                showToast('Önce bir model şablonu yükleyin', 'error');
+                return;
+            }
+
+            const falKey = localStorage.getItem('fal_api_key');
+            if (!falKey) {
+                showToast('Fal.ai API key gerekli - BiRefNet için', 'error');
+                openSettings();
+                return;
+            }
+
+            try {
+                showLoader('Önizleme hazırlanıyor...', '1/2 Takı çıkarılıyor');
+
+                // BiRefNet ile takıyı çıkar
+                const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Key ${falKey}`
+                    },
+                    body: JSON.stringify({
+                        image_url: state.originalBase64,
+                        model: "General Use (Light)",
+                        operating_resolution: "1024x1024",
+                        output_format: "png"
+                    })
+                });
+
+                if (!birefnetResponse.ok) {
+                    throw new Error('BiRefNet hatası');
+                }
+
+                const birefnetData = await birefnetResponse.json();
+                const transparentJewelryUrl = birefnetData.image?.url;
+
+                if (!transparentJewelryUrl) {
+                    throw new Error('Takı çıkarılamadı');
+                }
+
+                // URL'den base64'e çevir ve state'e kaydet
+                showLoader('Önizleme hazırlanıyor...', '2/2 Önizleme oluşturuluyor');
+                state.extractedJewelry = await fetchImageAsBase64(transparentJewelryUrl);
+
+                // Önceki interaktif resimleri temizle
+                interactiveImages = { template: null, jewelry: null };
+
+                // İnteraktif önizlemeyi göster
+                hideLoader();
+                showInteractivePreview();
+
+                showToast('Önizleme hazır! Takıyı sürükleyerek konumlandırın', 'success');
+
+            } catch (error) {
+                console.error('Preview error:', error);
+                hideLoader();
+                showToast('Önizleme hatası: ' + error.message, 'error');
             }
         }
 
