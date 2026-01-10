@@ -600,6 +600,59 @@
                         </div>
                     </div>
 
+                    <!-- Akıllı Prompt Sistemi -->
+                    <div class="glass rounded-2xl p-4 border border-indigo-500/30">
+                        <h3 class="font-semibold mb-3 flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-brain text-indigo-400"></i>
+                            Akıllı Prompt
+                            <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">AI</span>
+                        </h3>
+
+                        <textarea id="smartPromptInput"
+                            placeholder="Örnek komutlar:
+• Kıyafet mor olsun
+• Ürünü biraz yaklaştır
+• Sağ taraftan çekim yap
+• Model sarışın olsun
+• Altın saat ışığında çek
+• Arka plan siyah olsun"
+                            class="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-3 text-sm placeholder-slate-500 focus:border-indigo-500 focus:outline-none resize-none"
+                            rows="3"></textarea>
+
+                        <!-- Hızlı Komutlar -->
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                            <button onclick="addSmartPrompt('yakın çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-search-plus mr-1"></i>Yakın
+                            </button>
+                            <button onclick="addSmartPrompt('uzak çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-search-minus mr-1"></i>Uzak
+                            </button>
+                            <button onclick="addSmartPrompt('sağdan çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-arrow-right mr-1"></i>Sağ
+                            </button>
+                            <button onclick="addSmartPrompt('soldan çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-arrow-left mr-1"></i>Sol
+                            </button>
+                            <button onclick="addSmartPrompt('kıyafet siyah')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-shirt mr-1"></i>Siyah
+                            </button>
+                            <button onclick="addSmartPrompt('kıyafet beyaz')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-shirt mr-1"></i>Beyaz
+                            </button>
+                            <button onclick="addSmartPrompt('altın saat ışığı')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-sun mr-1"></i>Golden
+                            </button>
+                            <button onclick="addSmartPrompt('karanlık stüdyo')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
+                                <i class="fa-solid fa-moon mr-1"></i>Dark
+                            </button>
+                        </div>
+
+                        <p class="text-[9px] text-slate-500 mt-2">
+                            <i class="fa-solid fa-shield-check text-green-400 mr-1"></i>
+                            Ürün asla değiştirilmez - sadece model, kıyafet, sahne ve açı değişir
+                        </p>
+                    </div>
+
                     <!-- Generate Button -->
                     <!-- Önizle + Oluştur Butonları -->
                     <div class="flex flex-col sm:flex-row gap-2">
@@ -614,8 +667,7 @@
                     </div>
                     <p class="text-[10px] text-slate-500 text-center mt-1">
                         <i class="fa-solid fa-info-circle mr-1"></i>
-                        Şablon varsa: Önizle → pozisyonu ayarla → Oluştur
-                    </p>
+                        Akıllı prompt + presetler birlikte çalışır
                 </div>
 
                 <!-- Right Panel: Preview & SEO -->
@@ -2253,6 +2305,171 @@ ${seo.hashtags || ''}
             }
         }
 
+        // ========== AKILLI PROMPT SİSTEMİ ==========
+
+        // Hızlı tag ekleme
+        function addSmartPrompt(text) {
+            const input = document.getElementById('smartPromptInput');
+            const current = input.value.trim();
+            if (current) {
+                input.value = current + ', ' + text;
+            } else {
+                input.value = text;
+            }
+            showToast(`"${text}" eklendi`, 'success');
+        }
+
+        // Akıllı prompt'u parse et ve talimat oluştur
+        function getSmartPromptInstructions() {
+            const smartPrompt = document.getElementById('smartPromptInput')?.value?.trim() || '';
+
+            if (!smartPrompt) {
+                return ''; // Boş ise ek talimat yok
+            }
+
+            // Türkçe komutları analiz et
+            const instructions = [];
+            const lowerPrompt = smartPrompt.toLowerCase();
+
+            // ===== ZOOM / FRAMING =====
+            if (lowerPrompt.includes('yakın') || lowerPrompt.includes('close') || lowerPrompt.includes('yaklaştır')) {
+                instructions.push('FRAMING: Close-up shot, jewelry fills 60-70% of frame, model visible from shoulders to chin only');
+            }
+            if (lowerPrompt.includes('uzak') || lowerPrompt.includes('uzaklaştır') || lowerPrompt.includes('tam boy') || lowerPrompt.includes('full')) {
+                instructions.push('FRAMING: Full body or waist-up shot, model clearly visible with jewelry as focal point');
+            }
+            if (lowerPrompt.includes('çok yakın') || lowerPrompt.includes('macro') || lowerPrompt.includes('detay')) {
+                instructions.push('FRAMING: Extreme close-up, jewelry fills 80% of frame, only neck/chest visible');
+            }
+
+            // ===== CAMERA ANGLE =====
+            if (lowerPrompt.includes('sağ') || lowerPrompt.includes('right')) {
+                instructions.push('CAMERA ANGLE: 3/4 view from the RIGHT side, model turned slightly left, showing jewelry from right angle');
+            }
+            if (lowerPrompt.includes('sol') || lowerPrompt.includes('left')) {
+                instructions.push('CAMERA ANGLE: 3/4 view from the LEFT side, model turned slightly right, showing jewelry from left angle');
+            }
+            if (lowerPrompt.includes('profil') || lowerPrompt.includes('profile') || lowerPrompt.includes('yandan')) {
+                instructions.push('CAMERA ANGLE: Side profile view, model facing 90 degrees to camera');
+            }
+            if (lowerPrompt.includes('önden') || lowerPrompt.includes('front') || lowerPrompt.includes('karşıdan')) {
+                instructions.push('CAMERA ANGLE: Straight front-facing shot, model looking directly at camera');
+            }
+            if (lowerPrompt.includes('yukarıdan') || lowerPrompt.includes('üstten') || lowerPrompt.includes('top')) {
+                instructions.push('CAMERA ANGLE: Slightly elevated angle, camera looking down at jewelry');
+            }
+            if (lowerPrompt.includes('aşağıdan') || lowerPrompt.includes('alttan') || lowerPrompt.includes('low')) {
+                instructions.push('CAMERA ANGLE: Low angle shot, camera looking up at the model');
+            }
+
+            // ===== OUTFIT COLOR =====
+            const colorMap = {
+                'siyah': 'black', 'beyaz': 'white', 'kırmızı': 'red', 'mor': 'purple',
+                'mavi': 'navy blue', 'yeşil': 'forest green', 'pembe': 'pink', 'bordo': 'burgundy',
+                'bej': 'beige', 'krem': 'cream', 'altın': 'gold', 'gümüş': 'silver',
+                'nude': 'nude/skin tone', 'lacivert': 'navy', 'turuncu': 'orange', 'sarı': 'yellow'
+            };
+
+            for (const [tr, en] of Object.entries(colorMap)) {
+                if (lowerPrompt.includes(`kıyafet ${tr}`) || lowerPrompt.includes(`${tr} kıyafet`) ||
+                    lowerPrompt.includes(`elbise ${tr}`) || lowerPrompt.includes(`${tr} elbise`)) {
+                    instructions.push(`OUTFIT COLOR: Model wearing elegant ${en} clothing that complements the jewelry`);
+                    break;
+                }
+            }
+
+            // ===== OUTFIT STYLE =====
+            if (lowerPrompt.includes('straplez') || lowerPrompt.includes('strapless') || lowerPrompt.includes('askısız')) {
+                instructions.push('OUTFIT STYLE: Strapless top/dress, completely bare shoulders, perfect for showcasing necklaces');
+            }
+            if (lowerPrompt.includes('v yaka') || lowerPrompt.includes('v-neck')) {
+                instructions.push('OUTFIT STYLE: V-neck top, elegant neckline that frames the jewelry');
+            }
+            if (lowerPrompt.includes('yuvarlak yaka') || lowerPrompt.includes('crew') || lowerPrompt.includes('round')) {
+                instructions.push('OUTFIT STYLE: Round/crew neck top, classic and elegant');
+            }
+            if (lowerPrompt.includes('omuz açık') || lowerPrompt.includes('off-shoulder') || lowerPrompt.includes('düşük omuz')) {
+                instructions.push('OUTFIT STYLE: Off-shoulder top, romantic and elegant, showcases collarbone area');
+            }
+
+            // ===== MODEL APPEARANCE =====
+            if (lowerPrompt.includes('sarışın') || lowerPrompt.includes('blonde')) {
+                instructions.push('MODEL: Blonde hair, elegant appearance');
+            }
+            if (lowerPrompt.includes('esmer') || lowerPrompt.includes('brunette') || lowerPrompt.includes('koyu saç')) {
+                instructions.push('MODEL: Dark/brunette hair, sophisticated look');
+            }
+            if (lowerPrompt.includes('kızıl') || lowerPrompt.includes('red hair') || lowerPrompt.includes('auburn')) {
+                instructions.push('MODEL: Auburn/red hair, striking appearance');
+            }
+            if (lowerPrompt.includes('kısa saç') || lowerPrompt.includes('short hair')) {
+                instructions.push('MODEL: Short hair, modern and chic style');
+            }
+            if (lowerPrompt.includes('uzun saç') || lowerPrompt.includes('long hair')) {
+                instructions.push('MODEL: Long flowing hair, elegant and feminine');
+            }
+            if (lowerPrompt.includes('topuz') || lowerPrompt.includes('bun') || lowerPrompt.includes('updo')) {
+                instructions.push('MODEL: Hair in elegant updo/bun, neck fully visible for jewelry display');
+            }
+
+            // ===== SCENE / LIGHTING =====
+            if (lowerPrompt.includes('altın saat') || lowerPrompt.includes('golden hour') || lowerPrompt.includes('gün batımı')) {
+                instructions.push('LIGHTING: Golden hour warm lighting, soft orange/gold tones, romantic atmosphere');
+            }
+            if (lowerPrompt.includes('karanlık') || lowerPrompt.includes('dark') || lowerPrompt.includes('moody')) {
+                instructions.push('LIGHTING: Dark moody studio, dramatic shadows, luxury feel, black/charcoal background');
+            }
+            if (lowerPrompt.includes('parlak') || lowerPrompt.includes('bright') || lowerPrompt.includes('aydınlık')) {
+                instructions.push('LIGHTING: Bright, high-key lighting, clean and fresh look');
+            }
+            if (lowerPrompt.includes('stüdyo') || lowerPrompt.includes('studio')) {
+                instructions.push('LIGHTING: Professional studio lighting, soft boxes, clean gradient background');
+            }
+            if (lowerPrompt.includes('doğal ışık') || lowerPrompt.includes('natural light') || lowerPrompt.includes('pencere')) {
+                instructions.push('LIGHTING: Natural window light, soft and flattering, lifestyle feel');
+            }
+
+            // ===== BACKGROUND =====
+            if (lowerPrompt.includes('arka plan siyah') || lowerPrompt.includes('siyah arka') || lowerPrompt.includes('black background')) {
+                instructions.push('BACKGROUND: Pure black or very dark charcoal background, luxury feel');
+            }
+            if (lowerPrompt.includes('arka plan beyaz') || lowerPrompt.includes('beyaz arka') || lowerPrompt.includes('white background')) {
+                instructions.push('BACKGROUND: Clean pure white background, e-commerce standard');
+            }
+            if (lowerPrompt.includes('arka plan gri') || lowerPrompt.includes('gri arka') || lowerPrompt.includes('gray background')) {
+                instructions.push('BACKGROUND: Neutral gray gradient background, professional look');
+            }
+            if (lowerPrompt.includes('doğa') || lowerPrompt.includes('outdoor') || lowerPrompt.includes('dış mekan')) {
+                instructions.push('BACKGROUND: Outdoor/nature setting, soft bokeh, natural environment');
+            }
+
+            // ===== MOOD / STYLE =====
+            if (lowerPrompt.includes('romantik') || lowerPrompt.includes('romantic')) {
+                instructions.push('MOOD: Romantic and dreamy atmosphere, soft focus, warm tones');
+            }
+            if (lowerPrompt.includes('lüks') || lowerPrompt.includes('luxury') || lowerPrompt.includes('premium')) {
+                instructions.push('MOOD: Luxury high-end feel, sophisticated, premium quality aesthetic');
+            }
+            if (lowerPrompt.includes('minimal') || lowerPrompt.includes('sade')) {
+                instructions.push('MOOD: Minimalist and clean, simple composition, focus on jewelry');
+            }
+            if (lowerPrompt.includes('editorial') || lowerPrompt.includes('dergi')) {
+                instructions.push('MOOD: Editorial/magazine style, artistic, high fashion feel');
+            }
+
+            // Eğer hiçbir pattern match olmadıysa, raw prompt'u gönder
+            if (instructions.length === 0 && smartPrompt) {
+                instructions.push(`CUSTOM REQUEST: ${smartPrompt}`);
+            }
+
+            // Tümünü birleştir
+            if (instructions.length > 0) {
+                return `\n\n===== USER'S SMART PROMPT INSTRUCTIONS =====\n${instructions.join('\n')}\n\nIMPORTANT: Apply these customizations to the MODEL, OUTFIT, SCENE, and CAMERA only.\nThe JEWELRY must remain 100% IDENTICAL to the original - never modify the product!\n==============================================`;
+            }
+
+            return '';
+        }
+
         function getOutfitScenePrompt() {
             if (state.settings.autoOutfit) {
                 // AI will analyze the jewelry and choose appropriate outfit/scene
@@ -2448,6 +2665,7 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             showLoader('Düz Zemin Modu...', '2/4 Model oluşturuluyor');
 
             const outfitSceneInstructions = getOutfitScenePrompt();
+            const smartPromptInstructions = getSmartPromptInstructions();
 
             // Takısız model oluşturma prompt'u
             const modelOnlyPrompt = `Create a professional jewelry photography model shot.
@@ -2463,6 +2681,7 @@ REQUIREMENTS:
 6. The neck area should be well-lit and clearly visible
 
 POSE: ${pose?.prompt || 'Front facing, clear view of neck area'}
+${smartPromptInstructions}
 
 DO NOT include any jewelry, necklaces, or accessories on the model. Leave the neck completely bare and ready for jewelry placement.`;
 
@@ -2646,10 +2865,23 @@ OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally 
             // ===== ADIM 2: Gemini ile temiz arka plan oluştur =====
             showLoader('Sadece Ürün Modu...', '2/3 Arka plan oluşturuluyor');
 
+            const smartPromptInstructions = getSmartPromptInstructions();
+
+            // Smart prompt'tan arka plan bilgilerini çıkar
+            let backgroundStyle = style.prompt;
+            if (smartPromptInstructions.includes('BACKGROUND:')) {
+                const bgMatch = smartPromptInstructions.match(/BACKGROUND: ([^\n]+)/);
+                if (bgMatch) backgroundStyle = bgMatch[1];
+            }
+            if (smartPromptInstructions.includes('LIGHTING:')) {
+                const lightMatch = smartPromptInstructions.match(/LIGHTING: ([^\n]+)/);
+                if (lightMatch) backgroundStyle += '. ' + lightMatch[1];
+            }
+
             const backgroundPrompt = `Create a clean, professional product photography background.
 
 REQUIREMENTS:
-- ${style.prompt}
+- ${backgroundStyle}
 - NO jewelry, NO products, NO objects - ONLY background
 - Professional studio quality
 - Subtle shadows/gradients allowed
@@ -2886,6 +3118,7 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             showLoader('Manken Modu...', '2/3 Model oluşturuluyor');
 
             const outfitSceneInstructions = getOutfitScenePrompt();
+            const smartPromptInstructions = getSmartPromptInstructions();
 
             // Orijinal görseli referans olarak kullan ama takısız model iste
             const modelPrompt = `Look at [Input Image 1] - this is a mannequin/display wearing jewelry.
@@ -2911,6 +3144,7 @@ ${style.prompt}
 
 POSE:
 ${pose?.prompt || 'Natural pose matching the input image framing'}
+${smartPromptInstructions}
 
 CRITICAL:
 - Do NOT include ANY jewelry, necklaces, or accessories
