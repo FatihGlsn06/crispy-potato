@@ -64,6 +64,10 @@
             background: rgba(168,85,247,0.15) !important;
             box-shadow: 0 0 20px rgba(168,85,247,0.3);
         }
+        .jewelry-cat-btn.active {
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+        }
 
         .style-card { transition: all 0.2s ease; cursor: pointer; }
         .style-card:hover { transform: scale(1.02); }
@@ -202,50 +206,115 @@
                         </div>
                     </div>
 
-                    <!-- Model Profiles - REALISM BOOST -->
+                    <!-- Model Profiles - JEWELRY CATEGORY BASED -->
                     <div class="glass rounded-2xl p-4 md:p-5 border border-purple-500/30">
-                        <h3 class="font-semibold mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base">
+                        <h3 class="font-semibold mb-3 flex items-center gap-2 text-sm md:text-base">
                             <i class="fa-solid fa-user text-purple-400"></i>
-                            Model Profili
-                            <span class="status-badge active ml-auto text-[9px] md:text-[10px]">REALISM BOOST</span>
+                            Takı Tipi & Model
+                            <span class="status-badge active ml-auto text-[9px] md:text-[10px]">AI OPTİMİZE</span>
                         </h3>
-                        <p class="text-[11px] md:text-xs text-slate-400 mb-2 md:mb-3">
-                            Gerçekçi cilt dokusu ve doğal insan görünümü için optimize edilmiş profiller
+
+                        <!-- Jewelry Category Tabs -->
+                        <div class="flex gap-1 mb-3 bg-slate-800/50 p-1 rounded-lg">
+                            <button onclick="selectJewelryCategory('general')" class="jewelry-cat-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-cat="general">
+                                <i class="fa-solid fa-shapes mr-1"></i>Genel
+                            </button>
+                            <button onclick="selectJewelryCategory('minimal')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="minimal">
+                                <i class="fa-solid fa-minus mr-1"></i>Minimal
+                            </button>
+                            <button onclick="selectJewelryCategory('statement')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="statement">
+                                <i class="fa-solid fa-gem mr-1"></i>Statement
+                            </button>
+                            <button onclick="selectJewelryCategory('pearl')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="pearl">
+                                <i class="fa-solid fa-circle mr-1"></i>İnci
+                            </button>
+                        </div>
+
+                        <!-- Category Description -->
+                        <p id="categoryDesc" class="text-[10px] text-slate-400 mb-2 px-1">
+                            Standart takı çekimleri için genel modeller
                         </p>
 
-                        <div class="grid grid-cols-2 sm:grid-cols-2 gap-2 md:gap-3" id="modelProfiles">
-                            <div onclick="selectModelProfile('neck_model')" class="model-card selected p-3 rounded-xl border border-slate-700" data-model="neck_model">
-                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-rose-200 to-rose-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-circle-user text-rose-700"></i>
+                        <!-- Model Cards Container -->
+                        <div class="grid grid-cols-2 gap-2" id="modelProfilesContainer">
+                            <!-- General Models -->
+                            <div onclick="selectModelProfile('neck_model')" class="model-card selected p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="neck_model" data-category="general">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-rose-200 to-rose-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-user text-rose-700 text-sm"></i>
                                 </div>
-                                <p class="text-xs font-medium text-center">Kolye Modeli</p>
+                                <p class="text-[11px] font-medium text-center">Kolye</p>
                                 <p class="text-[9px] text-slate-500 text-center">Boyun & Dekolte</p>
                             </div>
-                            <div onclick="selectModelProfile('hand_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="hand_model">
-                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-hand text-amber-700"></i>
+                            <div onclick="selectModelProfile('hand_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="hand_model" data-category="general">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-hand text-amber-700 text-sm"></i>
                                 </div>
-                                <p class="text-xs font-medium text-center">El Modeli</p>
+                                <p class="text-[11px] font-medium text-center">El</p>
                                 <p class="text-[9px] text-slate-500 text-center">Yüzük & Bileklik</p>
                             </div>
-                            <div onclick="selectModelProfile('set_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="set_model">
-                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-violet-200 to-violet-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-gem text-violet-700"></i>
+                            <div onclick="selectModelProfile('set_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="set_model" data-category="general">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-violet-200 to-violet-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-violet-700 text-sm"></i>
                                 </div>
-                                <p class="text-xs font-medium text-center">Set Modeli</p>
+                                <p class="text-[11px] font-medium text-center">Set</p>
                                 <p class="text-[9px] text-slate-500 text-center">Kolye + Küpe</p>
                             </div>
-                            <div onclick="selectModelProfile('boho_model')" class="model-card p-3 rounded-xl border border-slate-700" data-model="boho_model">
-                                <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-200 to-amber-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-sun text-orange-700"></i>
+                            <div onclick="selectModelProfile('boho_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="boho_model" data-category="general">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-orange-200 to-amber-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-sun text-orange-700 text-sm"></i>
                                 </div>
-                                <p class="text-xs font-medium text-center">Bohem Modeli</p>
+                                <p class="text-[11px] font-medium text-center">Bohem</p>
                                 <p class="text-[9px] text-slate-500 text-center">Doğal & Yazlık</p>
+                            </div>
+                            <!-- Minimal Models (hidden by default) -->
+                            <div onclick="selectModelProfile('minimal_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-sky-500/50 transition-all" data-model="minimal_neck" data-category="minimal">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-minus text-sky-700 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">Minimal Kolye</p>
+                                <p class="text-[9px] text-slate-500 text-center">İnce zincir, küçük pendant</p>
+                            </div>
+                            <div onclick="selectModelProfile('minimal_hand')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-sky-500/50 transition-all" data-model="minimal_hand" data-category="minimal">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-ring text-sky-700 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">Minimal Yüzük</p>
+                                <p class="text-[9px] text-slate-500 text-center">İnce band, küçük taş</p>
+                            </div>
+                            <!-- Statement Models (hidden by default) -->
+                            <div onclick="selectModelProfile('statement_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-fuchsia-500/50 transition-all" data-model="statement_neck" data-category="statement">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-fuchsia-200 to-fuchsia-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-gem text-fuchsia-700 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">Statement Kolye</p>
+                                <p class="text-[9px] text-slate-500 text-center">Büyük, gösterişli</p>
+                            </div>
+                            <div onclick="selectModelProfile('statement_ear')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-fuchsia-500/50 transition-all" data-model="statement_ear" data-category="statement">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-fuchsia-200 to-fuchsia-300 flex items-center justify-center">
+                                    <i class="fa-solid fa-star text-fuchsia-700 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">Statement Küpe</p>
+                                <p class="text-[9px] text-slate-500 text-center">Sarkık, büyük küpe</p>
+                            </div>
+                            <!-- Pearl Models (hidden by default) -->
+                            <div onclick="selectModelProfile('pearl_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-400/50 transition-all" data-model="pearl_neck" data-category="pearl">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle text-slate-600 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">İnci Kolye</p>
+                                <p class="text-[9px] text-slate-500 text-center">Yumuşak ışık, parlaklık</p>
+                            </div>
+                            <div onclick="selectModelProfile('pearl_ear')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-400/50 transition-all" data-model="pearl_ear" data-category="pearl">
+                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle text-slate-600 text-sm"></i>
+                                </div>
+                                <p class="text-[11px] font-medium text-center">İnci Küpe</p>
+                                <p class="text-[9px] text-slate-500 text-center">İnci parlaklığı optimizasyonu</p>
                             </div>
                         </div>
 
                         <!-- Model Profile Info -->
-                        <div id="modelProfileInfo" class="mt-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                        <div id="modelProfileInfo" class="mt-3 p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                             <p class="text-[10px] text-purple-300" id="modelProfileDesc">
                                 <i class="fa-solid fa-info-circle mr-1"></i>
                                 Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar.
@@ -807,7 +876,8 @@
             settings: {
                 modelProfile: 'neck_model',
                 style: 'studio',
-                pose: 'front'  // Varsayılan: önden
+                pose: 'front',  // Varsayılan: önden
+                jewelryCategory: 'general'  // Takı kategorisi
             },
             position: {
                 x: 50,      // Yatay pozisyon (%)
@@ -1536,21 +1606,79 @@ ${seo.hashtags || ''}
 
         // ========== MODEL PROFILES - REALISM BOOST ==========
         const modelProfiles = {
+            // ========== GENEL MODELLER ==========
             'neck_model': {
                 desc: "Jewelry Photography: Headless cropped shot of a female model focusing on the neck. Real human skin texture with pores and natural imperfections. Clean skin but NOT airbrushed. Hands completely away from the necklace/neck area. Hair tied back. Clear view of the decolletage.",
-                info: "Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar."
+                info: "Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar.",
+                category: "general",
+                icon: "fa-circle-user",
+                color: "rose"
             },
             'hand_model': {
                 desc: "Hand jewelry photography: Elegant female hands with natural skin texture. Visible pores, subtle veins, and realistic nail beds. Fingers slightly spread to showcase rings. Wrist visible for bracelets. Real human hands, not mannequin.",
-                info: "El Modeli: Yüzük & bileklik için doğal el görünümü."
+                info: "El Modeli: Yüzük & bileklik için doğal el görünümü.",
+                category: "general",
+                icon: "fa-hand",
+                color: "amber"
             },
             'set_model': {
                 desc: "Jewelry set photography: Female model from shoulders up, showing both neck and ears. Real skin texture with natural undertones. Hair elegantly styled away from ears and neck. Coordinated necklace and earring display on living human skin.",
-                info: "Set Modeli: Kolye + küpe birlikte görüntüleme."
+                info: "Set Modeli: Kolye + küpe birlikte görüntüleme.",
+                category: "general",
+                icon: "fa-users",
+                color: "violet"
             },
             'boho_model': {
                 desc: "Bohemian lifestyle jewelry photography: Sun-kissed skin with natural warmth. Outdoor lighting feel. Relaxed, natural pose. Visible freckles and tan lines welcome. Beach or nature vibes. Authentic human appearance.",
-                info: "Bohem Modeli: Doğal & yazlık görünüm."
+                info: "Bohem Modeli: Doğal & yazlık görünüm.",
+                category: "general",
+                icon: "fa-sun",
+                color: "orange"
+            },
+            // ========== MİNİMAL TAKI MODELLERİ ==========
+            'minimal_neck': {
+                desc: "MINIMAL/DELICATE JEWELRY NECK: Ultra-close crop focusing ONLY on collarbone and lower neck area. Very soft, even diffused lighting with NO harsh shadows. Maximum negative space around the jewelry. Smooth realistic skin with subtle pores. Perfect for thin chains, small pendants, delicate chokers. Soft gradient background. The delicate jewelry is the ONLY focal point.",
+                info: "Minimal Kolye: İnce zincir, küçük pendant için optimize.",
+                category: "minimal",
+                icon: "fa-minus",
+                color: "sky"
+            },
+            'minimal_hand': {
+                desc: "MINIMAL/DELICATE HAND JEWELRY: Elegant hand pose with fingers gently together or slightly curved. Soft, even lighting to capture thin bands and small stones without overpowering them. Clean, uncluttered composition with lots of negative space. Natural or bare nails. Real skin texture. Focus entirely on the delicate minimalist ring details.",
+                info: "Minimal Yüzük: İnce band, küçük taş detayları.",
+                category: "minimal",
+                icon: "fa-ring",
+                color: "sky"
+            },
+            // ========== STATEMENT TAKI MODELLERİ ==========
+            'statement_neck': {
+                desc: "STATEMENT/BOLD NECKLACE: Wider frame showing full shoulders and upper chest to capture the SCALE of large jewelry. More dramatic lighting with intentional highlights on metallic surfaces. Confident presentation. The bold jewelry commands attention and fills the frame. Can include subtle background texture. Editorial fashion feel. Real skin with natural warmth.",
+                info: "Statement Kolye: Büyük, gösterişli parçalar için geniş kadraj.",
+                category: "statement",
+                icon: "fa-gem",
+                color: "fuchsia"
+            },
+            'statement_ear': {
+                desc: "STATEMENT EARRINGS: Side profile or 3/4 angle showing the FULL DROP LENGTH of large earrings. Hair pulled completely back and away. Dramatic lighting to catch sparkle, movement and dimension. Neck and jawline visible to emphasize scale. Editorial fashion photography style. Real human ear with natural skin texture.",
+                info: "Statement Küpe: Sarkık, büyük küpeler için profil çekim.",
+                category: "statement",
+                icon: "fa-star",
+                color: "fuchsia"
+            },
+            // ========== İNCİ TAKI MODELLERİ ==========
+            'pearl_neck': {
+                desc: "PEARL NECKLACE SPECIALIST: Soft, DIFFUSED wrap-around lighting essential for pearl luster - absolutely NO harsh directional light or hot spots. Neutral warm skin tone that complements cream/white pearl colors. Very smooth, clean gradient background. Close framing to show pearl quality, surface, and natural overtones. Gentle soft shadows only. Lighting must make pearls GLOW naturally.",
+                info: "İnci Kolye: İnci parlaklığı için özel yumuşak aydınlatma.",
+                category: "pearl",
+                icon: "fa-circle",
+                color: "slate"
+            },
+            'pearl_ear': {
+                desc: "PEARL EARRING SPECIALIST: Soft wrap-around diffused lighting for maximum pearl luster and iridescence. Clean composition focusing on ear area. Hair elegantly swept away from ears. Neutral background that doesn't compete with pearl colors (cream, white, pink overtones). Capture the natural glow and surface quality of pearls. Flattering soft light on skin.",
+                info: "İnci Küpe: İnci parlaklığını öne çıkaran kompozisyon.",
+                category: "pearl",
+                icon: "fa-circle",
+                color: "slate"
             }
         };
 
@@ -1765,17 +1893,58 @@ ${seo.hashtags || ''}
             reader.readAsDataURL(file);
         }
 
+        // ========== JEWELRY CATEGORY SELECTION ==========
+        const categoryDescriptions = {
+            general: "Standart takı çekimleri için genel modeller",
+            minimal: "İnce zincir, küçük pendant, minimalist parçalar için optimize edilmiş",
+            statement: "Büyük, gösterişli, dikkat çekici takılar için geniş kadraj",
+            pearl: "İnci parlaklığı ve yansıması için özel yumuşak aydınlatma"
+        };
+
+        function selectJewelryCategory(category) {
+            state.settings.jewelryCategory = category;
+
+            // Update category tabs
+            document.querySelectorAll('.jewelry-cat-btn').forEach(btn => {
+                if (btn.dataset.cat === category) {
+                    btn.classList.add('active', 'bg-purple-600', 'text-white');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('active', 'bg-purple-600', 'text-white');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+
+            // Show/hide model cards based on category
+            document.querySelectorAll('.model-card').forEach(card => {
+                if (card.dataset.category === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            // Update category description
+            document.getElementById('categoryDesc').textContent = categoryDescriptions[category];
+
+            // Auto-select first model in category
+            const firstModel = document.querySelector(`.model-card[data-category="${category}"]`);
+            if (firstModel) {
+                const modelKey = firstModel.dataset.model;
+                selectModelProfile(modelKey);
+            }
+        }
+
         // ========== MODEL PROFILE SELECTION ==========
         function selectModelProfile(profile) {
             state.settings.modelProfile = profile;
 
-            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+            // Only update visible cards
+            document.querySelectorAll('.model-card:not(.hidden)').forEach(c => c.classList.remove('selected'));
             document.querySelector(`[data-model="${profile}"]`)?.classList.add('selected');
 
             document.getElementById('modelProfileDesc').innerHTML =
                 '<i class="fa-solid fa-info-circle mr-1"></i>' + modelProfiles[profile].info;
-
-            showToast(`${profile.replace('_', ' ')} profili seçildi`, 'success');
         }
 
         // ========== STYLE SELECTION ==========
