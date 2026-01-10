@@ -2497,16 +2497,30 @@ DO NOT include any jewelry, necklaces, or accessories on the model. Leave the ne
             // Gemini'ye her iki görseli gönder - takıyı modele yerleştirmesini iste
             const placeJewelryPrompt = `Place the jewelry from the first image onto the model in the second image.
 
-TASK: Naturally place the jewelry (transparent background) onto the model's neck area.
+CRITICAL - SIZE RULES:
+- Do NOT enlarge or shrink the jewelry
+- Keep the jewelry at its ORIGINAL SIZE and PROPORTIONS
+- If the jewelry appears small, that's correct - it's a delicate piece
+- If the jewelry appears large, that's correct - it's a statement piece
+- Adjust the MODEL framing to fit the jewelry, NOT the other way around
 
-CRITICAL REQUIREMENTS:
-1. The jewelry design must remain EXACTLY as shown in the first image - same beads, same colors, same pendant, same arrangement
-2. Place it naturally on the model's neck/chest area
-3. Add realistic shadows under the jewelry
-4. Match the lighting of the jewelry to the model
-5. Make it look like the model is actually wearing this exact jewelry
+TASK: Naturally place the jewelry (at its original size) onto the model's neck area.
 
-DO NOT modify, simplify, or change the jewelry design in any way. Just place it naturally.`;
+REQUIREMENTS:
+1. PRESERVE the jewelry EXACTLY as shown - every bead, every color, every detail, every proportion
+2. Do NOT crop, cut, resize, or modify the jewelry in ANY way
+3. Place it naturally on the model's neck/chest area
+4. Add realistic shadows under the jewelry
+5. Match the lighting of the jewelry to the model
+
+FORBIDDEN:
+- Do NOT enlarge the jewelry
+- Do NOT shrink the jewelry
+- Do NOT simplify the jewelry
+- Do NOT add or remove any beads or elements
+- Do NOT change colors or arrangement
+
+The jewelry in the output must be PIXEL-PERFECT identical to the input jewelry.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
