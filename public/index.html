@@ -185,16 +185,21 @@
                             <i class="fa-solid fa-toggle-on text-cyan-400"></i>
                             Çalışma Modu
                         </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="setWorkMode('mannequin')" id="modeMannequin" class="mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all">
-                                <i class="fa-solid fa-person-dress text-2xl text-cyan-400 mb-2"></i>
-                                <p class="text-xs font-medium">Manken Fotoğrafı</p>
-                                <p class="text-[9px] text-slate-400">Takı mankende giyili</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setWorkMode('mannequin')" id="modeMannequin" class="mode-btn active p-2 sm:p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all">
+                                <i class="fa-solid fa-person-dress text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2"></i>
+                                <p class="text-[10px] sm:text-xs font-medium">Manken</p>
+                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Takı mankende</p>
                             </button>
-                            <button onclick="setWorkMode('flatlay')" id="modeFlatlay" class="mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
-                                <i class="fa-solid fa-table-cells text-2xl text-slate-400 mb-2"></i>
-                                <p class="text-xs font-medium">Düz Zemin</p>
-                                <p class="text-[9px] text-slate-400">Takı masada/yerde</p>
+                            <button onclick="setWorkMode('flatlay')" id="modeFlatlay" class="mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
+                                <i class="fa-solid fa-table-cells text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2"></i>
+                                <p class="text-[10px] sm:text-xs font-medium">Düz Zemin</p>
+                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Model ekler</p>
+                            </button>
+                            <button onclick="setWorkMode('product')" id="modeProduct" class="mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
+                                <i class="fa-solid fa-gem text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2"></i>
+                                <p class="text-[10px] sm:text-xs font-medium">Sadece Ürün</p>
+                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Model yok</p>
                             </button>
                         </div>
                     </div>
@@ -1052,25 +1057,29 @@
         function setWorkMode(mode) {
             state.workMode = mode;
 
-            // UI güncelle
-            document.getElementById('modeMannequin').className = mode === 'mannequin'
-                ? 'mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all'
-                : 'mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
+            const activeClass = 'mode-btn active p-2 sm:p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all';
+            const inactiveClass = 'mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
 
-            document.getElementById('modeFlatlay').className = mode === 'flatlay'
-                ? 'mode-btn active p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all'
-                : 'mode-btn p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
+            // UI güncelle
+            document.getElementById('modeMannequin').className = mode === 'mannequin' ? activeClass : inactiveClass;
+            document.getElementById('modeFlatlay').className = mode === 'flatlay' ? activeClass : inactiveClass;
+            document.getElementById('modeProduct').className = mode === 'product' ? activeClass : inactiveClass;
 
             // İkon renklerini güncelle
             document.querySelector('#modeMannequin i').className = mode === 'mannequin'
-                ? 'fa-solid fa-person-dress text-2xl text-cyan-400 mb-2'
-                : 'fa-solid fa-person-dress text-2xl text-slate-400 mb-2';
+                ? 'fa-solid fa-person-dress text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
+                : 'fa-solid fa-person-dress text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
 
             document.querySelector('#modeFlatlay i').className = mode === 'flatlay'
-                ? 'fa-solid fa-table-cells text-2xl text-cyan-400 mb-2'
-                : 'fa-solid fa-table-cells text-2xl text-slate-400 mb-2';
+                ? 'fa-solid fa-table-cells text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
+                : 'fa-solid fa-table-cells text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
 
-            showToast(`${mode === 'mannequin' ? 'Manken' : 'Düz Zemin'} modu seçildi`, 'success');
+            document.querySelector('#modeProduct i').className = mode === 'product'
+                ? 'fa-solid fa-gem text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
+                : 'fa-solid fa-gem text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
+
+            const modeNames = { mannequin: 'Manken', flatlay: 'Düz Zemin', product: 'Sadece Ürün' };
+            showToast(`${modeNames[mode]} modu seçildi`, 'success');
         }
 
         // ========== MANUAL IMAGE ADJUSTMENTS ==========
@@ -2286,9 +2295,12 @@ The jewelry must remain EXACTLY as provided - do not modify the jewelry in any w
                 if (state.workMode === 'mannequin') {
                     console.log('🎯 Manken Modu - Gemini Edit başlatılıyor...');
                     state.processedImage = await generateWithGemini25();
-                } else {
+                } else if (state.workMode === 'flatlay') {
                     console.log('🎯 Düz Zemin Modu - Flatlay başlatılıyor...');
                     state.processedImage = await generateFlatlayMode();
+                } else if (state.workMode === 'product') {
+                    console.log('🎯 Sadece Ürün Modu - Ürün iyileştirme başlatılıyor...');
+                    state.processedImage = await generateProductOnlyMode();
                 }
 
                 // STUDIO ENHANCE - Fal.ai ile kalite artırma
@@ -2583,6 +2595,124 @@ OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally 
             }
 
             throw new Error('Görsel üretilemedi');
+        }
+
+        // ========== SADECE ÜRÜN MODU - MODEL YOK ==========
+        // Fotoğrafı olduğu gibi iyileştir, yüz/model ekleme
+        async function generateProductOnlyMode() {
+            const geminiKey = localStorage.getItem('gemini_api_key');
+            const falKey = localStorage.getItem('fal_api_key');
+            const style = stylePresets[state.settings.style];
+
+            console.log('✨ Sadece Ürün Modu başlatılıyor...');
+            showLoader('Sadece Ürün Modu...', '1/2 Fotoğraf analiz ediliyor');
+
+            // Kullanıcı arka plan kaldırmak istiyorsa BiRefNet kullan
+            let processedBase64 = state.originalBase64;
+
+            // Stil'e göre arka plan işlemi
+            if (style.key === 'minimal' || style.key === 'clean') {
+                // Arka planı temizle/beyazlaştır
+                if (falKey) {
+                    console.log('✂️ Arka plan temizleniyor...');
+                    showLoader('Sadece Ürün Modu...', '1/2 Arka plan temizleniyor');
+
+                    try {
+                        const birefnetResponse = await fetch('https://fal.run/fal-ai/birefnet', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Key ${falKey}`
+                            },
+                            body: JSON.stringify({
+                                image_url: state.originalBase64,
+                                model: "General Use (Light)",
+                                operating_resolution: "1024x1024",
+                                output_format: "png"
+                            })
+                        });
+
+                        if (birefnetResponse.ok) {
+                            const birefnetData = await birefnetResponse.json();
+                            if (birefnetData.image?.url) {
+                                processedBase64 = await fetchImageAsBase64(birefnetData.image.url);
+                                console.log('✅ Arka plan kaldırıldı');
+                            }
+                        }
+                    } catch (e) {
+                        console.log('⚠️ BiRefNet atlandı:', e.message);
+                    }
+                }
+            }
+
+            // STEP 2: Gemini ile ürün fotoğrafını iyileştir (model EKLEME!)
+            console.log('🎨 Ürün fotoğrafı iyileştiriliyor...');
+            showLoader('Sadece Ürün Modu...', '2/2 Kalite artırılıyor');
+
+            const enhancePrompt = `Enhance this jewelry product photo for professional e-commerce use.
+
+IMPORTANT RULES:
+1. DO NOT add any human, model, mannequin, or body parts
+2. DO NOT change, modify, or re-interpret the jewelry design
+3. If there is already a human/face in the photo, KEEP IT EXACTLY AS IS - do not modify, crop, or change the person
+4. Focus ONLY on:
+   - Professional lighting enhancement
+   - Color accuracy and vibrancy
+   - Sharpness and clarity
+   - Clean, professional background (if no background, add subtle gradient or pure white)
+   - Realistic shadows and reflections on jewelry
+
+PRESERVE 100%:
+• All jewelry details, textures, materials
+• Any existing human/model in the photo (face, skin, pose - everything)
+• Original composition and framing
+• Product colors and arrangement
+
+ENHANCE ONLY:
+• Lighting quality (soft, professional studio lighting)
+• Image sharpness and clarity
+• Background cleanliness
+• Overall professional e-commerce aesthetic
+
+${style.prompt}
+
+OUTPUT: High-quality product photo ready for e-commerce, with NO modifications to the jewelry or any existing people in the image.`;
+
+            const enhanceResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: enhancePrompt },
+                            { inlineData: { mimeType: 'image/png', data: processedBase64.split(',')[1] } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["IMAGE", "TEXT"],
+                        temperature: 0.2
+                    }
+                })
+            });
+
+            if (!enhanceResponse.ok) {
+                const err = await enhanceResponse.json();
+                throw new Error(err.error?.message || 'Fotoğraf iyileştirilemedi');
+            }
+
+            const enhanceData = await enhanceResponse.json();
+            const enhanceParts = enhanceData.candidates?.[0]?.content?.parts || [];
+
+            for (const part of enhanceParts) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                    console.log('✅ Sadece Ürün modu tamamlandı!');
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                }
+            }
+
+            // Gemini başarısız olursa orijinali döndür
+            console.log('⚠️ Gemini enhance atlandı, orijinal döndürülüyor');
+            return processedBase64;
         }
 
         // Helper: URL'den base64'e çevir
