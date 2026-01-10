@@ -67,7 +67,7 @@
 
         .style-card { transition: all 0.2s ease; cursor: pointer; }
         .style-card:hover { transform: scale(1.02); }
-        .style-card.selected {
+        .style-card.selected, .pose-card.selected {
             border-color: var(--primary) !important;
             box-shadow: 0 0 15px rgba(242,122,26,0.3);
         }
@@ -271,6 +271,41 @@
                                 <div class="w-full h-12 bg-gradient-to-br from-slate-900 to-slate-700 rounded-lg mb-2"></div>
                                 <p class="text-xs font-medium">Luxury</p>
                                 <p class="text-[9px] text-slate-500">Cartier Style</p>
+                            </div>
+                        </div>
+
+                        <!-- POZ SEÇİMİ -->
+                        <div class="mt-4 pt-4 border-t border-slate-700">
+                            <h4 class="text-xs font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-camera-rotate text-purple-400"></i>
+                                Ürün Pozu
+                                <span class="text-[9px] text-slate-500 font-normal">(Model açısı)</span>
+                            </h4>
+                            <div class="grid grid-cols-3 gap-2" id="posePresets">
+                                <div onclick="selectPose('front')" class="pose-card selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="front">
+                                    <i class="fa-solid fa-user text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Önden</p>
+                                </div>
+                                <div onclick="selectPose('right')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="right">
+                                    <i class="fa-solid fa-arrow-right text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Sağ Profil</p>
+                                </div>
+                                <div onclick="selectPose('left')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="left">
+                                    <i class="fa-solid fa-arrow-left text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Sol Profil</p>
+                                </div>
+                                <div onclick="selectPose('down')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="down">
+                                    <i class="fa-solid fa-arrow-down text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Aşağı Bakış</p>
+                                </div>
+                                <div onclick="selectPose('closeup')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="closeup">
+                                    <i class="fa-solid fa-magnifying-glass-plus text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Yakın Çekim</p>
+                                </div>
+                                <div onclick="selectPose('surface')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="surface">
+                                    <i class="fa-solid fa-square text-lg text-slate-400 mb-1"></i>
+                                    <p class="text-[10px]">Düz Yüzey</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -688,7 +723,8 @@
             workMode: 'mannequin', // 'mannequin' veya 'flatlay'
             settings: {
                 modelProfile: 'neck_model',
-                style: 'studio'
+                style: 'studio',
+                pose: 'front'  // Varsayılan: önden
             },
             position: {
                 x: 50,      // Yatay pozisyon (%)
@@ -1181,6 +1217,34 @@ ${seo.hashtags || ''}
             }
         };
 
+        // ========== POSE PRESETS - ÜRÜN POZLARI ==========
+        const posePresets = {
+            'front': {
+                name: "Önden (Varsayılan)",
+                prompt: "Model facing camera directly, front view. Jewelry clearly visible from the front."
+            },
+            'right': {
+                name: "Sağ Profil",
+                prompt: "Model turned to show RIGHT side profile (3/4 view). Camera captures the right side of neck/ear. Good for showing earrings or side of necklace."
+            },
+            'left': {
+                name: "Sol Profil",
+                prompt: "Model turned to show LEFT side profile (3/4 view). Camera captures the left side of neck/ear. Good for showing earrings or side of necklace."
+            },
+            'down': {
+                name: "Aşağı Bakış",
+                prompt: "Model looking down slightly, chin tilted down. Camera captures from slightly above. Shows top view of necklace on décolletage."
+            },
+            'closeup': {
+                name: "Yakın Çekim",
+                prompt: "Close-up shot focusing tightly on the jewelry area. Less body visible, more jewelry detail. Macro-style product focus."
+            },
+            'surface': {
+                name: "Düz Yüzey",
+                prompt: "NO MODEL. Jewelry laid flat on elegant surface (marble, velvet, or wood). Top-down flat lay photography. Product-only shot."
+            }
+        };
+
         // ========== CRITICAL: SKIN FIX PROMPT ==========
         const skinFix = " Render the neck/skin as hyper-realistic living human skin with pores and texture. REMOVE any plastic mannequin seams, stands, or artificial holders. The jewelry should rest naturally on human skin. NO mannequin, NO plastic, NO artificial appearance. ";
 
@@ -1371,6 +1435,17 @@ ${seo.hashtags || ''}
             showToast(`${style.charAt(0).toUpperCase() + style.slice(1)} stili seçildi`, 'success');
         }
 
+        // ========== POSE SELECTION ==========
+        function selectPose(pose) {
+            state.settings.pose = pose;
+
+            document.querySelectorAll('.pose-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-pose="${pose}"]`)?.classList.add('selected');
+
+            const poseName = posePresets[pose]?.name || pose;
+            showToast(`${poseName} pozu seçildi`, 'success');
+        }
+
         // ========== MAIN IMAGE GENERATION - GEMINI 2.5 ONLY ==========
         async function generateImage() {
             const geminiKey = localStorage.getItem('gemini_api_key');
@@ -1432,6 +1507,7 @@ ${seo.hashtags || ''}
             const falKey = localStorage.getItem('fal_api_key');
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
+            const pose = posePresets[state.settings.pose];
 
             // STEP 1: BiRefNet ile takıyı arka plandan ayır
             console.log('✂️ ADIM 1: BiRefNet ile takı çıkarılıyor...');
@@ -1474,13 +1550,32 @@ ${seo.hashtags || ''}
             // Takıyı base64'e çevir
             const jewelryBase64 = await fetchImageAsBase64(transparentJewelryUrl);
 
-            const flatlayPrompt = `Create a professional jewelry product photo.
+            // Düz yüzey pozu için model olmadan prompt
+            const isSurfacePose = state.settings.pose === 'surface';
+
+            const flatlayPrompt = isSurfacePose
+                ? `Create a professional jewelry product photo - FLAT LAY style.
+
+I'm providing a jewelry image (transparent background). Place this EXACT jewelry on an elegant surface.
+
+REQUIREMENTS:
+1. ${pose.prompt}
+2. The jewelry must look EXACTLY like the provided image - same design, colors, details
+3. ${style.prompt}
+4. Professional studio lighting, e-commerce quality
+5. Natural shadows from the jewelry on the surface
+6. Top-down camera angle, flat lay composition
+
+CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the jewelry style.`
+                : `Create a professional jewelry product photo.
 
 I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic human model.
 
+POSE/ANGLE: ${pose.prompt}
+
 REQUIREMENTS:
 1. Show a realistic female model from shoulders to lower face (lips and chin visible, eyes can be partially visible or cropped out of frame)
-2. Place the jewelry naturally on the model's neck
+2. Place the jewelry naturally on the model's neck/body
 3. The jewelry must look EXACTLY like the provided image - same design, colors, details
 4. ${profile.desc}
 5. ${style.prompt}
@@ -1544,6 +1639,7 @@ CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the
             const geminiKey = localStorage.getItem('gemini_api_key');
             const profile = modelProfiles[state.settings.modelProfile];
             const style = stylePresets[state.settings.style];
+            const pose = posePresets[state.settings.pose];
 
             console.log('🎨 Gemini Edit Mode başlatılıyor...');
             showLoader('Gemini Edit Mode...', 'Profesyonel Stüdyo Kalitesi');
