@@ -2494,33 +2494,60 @@ DO NOT include any jewelry, necklaces, or accessories on the model. Leave the ne
             console.log('💎 ADIM 2b: Gemini Edit ile takı yerleştiriliyor...');
             showLoader('Düz Zemin Modu...', '3/3 Takı yerleştiriliyor');
 
-            // Gemini'ye her iki görseli gönder - takıyı modele yerleştirmesini iste
-            const placeJewelryPrompt = `Place the jewelry from the first image onto the model in the second image.
+            // Kıyafet ve sahne bilgilerini al
+            const outfit = outfitPresets[state.settings.outfit];
+            const scene = scenePresets[state.settings.scene];
 
-CRITICAL - SIZE RULES:
-- Do NOT enlarge or shrink the jewelry
-- Keep the jewelry at its ORIGINAL SIZE and PROPORTIONS
-- If the jewelry appears small, that's correct - it's a delicate piece
-- If the jewelry appears large, that's correct - it's a statement piece
-- Adjust the MODEL framing to fit the jewelry, NOT the other way around
+            // Gemini'ye her iki görseli gönder - profesyonel prompt ile
+            const placeJewelryPrompt = `[TASK] Integrate the isolated jewelry product from [Input Image 1] onto the [Model] from [Input Image 2] and create a professional e-commerce jewelry photo.
 
-TASK: Naturally place the jewelry (at its original size) onto the model's neck area.
+[CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
+The jewelry shown in Input Image 1 MUST remain EXACTLY THE SAME in the final generation.
+NO re-interpretation, artistic alteration, or modification is allowed for these attributes:
 
-REQUIREMENTS:
-1. PRESERVE the jewelry EXACTLY as shown - every bead, every color, every detail, every proportion
-2. Do NOT crop, cut, resize, or modify the jewelry in ANY way
-3. Place it naturally on the model's neck/chest area
-4. Add realistic shadows under the jewelry
-5. Match the lighting of the jewelry to the model
+• Texture & Material: The specific metal shine, bead surfaces, gemstone facets must be IDENTICAL to source.
+• Pattern & Color: All colors, hues, arrangements must be preserved 100%. Do not alter existing elements.
+• Form & Shape: Every bead position, chain link, pendant shape must NOT be changed.
+• Size & Scale: Do NOT enlarge or shrink. Keep ORIGINAL proportions exactly.
 
-FORBIDDEN:
-- Do NOT enlarge the jewelry
-- Do NOT shrink the jewelry
-- Do NOT simplify the jewelry
-- Do NOT add or remove any beads or elements
-- Do NOT change colors or arrangement
+[MODEL DESCRIPTION]
+${profile.desc}
 
-The jewelry in the output must be PIXEL-PERFECT identical to the input jewelry.`;
+[OUTFIT]
+${outfit?.prompt || 'Elegant complementary clothing'}
+
+[MODEL POSE]
+${pose?.prompt || 'Front facing, clear neck view'}
+
+[SCENE & ATMOSPHERE]
+${scene?.prompt || 'Professional studio'}
+${style.prompt}
+
+[INTEGRATION & PLACEMENT]
+• Place jewelry naturally on model's neck/chest - it should conform to body contours realistically
+• Necklace must follow natural draping physics - not float or stick unnaturally
+• Must look like actually being worn, not digitally pasted
+
+[LIGHTING & REALISM]
+• Apply realistic shadows and highlights from scene's light source onto jewelry
+• Lighting only "on top" of jewelry - must NOT alter underlying original texture
+• Jewelry should blend into scene lighting, not look like flat sticker
+• Add subtle shadow under jewelry where it touches skin
+
+[TECHNICAL SPECS]
+• Photorealistic, high resolution, sharp focus
+• Camera: Front-facing, jewelry-centered composition
+• Jewelry is the focal point
+
+[FORBIDDEN ACTIONS] ❌
+• Do NOT enlarge or shrink the jewelry
+• Do NOT simplify or reduce any detail
+• Do NOT add or remove beads, gems, elements
+• Do NOT change colors, materials, arrangement
+• Do NOT crop or cut any part of jewelry
+• Do NOT re-interpret the design
+
+OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally integrated onto the model.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -2535,7 +2562,7 @@ The jewelry in the output must be PIXEL-PERFECT identical to the input jewelry.`
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.2
+                        temperature: 0.1
                     }
                 })
             });
