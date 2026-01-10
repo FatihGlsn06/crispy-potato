@@ -2429,58 +2429,119 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
                 return compositeResult;
             }
 
-            // ========== ŞABLON YOK: Eski AI modu (basitleştirilmiş) ==========
+            // ========== ŞABLON YOK: Yeni Güvenli Mod ==========
+            // ADIM 1: Gemini sadece model/kıyafet/sahne oluşturur (takı YOK)
+            // ADIM 2: Canvas ile orijinal takıyı üzerine yerleştiririz
+            console.log('🎨 ADIM 2a: Gemini ile takısız model oluşturuluyor...');
+            showLoader('Düz Zemin Modu...', '2/4 Model oluşturuluyor');
+
             const outfitSceneInstructions = getOutfitScenePrompt();
 
-            const flatlayPrompt = `Create a professional jewelry product photo.
+            // Takısız model oluşturma prompt'u
+            const modelOnlyPrompt = `Create a professional jewelry photography model shot.
 
-I'm providing a jewelry image (transparent background). Place this EXACT jewelry on a realistic female model.
+IMPORTANT: Generate ONLY the model WITHOUT any jewelry. The jewelry will be added separately.
 
 REQUIREMENTS:
-1. Show a realistic female model from shoulders to lower face
-2. Place the jewelry naturally on the model's neck
-3. The jewelry must look EXACTLY like the provided image - same design, colors, details
-4. ${profile.desc}
-5. ${style.prompt}
-6. Professional studio lighting, e-commerce quality
+1. Female model from shoulders to lower face (headless crop or partial face)
+2. ${profile.desc}
+3. Clear, unobstructed neck and decolletage area - ready for a necklace to be added
+4. ${outfitSceneInstructions}
+5. Professional studio lighting, e-commerce quality
+6. The neck area should be well-lit and clearly visible
 
-${outfitSceneInstructions}
+POSE: ${pose?.prompt || 'Front facing, clear view of neck area'}
 
-CRITICAL: The jewelry design must match the reference EXACTLY. Do not modify the jewelry style, color, or any details. Only the model, outfit, and scene should be generated around the existing jewelry.`;
+DO NOT include any jewelry, necklaces, or accessories on the model. Leave the neck completely bare and ready for jewelry placement.`;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: modelOnlyPrompt }]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["IMAGE", "TEXT"],
+                        temperature: 0.5
+                    }
+                })
+            });
+
+            if (!modelResponse.ok) {
+                const err = await modelResponse.json();
+                throw new Error(err.error?.message || 'Model oluşturulamadı');
+            }
+
+            const modelData = await modelResponse.json();
+            const modelParts = modelData.candidates?.[0]?.content?.parts || [];
+            let modelImageBase64 = null;
+
+            for (const part of modelParts) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                    modelImageBase64 = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    break;
+                }
+            }
+
+            if (!modelImageBase64) {
+                throw new Error('Model görseli oluşturulamadı');
+            }
+
+            console.log('✅ Takısız model oluşturuldu');
+
+            // ADIM 2b: Canvas ile orijinal takıyı model üzerine yerleştir
+            console.log('💎 ADIM 2b: Orijinal takı yerleştiriliyor...');
+            showLoader('Düz Zemin Modu...', '3/4 Takı yerleştiriliyor');
+
+            const compositeResult = await compositeJewelryOnTemplate(jewelryBase64, modelImageBase64);
+            console.log('✅ Takı yerleştirildi');
+
+            // ADIM 3: AI ile kenarları yumuşat ve finalize et
+            console.log('✨ ADIM 3: Kenarlar yumuşatılıyor...');
+            showLoader('Düz Zemin Modu...', '4/4 Finalizasyon');
+
+            const finalizePrompt = `Finalize this jewelry product photo. The jewelry has been placed on the model.
+
+TASK: Blend the jewelry seamlessly with the model. Make it look natural and professional.
+- Soften any hard edges around the jewelry
+- Ensure natural shadows under the jewelry
+- Match the lighting between jewelry and model
+- Keep the jewelry design EXACTLY as it is - do not modify the jewelry itself
+
+The result should look like a professional e-commerce jewelry photo.`;
+
+            const finalizeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: flatlayPrompt },
-                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } }
+                            { text: finalizePrompt },
+                            { inlineData: { mimeType: 'image/png', data: compositeResult.split(',')[1] } }
                         ]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.4
+                        temperature: 0.3
                     }
                 })
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error?.message || 'Model oluşturulamadı');
-            }
-
-            const data = await response.json();
-            const parts = data.candidates?.[0]?.content?.parts || [];
-
-            for (const part of parts) {
-                if (part.inlineData?.mimeType?.startsWith('image/')) {
-                    console.log('✅ Flatlay modu tamamlandı!');
-                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+            if (finalizeResponse.ok) {
+                const finalizeData = await finalizeResponse.json();
+                const finalizeParts = finalizeData.candidates?.[0]?.content?.parts || [];
+                for (const part of finalizeParts) {
+                    if (part.inlineData?.mimeType?.startsWith('image/')) {
+                        console.log('✅ Flatlay modu tamamlandı (Güvenli Mod)!');
+                        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    }
                 }
             }
 
-            throw new Error('Görsel üretilemedi');
+            // Finalize başarısız olursa composite'i döndür
+            console.log('⚠️ Finalize atlandı, composite döndürülüyor');
+            return compositeResult;
         }
 
         // Helper: URL'den base64'e çevir
