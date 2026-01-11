@@ -1691,7 +1691,7 @@ ${seo.hashtags || ''}
                     body: JSON.stringify({
                         image_url: state.originalBase64,
                         model: "General Use (Light)",
-                        operating_resolution: "1024x1024",
+                        operating_resolution: state.isHighRes ? "2048x2048" : "1024x1024",
                         output_format: "png"
                     })
                 });
@@ -2083,13 +2083,17 @@ ${seo.hashtags || ''}
                 const img = new Image();
                 img.onload = () => {
                     state.originalImage = img;
+                    // Orijinal boyutları sakla
+                    state.originalWidth = img.width;
+                    state.originalHeight = img.height;
+                    state.isHighRes = img.width >= 1500 || img.height >= 1500;
 
                     document.getElementById('uploadPrompt').classList.add('hidden');
                     document.getElementById('uploadPreviewContainer').classList.remove('hidden');
                     document.getElementById('uploadPreview').src = state.originalBase64;
-                    document.getElementById('fileName').textContent = `${file.name} (${img.width}x${img.height})`;
+                    document.getElementById('fileName').textContent = `${file.name} (${img.width}x${img.height})${state.isHighRes ? ' HD' : ''}`;
 
-                    showToast('Ürün yüklendi', 'success');
+                    showToast(`Ürün yüklendi${state.isHighRes ? ' (Yüksek çözünürlük)' : ''}`, 'success');
                 };
                 img.src = state.originalBase64;
             };
@@ -2256,24 +2260,24 @@ ${seo.hashtags || ''}
                 instructions.push('FRAMING: Extreme close-up, jewelry fills 80% of frame, only neck/chest visible');
             }
 
-            // ===== CAMERA ANGLE =====
-            if (lowerPrompt.includes('sağ') || lowerPrompt.includes('right')) {
-                instructions.push('CAMERA ANGLE: 3/4 view from the RIGHT side, model turned slightly left, showing jewelry from right angle');
+            // ===== CAMERA ANGLE (PRIORITY INSTRUCTIONS) =====
+            if (lowerPrompt.includes('sağ') || lowerPrompt.includes('right') || lowerPrompt.includes('sağdan')) {
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: Position camera to the RIGHT of the model. Model body faces slightly LEFT (30-45 degrees). This is a 3/4 RIGHT side view. DO NOT use front view. The right side of the jewelry and model must be more visible.');
             }
-            if (lowerPrompt.includes('sol') || lowerPrompt.includes('left')) {
-                instructions.push('CAMERA ANGLE: 3/4 view from the LEFT side, model turned slightly right, showing jewelry from left angle');
+            if (lowerPrompt.includes('sol') || lowerPrompt.includes('left') || lowerPrompt.includes('soldan')) {
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: Position camera to the LEFT of the model. Model body faces slightly RIGHT (30-45 degrees). This is a 3/4 LEFT side view. DO NOT use front view. The left side of the jewelry and model must be more visible.');
             }
             if (lowerPrompt.includes('profil') || lowerPrompt.includes('profile') || lowerPrompt.includes('yandan')) {
-                instructions.push('CAMERA ANGLE: Side profile view, model facing 90 degrees to camera');
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: Pure SIDE PROFILE view - model facing 90 degrees to camera. Show the silhouette of face/neck. Jewelry visible from the side.');
             }
             if (lowerPrompt.includes('önden') || lowerPrompt.includes('front') || lowerPrompt.includes('karşıdan')) {
-                instructions.push('CAMERA ANGLE: Straight front-facing shot, model looking directly at camera');
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: Straight FRONT-FACING shot. Model looking directly at camera. Symmetrical view of jewelry.');
             }
             if (lowerPrompt.includes('yukarıdan') || lowerPrompt.includes('üstten') || lowerPrompt.includes('top')) {
-                instructions.push('CAMERA ANGLE: Slightly elevated angle, camera looking down at jewelry');
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: HIGH ANGLE shot - camera positioned ABOVE looking DOWN at the model and jewelry.');
             }
             if (lowerPrompt.includes('aşağıdan') || lowerPrompt.includes('alttan') || lowerPrompt.includes('low')) {
-                instructions.push('CAMERA ANGLE: Low angle shot, camera looking up at the model');
+                instructions.push('⚠️ CAMERA ANGLE [MANDATORY]: LOW ANGLE shot - camera positioned BELOW looking UP at the model. Dramatic upward perspective.');
             }
 
             // ===== OUTFIT COLOR =====
@@ -2488,7 +2492,7 @@ The jewelry must remain EXACTLY as provided - do not modify the jewelry in any w
                 body: JSON.stringify({
                     image_url: state.originalBase64,
                     model: "General Use (Light)",
-                    operating_resolution: "1024x1024",
+                    operating_resolution: state.isHighRes ? "2048x2048" : "1024x1024",
                     output_format: "png"
                 })
             });
@@ -2761,7 +2765,7 @@ OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally 
                 body: JSON.stringify({
                     image_url: state.originalBase64,
                     model: "General Use (Light)",
-                    operating_resolution: "1024x1024",
+                    operating_resolution: state.isHighRes ? "2048x2048" : "1024x1024",
                     output_format: "png"
                 })
             });
@@ -3013,7 +3017,7 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
                 body: JSON.stringify({
                     image_url: state.originalBase64,
                     model: "General Use (Light)",
-                    operating_resolution: "1024x1024",
+                    operating_resolution: state.isHighRes ? "2048x2048" : "1024x1024",
                     output_format: "png"
                 })
             });
@@ -3041,22 +3045,42 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             // Smart prompt'ta açı var mı kontrol et
             const hasAngleInstruction = smartPromptInstructions.includes('CAMERA ANGLE:');
 
+            // Boyut bilgisi
+            const aspectRatio = state.originalWidth && state.originalHeight
+                ? (state.originalWidth / state.originalHeight).toFixed(2)
+                : 1;
+            const isPortrait = aspectRatio < 1;
+            const isLandscape = aspectRatio > 1;
+
             // Orijinal görseli referans olarak kullan ama takısız model iste
-            const modelPrompt = `Look at [Input Image 1] - this is a mannequin/display wearing jewelry.
+            const modelPrompt = `Look at [Input Image 1] - this shows jewelry being worn (either on a mannequin or a model).
 
-YOUR TASK: Create a NEW image of a realistic human model in a SIMILAR pose and framing, but WITHOUT any jewelry.
+IMAGE SPECIFICATIONS:
+- Original dimensions: ${state.originalWidth || 1024}x${state.originalHeight || 1024}
+- Aspect ratio: ${isPortrait ? 'PORTRAIT (taller than wide)' : isLandscape ? 'LANDSCAPE (wider than tall)' : 'SQUARE'}
+- Generate output with SAME aspect ratio and orientation
 
-REFERENCE FROM INPUT IMAGE:
-- Match the approximate body position
-- Match the framing (how much of body is visible)
-${hasAngleInstruction ? '- IGNORE the camera angle - use the CAMERA ANGLE specified below instead' : '- Match the camera angle and distance'}
+YOUR TASK: Create a completely NEW image of a realistic human model WITHOUT any jewelry.
+${hasAngleInstruction ? `
+⚠️ CRITICAL: USER REQUESTED A DIFFERENT CAMERA ANGLE!
+DO NOT copy the camera angle from the input image.
+Create the model from the SPECIFIED angle below - this is the PRIMARY requirement.
+` : ''}
+${smartPromptInstructions ? `
+===== USER CUSTOM INSTRUCTIONS (HIGHEST PRIORITY) =====
+${smartPromptInstructions}
+===== END USER INSTRUCTIONS =====
+` : ''}
+REFERENCE FROM INPUT IMAGE (use only if no custom instructions above):
+- Use similar framing (how much of body is visible)
+${hasAngleInstruction ? '- IGNORE the camera angle completely - use USER CUSTOM INSTRUCTIONS angle' : '- Match the camera angle'}
+- The jewelry type helps determine body area needed (neck for necklace, hand for ring, etc.)
 
-${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY):\n${smartPromptInstructions}\n` : ''}
 MODEL REQUIREMENTS:
 - ${profile.desc}
 - Realistic human skin with natural texture
 - Professional model appearance
-- Clear, unobstructed neck and chest area ready for necklace placement
+- Clear, unobstructed area ready for jewelry placement
 
 OUTFIT:
 ${outfitSceneInstructions}
@@ -3065,16 +3089,16 @@ SCENE & BACKGROUND:
 ${style.prompt}
 
 POSE:
-${pose?.prompt || 'Natural pose matching the input image framing'}
+${hasAngleInstruction ? 'Follow the camera angle from USER CUSTOM INSTRUCTIONS' : (pose?.prompt || 'Natural pose matching the input image framing')}
 
-CRITICAL:
+CRITICAL RULES:
 - Do NOT include ANY jewelry, necklaces, or accessories
-- Leave neck completely bare
-- The model should look like they're ready to have jewelry placed on them
+- Leave the jewelry placement area completely bare
 - Professional studio lighting
 - E-commerce quality
+${hasAngleInstruction ? '- THE CAMERA ANGLE FROM USER INSTRUCTIONS IS MANDATORY - DO NOT USE INPUT IMAGE ANGLE' : ''}
 
-OUTPUT: Professional model photo WITHOUT jewelry, matching the input image's framing and pose.`;
+OUTPUT: Professional model photo WITHOUT jewelry${hasAngleInstruction ? ' FROM THE SPECIFIED CAMERA ANGLE' : ''}.`;
 
             const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
