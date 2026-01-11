@@ -1097,6 +1097,7 @@
                 rotation: 0 // Döndürme (derece)
             },
             extractedJewelry: null, // BiRefNet ile çıkarılan takı (şeffaf arka plan)
+            detectedProperties: null, // Otomatik tespit edilen takı özellikleri
             seo: {
                 title: '',
                 altTitles: [],
@@ -2243,7 +2244,7 @@ ${seo.hashtags || ''}
                 state.originalBase64 = e.target.result;
 
                 const img = new Image();
-                img.onload = () => {
+                img.onload = async () => {
                     state.originalImage = img;
                     // Orijinal boyutları sakla
                     state.originalWidth = img.width;
@@ -2256,6 +2257,19 @@ ${seo.hashtags || ''}
                     document.getElementById('fileName').textContent = `${file.name} (${img.width}x${img.height})${state.isHighRes ? ' HD' : ''}`;
 
                     showToast(`Ürün yüklendi${state.isHighRes ? ' (Yüksek çözünürlük)' : ''}`, 'success');
+
+                    // Auto-detect jewelry properties
+                    try {
+                        showToast('🔍 Takı analiz ediliyor...', 'info');
+                        const detected = await autoDetectJewelryProperties(state.originalBase64);
+                        if (detected) {
+                            applyDetectedProperties(detected);
+                            // Store for later use in prompts
+                            state.detectedProperties = detected;
+                        }
+                    } catch (err) {
+                        console.warn('Auto-detect atlandı:', err);
+                    }
                 };
                 img.src = state.originalBase64;
             };
@@ -2398,6 +2412,94 @@ ${seo.hashtags || ''}
 
             const config = necklaceLengthConfig[length];
             showToast(`${config.name} kolye (${config.cm}) seçildi`, 'success');
+        }
+
+        // ========== AUTO-DETECT JEWELRY PROPERTIES ==========
+        async function autoDetectJewelryProperties(imageBase64) {
+            const geminiKey = localStorage.getItem('gemini_api_key');
+            if (!geminiKey) return null;
+
+            console.log('🔍 Takı özellikleri otomatik analiz ediliyor...');
+
+            const analysisPrompt = `Analyze this jewelry image and determine its properties. Return ONLY a JSON object.
+
+ANALYZE:
+1. NECKLACE LENGTH - How long is this necklace when worn?
+   - "choker": Sits tight around throat (35-40cm)
+   - "short": Hangs just below collarbone (45-50cm)
+   - "medium": Hangs to mid-chest (55-65cm)
+   - "long": Hangs to stomach/lower chest (70cm+)
+
+2. PENDANT/CENTERPIECE SIZE - How large is the main pendant or centerpiece?
+   - "small": Tiny, delicate (1-2cm)
+   - "medium": Standard size (2-4cm)
+   - "large": Statement piece (4-7cm)
+   - "xlarge": Oversized (7cm+)
+
+3. IS MULTI-LAYER - Does it have multiple chains/rows?
+
+Look at the chain length, bead count, pendant position, and overall spread to determine these values.
+
+Return ONLY valid JSON in this format:
+{"length": "short|medium|long|choker", "size": "small|medium|large|xlarge", "multiLayer": true|false, "confidence": "high|medium|low"}`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: analysisPrompt },
+                                { inlineData: { mimeType: 'image/jpeg', data: imageBase64.split(',')[1] } }
+                            ]
+                        }],
+                        generationConfig: {
+                            temperature: 0.1,
+                            maxOutputTokens: 200
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    console.warn('Auto-detect API hatası');
+                    return null;
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                // Extract JSON from response
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const result = JSON.parse(jsonMatch[0]);
+                    console.log('✅ Otomatik analiz sonucu:', result);
+                    return result;
+                }
+            } catch (err) {
+                console.warn('Auto-detect parse hatası:', err);
+            }
+            return null;
+        }
+
+        // Apply detected properties to UI
+        function applyDetectedProperties(detected) {
+            if (!detected) return;
+
+            // Update necklace length
+            if (detected.length && necklaceLengthConfig[detected.length]) {
+                selectNecklaceLength(detected.length);
+            }
+
+            // Update jewelry size
+            if (detected.size && jewelrySizeConfig[detected.size]) {
+                selectJewelrySize(detected.size);
+            }
+
+            // Show detection result
+            const lengthName = necklaceLengthConfig[detected.length]?.name || detected.length;
+            const sizeName = jewelrySizeConfig[detected.size]?.name || detected.size;
+            showToast(`🔍 Tespit: ${lengthName} kolye, ${sizeName} boyut`, 'info');
         }
 
         // ========== MODEL PROFILE SELECTION ==========
