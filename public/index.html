@@ -2595,13 +2595,20 @@ IMPORTANT: Generate ONLY the model WITHOUT any jewelry. The jewelry will be adde
 
 ${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY - FOLLOW THESE):\n${smartPromptInstructions}\n` : ''}
 REQUIREMENTS:
-1. Female model from shoulders to lower face (headless crop or partial face)
+1. Female model - professional e-commerce photography style
 2. ${profile.desc}
 3. Clear, unobstructed neck and decolletage area - ready for a necklace to be added
 4. ${outfitSceneInstructions}
 5. Professional studio lighting, e-commerce quality
 6. The neck area should be well-lit and clearly visible
 ${hasAngleInstruction ? '7. IMPORTANT: Use the CAMERA ANGLE specified above in USER CUSTOM INSTRUCTIONS' : ''}
+
+FACE & FRAMING (CRITICAL):
+- Frame the shot from chin/jawline down, or crop naturally from forehead/eyebrows
+- Face can be partially visible (chin, lips) or turned to the side
+- DO NOT blur, white-out, or artificially remove face
+- Natural "headless crop" style is preferred - looks professional, not edited
+- The image should look like a real professional photo, not censored
 
 POSE: ${pose?.prompt || 'Front facing, clear view of neck area'}
 
@@ -3081,6 +3088,13 @@ MODEL REQUIREMENTS:
 - Realistic human skin with natural texture
 - Professional model appearance
 - Clear, unobstructed area ready for jewelry placement
+
+FACE & IDENTITY (VERY IMPORTANT):
+- For e-commerce jewelry photos, face should be NATURALLY CROPPED or partially visible
+- ACCEPTABLE: Crop from forehead/eyebrows down (chin, neck, shoulders visible), side profile looking away, face turned to side
+- DO NOT: Blur face, white-out face, black-out face, or create any artificial face removal
+- The model should look like a real person, just with face naturally out of frame or turned away
+- Professional headless crop (from above eyebrows) is PREFERRED for necklace photos
 
 OUTFIT:
 ${outfitSceneInstructions}
