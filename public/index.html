@@ -3009,59 +3009,53 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             const layerCount = state.detectedProperties?.layerCount || 1;
             const verticalSpread = state.detectedProperties?.verticalSpread || 'moderate';
 
-            // Takısız model oluşturma prompt'u
-            const modelOnlyPrompt = `Create a professional jewelry photography model shot.
+            // Takısız model oluşturma prompt'u - AI TAKIYI GÖRSÜN VE ONA GÖRE MODEL ÜRETSİN
+            const modelOnlyPrompt = `Look at [Input Image 1] - this is the jewelry that will be placed on the model.
 
-IMPORTANT: Generate ONLY the model WITHOUT any jewelry. The jewelry will be added separately.
+⚠️ ANALYZE THE JEWELRY FIRST:
+- How LONG is this necklace? Does it hang to mid-chest? To stomach?
+- How WIDE is the pendant/centerpiece?
+- Is it multi-layer (multiple chains)?
+- What is the total VERTICAL SPREAD?
 
-⚠️ NECKLACE LENGTH: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
-📐 PENDANT SIZE: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
-FRAMING REQUIREMENT: ${neckLenConfig.framing}
-${isMultiLayer ? `
-🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
-- This necklace has ${layerCount} separate chains/rows
-- Need EXTRA vertical space to show all layers
-- Frame must be WIDER to accommodate the full spread
-- Vertical spread: ${verticalSpread.toUpperCase()}
-` : ''}
-${state.settings.necklaceLength === 'long' ? `
-🚨 THIS IS A LONG NECKLACE! You MUST show MORE of the body:
-- Frame should include chin down to STOMACH area
-- The chest must be fully visible
-- Leave space for necklace to hang LOW on the body
-` : state.settings.necklaceLength === 'medium' ? `
-📏 MEDIUM NECKLACE: Show full chest area for proper necklace placement
-- Pendant will hang at mid-chest level
-- Need visible chest area from collarbone to mid-sternum
-` : ''}
+Based on your analysis, create a model with ENOUGH visible chest/body area to fit this jewelry.
 
-${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY - FOLLOW THESE):\n${smartPromptInstructions}\n` : ''}
-REQUIREMENTS:
-1. Female model - professional e-commerce photography style
-2. ${profile.desc}
-3. Clear, unobstructed neck and chest area - frame must accommodate ${neckLenConfig.name} necklace
-4. ${outfitSceneInstructions}
-5. Professional studio lighting, e-commerce quality
-6. The neck/chest area should be well-lit and clearly visible
-${hasAngleInstruction ? '7. IMPORTANT: Use the CAMERA ANGLE specified above in USER CUSTOM INSTRUCTIONS' : ''}
+YOUR TASK: Create a professional model photo WITHOUT any jewelry, but with correct framing for THIS specific jewelry.
 
-FACE & FRAMING (CRITICAL):
-- ${neckLenConfig.framing}
-- Face can be partially visible (chin, lips) or turned to the side
-- DO NOT blur, white-out, or artificially remove face
-- Natural "headless crop" style is preferred - looks professional, not edited
-- The image should look like a real professional photo, not censored
+FRAMING RULES (based on jewelry analysis):
+- If necklace is LONG (hangs to chest/stomach): Show chin to stomach area
+- If necklace is MEDIUM (hangs to mid-chest): Show chin to mid-chest area
+- If necklace is SHORT/CHOKER: Closer crop, chin to upper chest
+- If MULTI-LAYER: Need extra vertical space for all rows
+
+${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY):\n${smartPromptInstructions}\n` : ''}
+
+MODEL REQUIREMENTS:
+- ${profile.desc}
+- ${outfitSceneInstructions}
+- Professional studio lighting
+- Clear, unobstructed neck and chest area
+
+FACE & FRAMING:
+- Face can be partially visible (chin, lips) or turned away
+- Natural "headless crop" from above eyebrows is preferred
+- DO NOT blur or artificially remove face
 
 POSE: ${pose?.prompt || 'Front facing, clear view of neck area'}
+${hasAngleInstruction ? 'Use the CAMERA ANGLE from USER CUSTOM INSTRUCTIONS' : ''}
 
-DO NOT include any jewelry, necklaces, or accessories on the model. Leave the neck completely bare and ready for jewelry placement.`;
+CRITICAL: Generate ENOUGH visible body area for the jewelry in [Input Image 1] to fit naturally.
+DO NOT include any jewelry on the model - leave neck completely bare.`;
 
             const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: modelOnlyPrompt }]
+                        parts: [
+                            { text: modelOnlyPrompt },
+                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } }
+                        ]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
@@ -3100,93 +3094,59 @@ DO NOT include any jewelry, necklaces, or accessories on the model. Leave the ne
             const outfit = outfitPresets[state.settings.outfit];
             const scene = scenePresets[state.settings.scene];
 
-            // Gemini'ye her iki görseli gönder - profesyonel prompt ile
-            const placeJewelryPrompt = `[TASK] Integrate the isolated jewelry product from [Input Image 1] onto the [Model] from [Input Image 2] and create a professional e-commerce jewelry photo.
+            // Gemini'ye her iki görseli gönder - basitleştirilmiş prompt
+            const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
 
-⚠️ NECKLACE LENGTH SETTING: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
-PLACEMENT: ${neckLenConfig.placement}
+⚠️ CRITICAL: ANALYZE THE JEWELRY IMAGE FIRST!
+Look at Input Image 1 carefully:
+- How LONG is the necklace? (Does it hang to chest? To stomach?)
+- How WIDE is the pendant/centerpiece?
+- Is it multi-layer (multiple chains)?
+- What is the total VERTICAL SPREAD of the piece?
 
-📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
-SIZE DESCRIPTION: ${sizeConfig.scaleHint}
-${isMultiLayer ? `
-🔗 MULTI-LAYER NECKLACE ALERT (${layerCount} ROWS)!
-- This jewelry has ${layerCount} SEPARATE chains/rows
-- Each layer must be VISIBLE and properly spaced
-- DO NOT compress or merge the layers together
-- Maintain the FULL vertical spread of all rows
-- Vertical spread level: ${verticalSpread.toUpperCase()}
-` : ''}
+The jewelry image shows EXACTLY how big and long this necklace is.
+Your job is to place it on the model at the SAME relative size and length.
 
-[CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
-The jewelry shown in Input Image 1 MUST remain EXACTLY THE SAME in the final generation.
-NO re-interpretation, artistic alteration, or modification is allowed for these attributes:
+[ABSOLUTE RULES - NO EXCEPTIONS] ⚠️
+1. PRESERVE EXACT SIZE: The jewelry must appear the SAME size as in Input Image 1
+2. PRESERVE EXACT LENGTH: If the necklace hangs to mid-chest in the image, it must hang to mid-chest on the model
+3. PRESERVE EXACT SPREAD: If it's a wide/long necklace, show full chest area to fit it
+4. DO NOT COMPRESS: Never make a long necklace look shorter
+5. DO NOT RESIZE: Never shrink or enlarge the jewelry
 
-• Texture & Material: The specific metal shine, bead surfaces, gemstone facets must be IDENTICAL to source.
-• Pattern & Color: All colors, hues, arrangements must be preserved 100%. Do not alter existing elements.
-• Form & Shape: Every bead position, chain link, pendant shape must NOT be changed.
-• Size & Scale: ${sizeConfig.preserveRule}
-• LENGTH: This is a ${neckLenConfig.name} necklace - MUST hang at ${neckLenConfig.cm} level
-• DRAPING: Preserve exact hanging position and curvature of chain/beads
-• ACTUAL SIZE: The pendant/centerpiece is ${sizeConfig.size} in real life - display accordingly
-${isMultiLayer ? `• MULTI-LAYER SPREAD: ALL ${layerCount} rows must be visible with proper spacing between them` : ''}
+[PRESERVATION - COPY EXACTLY]
+• Every bead, link, stone must be IDENTICAL to Input Image 1
+• Colors, textures, materials - no changes
+• Chain spacing, pendant shape - exact copy
+• If multi-layer: ALL layers must be visible with proper spacing
 
-[NECKLACE PLACEMENT - BASED ON LENGTH SETTING] ⚠️
-${neckLenConfig.placement}
-${state.settings.necklaceLength === 'long' ? `
-🚨 LONG NECKLACE RULES:
-- Pendant MUST hang at stomach/lower chest level
-- DO NOT pull the necklace up to sit at neck level
-- The chain should drape naturally with gravity
-- All beads/links must be visible - no compression
-` : state.settings.necklaceLength === 'medium' ? `
-📏 MEDIUM NECKLACE: Pendant at mid-chest, below collarbone
-- The pendant should rest at CENTER of chest, NOT at throat
-- Maintain proper draping distance from neck
-` : state.settings.necklaceLength === 'choker' ? `
-📏 CHOKER: Tight around throat, minimal draping
-` : ''}
+[PLACEMENT LOGIC]
+• Analyze the jewelry's proportions in Input Image 1
+• The necklace should hang at the SAME relative position on the model
+• Long necklace = pendant at chest/stomach level
+• Short necklace = pendant near collarbone
+• Multi-layer = each row visible and spaced correctly
 
-[MODEL DESCRIPTION]
+[MODEL & SCENE]
 ${profile.desc}
-
-[OUTFIT]
-${outfit?.prompt || 'Elegant complementary clothing'}
-
-[MODEL POSE]
-${pose?.prompt || 'Front facing, clear neck view'}
-
-[SCENE & ATMOSPHERE]
+${outfit?.prompt || 'Elegant clothing'}
 ${scene?.prompt || 'Professional studio'}
 ${style.prompt}
 
-[INTEGRATION & PLACEMENT]
-• Place jewelry naturally on model's neck/chest - it should conform to body contours realistically
-• For LONG necklaces: let them hang down properly, pendant resting on chest
-• Necklace must follow natural draping physics and gravity
-• Must look like actually being worn, not digitally pasted
+[INTEGRATION]
+• Natural draping following gravity
+• Realistic shadows where jewelry touches skin
+• Blend lighting naturally
+• Must look actually worn, not pasted
 
-[LIGHTING & REALISM]
-• Apply realistic shadows and highlights from scene's light source onto jewelry
-• Lighting only "on top" of jewelry - must NOT alter underlying original texture
-• Jewelry should blend into scene lighting, not look like flat sticker
-• Add subtle shadow under jewelry where it touches skin
+[FORBIDDEN] ❌
+• Do NOT shorten the necklace
+• Do NOT compress the chain spacing
+• Do NOT resize the pendant
+• Do NOT merge multi-layer chains
+• Do NOT crop any part of jewelry
 
-[TECHNICAL SPECS]
-• Photorealistic, high resolution, sharp focus
-• Camera: Front-facing, jewelry-centered composition
-• Jewelry is the focal point
-
-[FORBIDDEN ACTIONS] ❌
-• Do NOT enlarge or shrink the jewelry
-• Do NOT shorten long necklaces to make them chokers
-• Do NOT compress the chain/bead spacing
-• Do NOT simplify or reduce any detail
-• Do NOT add or remove beads, gems, elements
-• Do NOT change colors, materials, arrangement
-• Do NOT crop or cut any part of jewelry
-• Do NOT re-interpret the design
-
-OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1 with EXACT same length, naturally integrated onto the model.`;
+OUTPUT: The jewelry must appear EXACTLY as it does in Input Image 1 - same length, same size, same spread - naturally placed on the model.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3549,80 +3509,47 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             const isPortrait = aspectRatio < 1;
             const isLandscape = aspectRatio > 1;
 
-            // Orijinal görseli referans olarak kullan ama takısız model iste
-            const modelPrompt = `Look at [Input Image 1] - this shows jewelry being worn (either on a mannequin or a model).
+            // Orijinal görsel + BiRefNet çıktısı ile model oluştur - AI TAKIYI ANALİZ ETSİN
+            const modelPrompt = `You have TWO input images:
+[Input Image 1] = Original photo showing the jewelry on a mannequin/model
+[Input Image 2] = The EXTRACTED jewelry with transparent background (from BiRefNet)
 
-IMAGE SPECIFICATIONS:
-- Original dimensions: ${state.originalWidth || 1024}x${state.originalHeight || 1024}
-- Aspect ratio: ${isPortrait ? 'PORTRAIT (taller than wide)' : isLandscape ? 'LANDSCAPE (wider than tall)' : 'SQUARE'}
-- Generate output with SAME aspect ratio and orientation
+⚠️ CRITICAL: ANALYZE [Input Image 2] (the extracted jewelry) FIRST!
+Look at the extracted jewelry carefully:
+- How LONG is this necklace? (How far down does it hang?)
+- How WIDE is the pendant/centerpiece?
+- Is it multi-layer (multiple chains)?
+- What is the total VERTICAL SPREAD of the entire piece?
 
-⚠️ NECKLACE LENGTH: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
-📐 PENDANT SIZE: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
-FRAMING REQUIREMENT: ${neckLenConfig.framing}
-${isMultiLayer ? `
-🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
-- This necklace has ${layerCount} separate chains/rows that need to be displayed
-- Need EXTRA vertical chest space to show all layers properly
-- Vertical spread: ${verticalSpread.toUpperCase()} - frame accordingly
-- DO NOT create a tight crop - we need room for all rows
-` : ''}
-${state.settings.necklaceLength === 'long' || (isMultiLayer && verticalSpread !== 'compact') ? `
-🚨 WIDE FRAMING REQUIRED!
-- Frame should include chin down to ${state.settings.necklaceLength === 'long' ? 'STOMACH area' : 'MID-CHEST area'}
-- The chest must be fully visible
-- Leave space for necklace to hang properly
-- DO NOT create a close-up - we need a WIDE frame
-` : state.settings.necklaceLength === 'medium' ? `
-📏 MEDIUM FRAMING: Show full chest area from chin to mid-sternum
-` : ''}
+YOUR TASK: Create a professional model photo WITHOUT any jewelry, but with CORRECT FRAMING to fit this specific jewelry.
 
-YOUR TASK: Create a completely NEW image of a realistic human model WITHOUT any jewelry.
-${hasAngleInstruction ? `
-⚠️ CRITICAL: USER REQUESTED A DIFFERENT CAMERA ANGLE!
-DO NOT copy the camera angle from the input image.
-Create the model from the SPECIFIED angle below - this is the PRIMARY requirement.
-` : ''}
-${smartPromptInstructions ? `
-===== USER CUSTOM INSTRUCTIONS (HIGHEST PRIORITY) =====
-${smartPromptInstructions}
-===== END USER INSTRUCTIONS =====
-` : ''}
-FRAMING BASED ON NECKLACE LENGTH:
-- ${neckLenConfig.framing}
-${hasAngleInstruction ? '- IGNORE the camera angle from input - use USER CUSTOM INSTRUCTIONS angle' : '- Match the camera angle from input'}
-- The body framing MUST accommodate the necklace length specified above
+FRAMING RULES (based on YOUR analysis of the jewelry):
+- If necklace is LONG (hangs to chest/stomach): Show chin to stomach area
+- If necklace is MEDIUM (hangs to mid-chest): Show chin to mid-chest area
+- If necklace is SHORT/CHOKER: Closer crop, chin to upper chest
+- If MULTI-LAYER: Need extra vertical space for all rows
 
-MODEL REQUIREMENTS:
+IMAGE SPECS:
+- Dimensions: ${state.originalWidth || 1024}x${state.originalHeight || 1024}
+- Aspect: ${isPortrait ? 'PORTRAIT' : isLandscape ? 'LANDSCAPE' : 'SQUARE'}
+- Match the aspect ratio
+
+${smartPromptInstructions ? `USER INSTRUCTIONS (PRIORITY):\n${smartPromptInstructions}\n` : ''}
+
+MODEL:
 - ${profile.desc}
-- Realistic human skin with natural texture
-- Professional model appearance
-- Clear, unobstructed area ready for jewelry placement
-
-FACE & IDENTITY (VERY IMPORTANT):
-- For e-commerce jewelry photos, face should be NATURALLY CROPPED or partially visible
-- ACCEPTABLE: Crop from forehead/eyebrows down (chin, neck, shoulders visible), side profile looking away, face turned to side
-- DO NOT: Blur face, white-out face, black-out face, or create any artificial face removal
-- The model should look like a real person, just with face naturally out of frame or turned away
-- Professional headless crop (from above eyebrows) is PREFERRED for necklace photos
-
-OUTFIT:
-${outfitSceneInstructions}
-
-SCENE & BACKGROUND:
-${style.prompt}
-
-POSE:
-${hasAngleInstruction ? 'Follow the camera angle from USER CUSTOM INSTRUCTIONS' : (pose?.prompt || 'Natural pose matching the input image framing')}
-
-CRITICAL RULES:
-- Do NOT include ANY jewelry, necklaces, or accessories
-- Leave the jewelry placement area completely bare
+- ${outfitSceneInstructions}
+- ${style.prompt}
 - Professional studio lighting
-- E-commerce quality
-${hasAngleInstruction ? '- THE CAMERA ANGLE FROM USER INSTRUCTIONS IS MANDATORY - DO NOT USE INPUT IMAGE ANGLE' : ''}
 
-OUTPUT: Professional model photo WITHOUT jewelry${hasAngleInstruction ? ' FROM THE SPECIFIED CAMERA ANGLE' : ''}.`;
+FACE: Natural headless crop (from above eyebrows) or face turned away. DO NOT blur/remove artificially.
+
+POSE: ${hasAngleInstruction ? 'Use angle from USER INSTRUCTIONS' : (pose?.prompt || 'Match the framing from Input Image 1')}
+
+CRITICAL:
+- Generate ENOUGH visible body area for the jewelry to fit naturally
+- DO NOT include any jewelry - leave neck completely bare
+- The framing must accommodate the ACTUAL size of the jewelry in Input Image 2`;
 
             const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3631,7 +3558,8 @@ OUTPUT: Professional model photo WITHOUT jewelry${hasAngleInstruction ? ' FROM T
                     contents: [{
                         parts: [
                             { text: modelPrompt },
-                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }
+                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } },
+                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } }
                         ]
                     }],
                     generationConfig: {
@@ -3665,75 +3593,45 @@ OUTPUT: Professional model photo WITHOUT jewelry${hasAngleInstruction ? ' FROM T
             // ===== ADIM 3: Gemini Edit ile orijinal takıyı yerleştir =====
             showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Orijinal)');
 
-            const placeJewelryPrompt = `[TASK] Integrate the isolated jewelry from [Input Image 1] onto the model in [Input Image 2].
+            const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
 
-⚠️ NECKLACE LENGTH SETTING: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
-PLACEMENT: ${neckLenConfig.placement}
+⚠️ CRITICAL: LOOK AT THE JEWELRY IMAGE FIRST!
+Analyze Input Image 1:
+- How LONG is this necklace?
+- How WIDE is the pendant?
+- Is it multi-layer?
+- What is the total VERTICAL SPREAD?
 
-📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
-SIZE DESCRIPTION: ${sizeConfig.scaleHint}
-${isMultiLayer ? `
-🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
-- This jewelry has ${layerCount} SEPARATE chains/rows
-- Each layer must be VISIBLE and properly spaced
-- DO NOT compress or merge the layers together
-- Maintain the FULL vertical spread between all rows
-- Show ALL ${layerCount} layers distinctly
-` : ''}
+The jewelry image shows EXACTLY how this necklace should look when worn.
+Your job is to place it on the model at the SAME size and length.
 
-[CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
-The jewelry in Input Image 1 MUST remain EXACTLY THE SAME in the final image.
-NO re-interpretation, artistic alteration, or modification allowed.
+[ABSOLUTE RULES] ⚠️
+1. PRESERVE EXACT SIZE: Same size as in Input Image 1
+2. PRESERVE EXACT LENGTH: Same hanging position
+3. PRESERVE EXACT SPREAD: Same vertical coverage
+4. DO NOT COMPRESS: Never shorten the necklace
+5. DO NOT RESIZE: Never shrink or enlarge
 
-PRESERVE 100%:
-• Texture & Material: Exact metal shine, bead surfaces, gemstone facets
-• Pattern & Color: All colors, hues, arrangements - no changes
-• Form & Shape: Every bead position, chain link, pendant shape
-• Size & Scale: ${sizeConfig.preserveRule}
-• ACTUAL PENDANT SIZE: ${sizeConfig.size} - display at this real-world scale
-• LENGTH: This is a ${neckLenConfig.name} necklace - it MUST hang at ${neckLenConfig.cm} level
-• DRAPING: Preserve exact hanging position and curvature of chain/beads
-${isMultiLayer ? `• MULTI-LAYER: ALL ${layerCount} rows must remain visible with proper vertical spacing` : ''}
+[COPY EXACTLY FROM INPUT IMAGE 1]
+• Every bead, link, stone - IDENTICAL
+• All colors, textures, materials
+• Chain spacing, pendant shape
+• If multi-layer: ALL layers visible with proper spacing
 
-[NECKLACE PLACEMENT - BASED ON LENGTH SETTING] ⚠️
-${neckLenConfig.placement}
-${state.settings.necklaceLength === 'long' ? `
-🚨 LONG NECKLACE RULES:
-- Pendant MUST hang at stomach/lower chest level
-- DO NOT pull the necklace up to sit at neck level
-- The chain should drape naturally with gravity
-- All beads/links must be visible - no compression
-` : state.settings.necklaceLength === 'medium' ? `
-📏 MEDIUM NECKLACE RULES:
-- Pendant should rest at mid-chest level
-- Necklace hangs below collarbone
-- Natural draping with some slack
-` : state.settings.necklaceLength === 'choker' ? `
-📏 CHOKER RULES:
-- Necklace sits tight around throat
-- Minimal draping - wraps close to neck
-- No pendant should hang low
-` : ''}
+[PLACEMENT]
+• Analyze how the jewelry hangs in Input Image 1
+• Place at SAME relative position on the model
+• Natural draping following gravity
+• Realistic shadows where jewelry touches skin
 
-[INTEGRATION]
-• Place jewelry at the CORRECT height based on length setting above
-• Jewelry draping should follow gravity naturally
-• For ${neckLenConfig.name} necklaces: ${neckLenConfig.placement}
-• Add realistic shadows where jewelry touches skin
-• Blend lighting naturally - jewelry should match scene lighting
-• Must look actually worn, not digitally pasted
+[FORBIDDEN] ❌
+• Do NOT shorten the necklace
+• Do NOT compress chain spacing
+• Do NOT resize pendant
+• Do NOT merge layers
+• Do NOT crop jewelry
 
-[FORBIDDEN ACTIONS] ❌
-• Do NOT enlarge or shrink the jewelry
-• Do NOT shorten long necklaces to make them chokers
-• Do NOT compress the chain/bead spacing
-• Do NOT simplify any detail
-• Do NOT add or remove elements
-• Do NOT change colors or materials
-• Do NOT crop any part of jewelry
-• Do NOT re-interpret the design
-
-OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1 with EXACT same length and proportions, naturally integrated onto the model.`;
+OUTPUT: Jewelry must appear EXACTLY as in Input Image 1 - same length, size, spread - naturally placed on model.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
