@@ -2421,27 +2421,47 @@ ${seo.hashtags || ''}
 
             console.log('🔍 Takı özellikleri otomatik analiz ediliyor...');
 
-            const analysisPrompt = `Analyze this jewelry image and determine its properties. Return ONLY a JSON object.
+            const analysisPrompt = `You are a jewelry expert. Analyze this jewelry image VERY CAREFULLY.
 
-ANALYZE:
-1. NECKLACE LENGTH - How long is this necklace when worn?
-   - "choker": Sits tight around throat (35-40cm)
-   - "short": Hangs just below collarbone (45-50cm)
-   - "medium": Hangs to mid-chest (55-65cm)
-   - "long": Hangs to stomach/lower chest (70cm+)
+CRITICAL: Look at WHERE the necklace sits on the body/mannequin to determine length.
+- If pendant reaches MID-CHEST or BELOW = "medium" or "long"
+- If necklace sits TIGHT at throat = "choker"
+- If just below collarbone = "short"
 
-2. PENDANT/CENTERPIECE SIZE - How large is the main pendant or centerpiece?
-   - "small": Tiny, delicate (1-2cm)
-   - "medium": Standard size (2-4cm)
-   - "large": Statement piece (4-7cm)
-   - "xlarge": Oversized (7cm+)
+ANALYZE THESE PROPERTIES:
 
-3. IS MULTI-LAYER - Does it have multiple chains/rows?
+1. NECKLACE LENGTH (based on WHERE it hangs on body):
+   - "choker": Tight around throat only (35-40cm)
+   - "short": Just at/below collarbone (45-50cm)
+   - "medium": Pendant at MID-CHEST level (55-65cm) ← MOST COMMON
+   - "long": Pendant at LOWER chest or stomach (70cm+)
 
-Look at the chain length, bead count, pendant position, and overall spread to determine these values.
+   🔍 TIP: If you see a pendant hanging at chest level, it's AT LEAST "medium"!
 
-Return ONLY valid JSON in this format:
-{"length": "short|medium|long|choker", "size": "small|medium|large|xlarge", "multiLayer": true|false, "confidence": "high|medium|low"}`;
+2. PENDANT/CENTERPIECE SIZE (compare to neck width):
+   - "small": Smaller than 2cm, tiny delicate charm
+   - "medium": About 2-4cm, standard pendant
+   - "large": 4-7cm, prominent statement piece ← Faceted stones are usually LARGE
+   - "xlarge": Bigger than 7cm, oversized
+
+   🔍 TIP: Faceted gemstone pendants (like tiger eye, crystal) are usually "large"!
+
+3. MULTI-LAYER: Does it have 2 or more separate chains/rows?
+   - Multi-layer necklaces need MORE vertical space on model
+   - If multi-layer AND one chain hangs lower = use the LONGEST chain's length
+
+4. TOTAL VERTICAL SPREAD: How much vertical space does the entire piece occupy?
+   - This affects how much of the model's chest needs to be visible
+
+Return ONLY this JSON:
+{
+  "length": "choker|short|medium|long",
+  "size": "small|medium|large|xlarge",
+  "multiLayer": true|false,
+  "layerCount": 1|2|3,
+  "verticalSpread": "compact|moderate|wide|very_wide",
+  "confidence": "high|medium|low"
+}`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
@@ -2486,20 +2506,50 @@ Return ONLY valid JSON in this format:
         function applyDetectedProperties(detected) {
             if (!detected) return;
 
+            let finalLength = detected.length;
+            let finalSize = detected.size;
+
+            // Multi-layer necklaces need extra space - bump up length if needed
+            if (detected.multiLayer && detected.layerCount >= 2) {
+                // If detected as short but multi-layer, upgrade to medium
+                if (finalLength === 'short') finalLength = 'medium';
+                // If detected as medium but very wide spread, upgrade to long
+                if (finalLength === 'medium' && detected.verticalSpread === 'very_wide') {
+                    finalLength = 'long';
+                }
+                console.log(`📏 Çift sıra kolye tespit edildi - uzunluk: ${finalLength}`);
+            }
+
+            // Wide vertical spread needs more framing
+            if (detected.verticalSpread === 'wide' || detected.verticalSpread === 'very_wide') {
+                if (finalLength === 'short') finalLength = 'medium';
+                if (finalLength === 'medium' && detected.verticalSpread === 'very_wide') {
+                    finalLength = 'long';
+                }
+            }
+
             // Update necklace length
-            if (detected.length && necklaceLengthConfig[detected.length]) {
-                selectNecklaceLength(detected.length);
+            if (finalLength && necklaceLengthConfig[finalLength]) {
+                selectNecklaceLength(finalLength);
             }
 
             // Update jewelry size
-            if (detected.size && jewelrySizeConfig[detected.size]) {
-                selectJewelrySize(detected.size);
+            if (finalSize && jewelrySizeConfig[finalSize]) {
+                selectJewelrySize(finalSize);
             }
 
+            // Store enhanced detection info
+            state.detectedProperties = {
+                ...detected,
+                adjustedLength: finalLength,
+                adjustedSize: finalSize
+            };
+
             // Show detection result
-            const lengthName = necklaceLengthConfig[detected.length]?.name || detected.length;
-            const sizeName = jewelrySizeConfig[detected.size]?.name || detected.size;
-            showToast(`🔍 Tespit: ${lengthName} kolye, ${sizeName} boyut`, 'info');
+            const lengthName = necklaceLengthConfig[finalLength]?.name || finalLength;
+            const sizeName = jewelrySizeConfig[finalSize]?.name || finalSize;
+            const multiLayerText = detected.multiLayer ? ` (${detected.layerCount} sıra)` : '';
+            showToast(`🔍 Tespit: ${lengthName} kolye${multiLayerText}, ${sizeName} boyut`, 'info');
         }
 
         // ========== MODEL PROFILE SELECTION ==========
@@ -2954,13 +3004,26 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             // Takı boyutu ayarları
             const sizeConfig = jewelrySizeConfig[state.settings.jewelrySize] || jewelrySizeConfig.medium;
 
+            // Çift sıra/katmanlı kolye kontrolü
+            const isMultiLayer = state.detectedProperties?.multiLayer || false;
+            const layerCount = state.detectedProperties?.layerCount || 1;
+            const verticalSpread = state.detectedProperties?.verticalSpread || 'moderate';
+
             // Takısız model oluşturma prompt'u
             const modelOnlyPrompt = `Create a professional jewelry photography model shot.
 
 IMPORTANT: Generate ONLY the model WITHOUT any jewelry. The jewelry will be added separately.
 
 ⚠️ NECKLACE LENGTH: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
+📐 PENDANT SIZE: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
 FRAMING REQUIREMENT: ${neckLenConfig.framing}
+${isMultiLayer ? `
+🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
+- This necklace has ${layerCount} separate chains/rows
+- Need EXTRA vertical space to show all layers
+- Frame must be WIDER to accommodate the full spread
+- Vertical spread: ${verticalSpread.toUpperCase()}
+` : ''}
 ${state.settings.necklaceLength === 'long' ? `
 🚨 THIS IS A LONG NECKLACE! You MUST show MORE of the body:
 - Frame should include chin down to STOMACH area
@@ -2968,6 +3031,8 @@ ${state.settings.necklaceLength === 'long' ? `
 - Leave space for necklace to hang LOW on the body
 ` : state.settings.necklaceLength === 'medium' ? `
 📏 MEDIUM NECKLACE: Show full chest area for proper necklace placement
+- Pendant will hang at mid-chest level
+- Need visible chest area from collarbone to mid-sternum
 ` : ''}
 
 ${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY - FOLLOW THESE):\n${smartPromptInstructions}\n` : ''}
@@ -3043,6 +3108,14 @@ PLACEMENT: ${neckLenConfig.placement}
 
 📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
 SIZE DESCRIPTION: ${sizeConfig.scaleHint}
+${isMultiLayer ? `
+🔗 MULTI-LAYER NECKLACE ALERT (${layerCount} ROWS)!
+- This jewelry has ${layerCount} SEPARATE chains/rows
+- Each layer must be VISIBLE and properly spaced
+- DO NOT compress or merge the layers together
+- Maintain the FULL vertical spread of all rows
+- Vertical spread level: ${verticalSpread.toUpperCase()}
+` : ''}
 
 [CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
 The jewelry shown in Input Image 1 MUST remain EXACTLY THE SAME in the final generation.
@@ -3055,6 +3128,7 @@ NO re-interpretation, artistic alteration, or modification is allowed for these 
 • LENGTH: This is a ${neckLenConfig.name} necklace - MUST hang at ${neckLenConfig.cm} level
 • DRAPING: Preserve exact hanging position and curvature of chain/beads
 • ACTUAL SIZE: The pendant/centerpiece is ${sizeConfig.size} in real life - display accordingly
+${isMultiLayer ? `• MULTI-LAYER SPREAD: ALL ${layerCount} rows must be visible with proper spacing between them` : ''}
 
 [NECKLACE PLACEMENT - BASED ON LENGTH SETTING] ⚠️
 ${neckLenConfig.placement}
@@ -3066,6 +3140,8 @@ ${state.settings.necklaceLength === 'long' ? `
 - All beads/links must be visible - no compression
 ` : state.settings.necklaceLength === 'medium' ? `
 📏 MEDIUM NECKLACE: Pendant at mid-chest, below collarbone
+- The pendant should rest at CENTER of chest, NOT at throat
+- Maintain proper draping distance from neck
 ` : state.settings.necklaceLength === 'choker' ? `
 📏 CHOKER: Tight around throat, minimal draping
 ` : ''}
@@ -3461,6 +3537,11 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             // Takı boyutu ayarları
             const sizeConfig = jewelrySizeConfig[state.settings.jewelrySize] || jewelrySizeConfig.medium;
 
+            // Çift sıra/katmanlı kolye kontrolü
+            const isMultiLayer = state.detectedProperties?.multiLayer || false;
+            const layerCount = state.detectedProperties?.layerCount || 1;
+            const verticalSpread = state.detectedProperties?.verticalSpread || 'moderate';
+
             // Boyut bilgisi
             const aspectRatio = state.originalWidth && state.originalHeight
                 ? (state.originalWidth / state.originalHeight).toFixed(2)
@@ -3477,13 +3558,23 @@ IMAGE SPECIFICATIONS:
 - Generate output with SAME aspect ratio and orientation
 
 ⚠️ NECKLACE LENGTH: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
+📐 PENDANT SIZE: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
 FRAMING REQUIREMENT: ${neckLenConfig.framing}
-${state.settings.necklaceLength === 'long' ? `
-🚨 THIS IS A LONG NECKLACE! You MUST show MORE of the body:
-- Frame should include chin down to STOMACH area
+${isMultiLayer ? `
+🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
+- This necklace has ${layerCount} separate chains/rows that need to be displayed
+- Need EXTRA vertical chest space to show all layers properly
+- Vertical spread: ${verticalSpread.toUpperCase()} - frame accordingly
+- DO NOT create a tight crop - we need room for all rows
+` : ''}
+${state.settings.necklaceLength === 'long' || (isMultiLayer && verticalSpread !== 'compact') ? `
+🚨 WIDE FRAMING REQUIRED!
+- Frame should include chin down to ${state.settings.necklaceLength === 'long' ? 'STOMACH area' : 'MID-CHEST area'}
 - The chest must be fully visible
-- Leave space for necklace to hang LOW on the body
-- DO NOT create a close-up - we need a WIDE frame for long jewelry
+- Leave space for necklace to hang properly
+- DO NOT create a close-up - we need a WIDE frame
+` : state.settings.necklaceLength === 'medium' ? `
+📏 MEDIUM FRAMING: Show full chest area from chin to mid-sternum
 ` : ''}
 
 YOUR TASK: Create a completely NEW image of a realistic human model WITHOUT any jewelry.
@@ -3581,6 +3672,14 @@ PLACEMENT: ${neckLenConfig.placement}
 
 📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
 SIZE DESCRIPTION: ${sizeConfig.scaleHint}
+${isMultiLayer ? `
+🔗 MULTI-LAYER NECKLACE (${layerCount} ROWS)!
+- This jewelry has ${layerCount} SEPARATE chains/rows
+- Each layer must be VISIBLE and properly spaced
+- DO NOT compress or merge the layers together
+- Maintain the FULL vertical spread between all rows
+- Show ALL ${layerCount} layers distinctly
+` : ''}
 
 [CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
 The jewelry in Input Image 1 MUST remain EXACTLY THE SAME in the final image.
@@ -3594,6 +3693,7 @@ PRESERVE 100%:
 • ACTUAL PENDANT SIZE: ${sizeConfig.size} - display at this real-world scale
 • LENGTH: This is a ${neckLenConfig.name} necklace - it MUST hang at ${neckLenConfig.cm} level
 • DRAPING: Preserve exact hanging position and curvature of chain/beads
+${isMultiLayer ? `• MULTI-LAYER: ALL ${layerCount} rows must remain visible with proper vertical spacing` : ''}
 
 [NECKLACE PLACEMENT - BASED ON LENGTH SETTING] ⚠️
 ${neckLenConfig.placement}
