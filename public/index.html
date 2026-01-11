@@ -72,6 +72,10 @@
             background: linear-gradient(135deg, #0891b2, #06b6d4);
             color: white;
         }
+        .jewelry-size-btn.active {
+            background: linear-gradient(135deg, #d946ef, #a855f7);
+            color: white;
+        }
 
         .style-card { transition: all 0.2s ease; cursor: pointer; }
         .style-card:hover { transform: scale(1.02); }
@@ -299,6 +303,30 @@
                                                 Uzun<br><span class="text-[8px] text-slate-500">70cm+</span>
                                             </button>
                                         </div>
+                                    </div>
+
+                                    <!-- Takı Boyutu -->
+                                    <div>
+                                        <label class="text-[10px] text-slate-400 mb-2 block">
+                                            <i class="fa-solid fa-expand mr-1"></i>Takı/Pendant Boyutu
+                                        </label>
+                                        <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
+                                            <button onclick="selectJewelrySize('small')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="small">
+                                                Küçük<br><span class="text-[8px] text-slate-500">1-2cm</span>
+                                            </button>
+                                            <button onclick="selectJewelrySize('medium')" class="jewelry-size-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-size="medium">
+                                                Orta<br><span class="text-[8px] text-slate-500">2-4cm</span>
+                                            </button>
+                                            <button onclick="selectJewelrySize('large')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="large">
+                                                Büyük<br><span class="text-[8px] text-slate-500">4-7cm</span>
+                                            </button>
+                                            <button onclick="selectJewelrySize('xlarge')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="xlarge">
+                                                XL<br><span class="text-[8px] text-slate-500">7cm+</span>
+                                            </button>
+                                        </div>
+                                        <p class="text-[9px] text-slate-500 mt-1 italic">
+                                            <i class="fa-solid fa-info-circle mr-1"></i>Takının gerçek boyutunu seçin - AI doğru ölçekte gösterecek
+                                        </p>
                                     </div>
 
                                     <!-- Model Profilleri -->
@@ -1057,6 +1085,7 @@
                 pose: 'front',  // Varsayılan: önden
                 jewelryCategory: 'general',  // Takı kategorisi
                 necklaceLength: 'short',  // Kolye uzunluğu: choker, short, medium, long
+                jewelrySize: 'medium',  // Takı/pendant boyutu: small, medium, large, xlarge
                 outfit: 'black_vneck',  // Kıyafet
                 scene: 'studio_clean',  // Sahne
                 autoOutfit: false  // AI otomatik öneri
@@ -2303,6 +2332,56 @@ ${seo.hashtags || ''}
             }
         };
 
+        // ========== JEWELRY SIZE CONFIG ==========
+        const jewelrySizeConfig = {
+            small: {
+                name: 'Küçük',
+                size: '1-2cm',
+                desc: 'Small, delicate pendant/charm. Approximately 1-2cm diameter. Dainty and subtle jewelry piece.',
+                scaleHint: 'SMALL pendant - should appear as a tiny, delicate accent. About the size of a fingernail.',
+                preserveRule: 'This is a SMALL piece - do NOT enlarge it. Keep it dainty and subtle.'
+            },
+            medium: {
+                name: 'Orta',
+                size: '2-4cm',
+                desc: 'Medium-sized pendant/centerpiece. Approximately 2-4cm diameter. Standard jewelry size.',
+                scaleHint: 'MEDIUM pendant - normal jewelry size. About the size of a coin (2-4cm).',
+                preserveRule: 'Maintain MEDIUM scale - natural, standard jewelry proportions.'
+            },
+            large: {
+                name: 'Büyük',
+                size: '4-7cm',
+                desc: 'Large statement pendant. Approximately 4-7cm diameter. Eye-catching centerpiece.',
+                scaleHint: 'LARGE pendant - prominent statement piece. About 4-7cm, covering significant chest area.',
+                preserveRule: 'This is a LARGE statement piece - preserve its impressive size. Do NOT shrink.'
+            },
+            xlarge: {
+                name: 'Çok Büyük',
+                size: '7cm+',
+                desc: 'Extra large/oversized jewelry. 7cm+ diameter. Bold statement piece that dominates.',
+                scaleHint: 'EXTRA LARGE jewelry - oversized statement. 7cm+ spread, covering large chest area.',
+                preserveRule: 'OVERSIZED piece - MUST remain very large. Do NOT reduce. This is intentionally big.'
+            }
+        };
+
+        function selectJewelrySize(size) {
+            state.settings.jewelrySize = size;
+
+            // Update buttons
+            document.querySelectorAll('.jewelry-size-btn').forEach(btn => {
+                if (btn.dataset.size === size) {
+                    btn.classList.add('active');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+
+            const config = jewelrySizeConfig[size];
+            showToast(`${config.name} boyut (${config.size}) seçildi`, 'success');
+        }
+
         function selectNecklaceLength(length) {
             state.settings.necklaceLength = length;
 
@@ -2770,6 +2849,9 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             // Kolye uzunluğu ayarları
             const neckLenConfig = necklaceLengthConfig[state.settings.necklaceLength] || necklaceLengthConfig.short;
 
+            // Takı boyutu ayarları
+            const sizeConfig = jewelrySizeConfig[state.settings.jewelrySize] || jewelrySizeConfig.medium;
+
             // Takısız model oluşturma prompt'u
             const modelOnlyPrompt = `Create a professional jewelry photography model shot.
 
@@ -2857,6 +2939,9 @@ DO NOT include any jewelry, necklaces, or accessories on the model. Leave the ne
 ⚠️ NECKLACE LENGTH SETTING: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
 PLACEMENT: ${neckLenConfig.placement}
 
+📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
+SIZE DESCRIPTION: ${sizeConfig.scaleHint}
+
 [CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
 The jewelry shown in Input Image 1 MUST remain EXACTLY THE SAME in the final generation.
 NO re-interpretation, artistic alteration, or modification is allowed for these attributes:
@@ -2864,9 +2949,10 @@ NO re-interpretation, artistic alteration, or modification is allowed for these 
 • Texture & Material: The specific metal shine, bead surfaces, gemstone facets must be IDENTICAL to source.
 • Pattern & Color: All colors, hues, arrangements must be preserved 100%. Do not alter existing elements.
 • Form & Shape: Every bead position, chain link, pendant shape must NOT be changed.
-• Size & Scale: Do NOT enlarge or shrink. Keep ORIGINAL proportions exactly.
+• Size & Scale: ${sizeConfig.preserveRule}
 • LENGTH: This is a ${neckLenConfig.name} necklace - MUST hang at ${neckLenConfig.cm} level
 • DRAPING: Preserve exact hanging position and curvature of chain/beads
+• ACTUAL SIZE: The pendant/centerpiece is ${sizeConfig.size} in real life - display accordingly
 
 [NECKLACE PLACEMENT - BASED ON LENGTH SETTING] ⚠️
 ${neckLenConfig.placement}
@@ -3270,6 +3356,9 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             // Kolye uzunluğu ayarları
             const neckLenConfig = necklaceLengthConfig[state.settings.necklaceLength] || necklaceLengthConfig.short;
 
+            // Takı boyutu ayarları
+            const sizeConfig = jewelrySizeConfig[state.settings.jewelrySize] || jewelrySizeConfig.medium;
+
             // Boyut bilgisi
             const aspectRatio = state.originalWidth && state.originalHeight
                 ? (state.originalWidth / state.originalHeight).toFixed(2)
@@ -3388,6 +3477,9 @@ OUTPUT: Professional model photo WITHOUT jewelry${hasAngleInstruction ? ' FROM T
 ⚠️ NECKLACE LENGTH SETTING: ${neckLenConfig.name.toUpperCase()} (${neckLenConfig.cm})
 PLACEMENT: ${neckLenConfig.placement}
 
+📐 JEWELRY SIZE SETTING: ${sizeConfig.name.toUpperCase()} (${sizeConfig.size})
+SIZE DESCRIPTION: ${sizeConfig.scaleHint}
+
 [CRITICAL PRESERVATION CONSTRAINTS] ⚠️ PRIMARY RULE: PRODUCT FIDELITY ⚠️
 The jewelry in Input Image 1 MUST remain EXACTLY THE SAME in the final image.
 NO re-interpretation, artistic alteration, or modification allowed.
@@ -3396,7 +3488,8 @@ PRESERVE 100%:
 • Texture & Material: Exact metal shine, bead surfaces, gemstone facets
 • Pattern & Color: All colors, hues, arrangements - no changes
 • Form & Shape: Every bead position, chain link, pendant shape
-• Size & Scale: Do NOT enlarge or shrink - keep ORIGINAL proportions
+• Size & Scale: ${sizeConfig.preserveRule}
+• ACTUAL PENDANT SIZE: ${sizeConfig.size} - display at this real-world scale
 • LENGTH: This is a ${neckLenConfig.name} necklace - it MUST hang at ${neckLenConfig.cm} level
 • DRAPING: Preserve exact hanging position and curvature of chain/beads
 
