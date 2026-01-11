@@ -580,7 +580,11 @@
                                         <button onclick="addSmartPrompt('karanlık stüdyo')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Dark</button>
                                     </div>
 
-                                    <p class="text-[8px] text-slate-500 mt-2">
+                                    <p class="text-[9px] text-indigo-400 mt-2">
+                                        <i class="fa-solid fa-arrow-up mr-1"></i>
+                                        Yazdıktan sonra yukarıdaki <strong>"Oluştur"</strong> butonuna tıklayın
+                                    </p>
+                                    <p class="text-[8px] text-slate-500 mt-1">
                                         <i class="fa-solid fa-shield-check text-green-400 mr-1"></i>
                                         Ürün asla değişmez - sadece model, kıyafet, sahne değişir
                                     </p>
@@ -2602,11 +2606,15 @@ The jewelry placement is FINAL. Only enhance the blending and overall image qual
             const outfitSceneInstructions = getOutfitScenePrompt();
             const smartPromptInstructions = getSmartPromptInstructions();
 
+            // Smart prompt'ta açı var mı kontrol et
+            const hasAngleInstruction = smartPromptInstructions.includes('CAMERA ANGLE:');
+
             // Takısız model oluşturma prompt'u
             const modelOnlyPrompt = `Create a professional jewelry photography model shot.
 
 IMPORTANT: Generate ONLY the model WITHOUT any jewelry. The jewelry will be added separately.
 
+${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY - FOLLOW THESE):\n${smartPromptInstructions}\n` : ''}
 REQUIREMENTS:
 1. Female model from shoulders to lower face (headless crop or partial face)
 2. ${profile.desc}
@@ -2614,9 +2622,9 @@ REQUIREMENTS:
 4. ${outfitSceneInstructions}
 5. Professional studio lighting, e-commerce quality
 6. The neck area should be well-lit and clearly visible
+${hasAngleInstruction ? '7. IMPORTANT: Use the CAMERA ANGLE specified above in USER CUSTOM INSTRUCTIONS' : ''}
 
 POSE: ${pose?.prompt || 'Front facing, clear view of neck area'}
-${smartPromptInstructions}
 
 DO NOT include any jewelry, necklaces, or accessories on the model. Leave the neck completely bare and ready for jewelry placement.`;
 
@@ -3055,16 +3063,20 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             const outfitSceneInstructions = getOutfitScenePrompt();
             const smartPromptInstructions = getSmartPromptInstructions();
 
+            // Smart prompt'ta açı var mı kontrol et
+            const hasAngleInstruction = smartPromptInstructions.includes('CAMERA ANGLE:');
+
             // Orijinal görseli referans olarak kullan ama takısız model iste
             const modelPrompt = `Look at [Input Image 1] - this is a mannequin/display wearing jewelry.
 
 YOUR TASK: Create a NEW image of a realistic human model in a SIMILAR pose and framing, but WITHOUT any jewelry.
 
 REFERENCE FROM INPUT IMAGE:
-- Match the approximate body position and angle
+- Match the approximate body position
 - Match the framing (how much of body is visible)
-- Match the camera angle and distance
+${hasAngleInstruction ? '- IGNORE the camera angle - use the CAMERA ANGLE specified below instead' : '- Match the camera angle and distance'}
 
+${smartPromptInstructions ? `USER CUSTOM INSTRUCTIONS (PRIORITY):\n${smartPromptInstructions}\n` : ''}
 MODEL REQUIREMENTS:
 - ${profile.desc}
 - Realistic human skin with natural texture
@@ -3079,7 +3091,6 @@ ${style.prompt}
 
 POSE:
 ${pose?.prompt || 'Natural pose matching the input image framing'}
-${smartPromptInstructions}
 
 CRITICAL:
 - Do NOT include ANY jewelry, necklaces, or accessories
