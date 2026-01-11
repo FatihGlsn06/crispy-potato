@@ -2776,6 +2776,15 @@ NO re-interpretation, artistic alteration, or modification is allowed for these 
 • Pattern & Color: All colors, hues, arrangements must be preserved 100%. Do not alter existing elements.
 • Form & Shape: Every bead position, chain link, pendant shape must NOT be changed.
 • Size & Scale: Do NOT enlarge or shrink. Keep ORIGINAL proportions exactly.
+• LENGTH: If necklace is LONG, it MUST stay LONG - do NOT shorten it
+• DRAPING: Preserve exact hanging position and curvature of chain/beads
+
+[NECKLACE LENGTH - CRITICAL] ⚠️
+- LONG necklaces (below collarbone) MUST remain long
+- Do NOT compress or shorten the necklace to fit closer to neck
+- The pendant/end piece should hang at the SAME relative position as original
+- Count the beads/links - they must ALL be visible, not hidden or compressed
+- If original necklace hangs to chest level, output must also hang to chest level
 
 [MODEL DESCRIPTION]
 ${profile.desc}
@@ -2792,7 +2801,8 @@ ${style.prompt}
 
 [INTEGRATION & PLACEMENT]
 • Place jewelry naturally on model's neck/chest - it should conform to body contours realistically
-• Necklace must follow natural draping physics - not float or stick unnaturally
+• For LONG necklaces: let them hang down properly, pendant resting on chest
+• Necklace must follow natural draping physics and gravity
 • Must look like actually being worn, not digitally pasted
 
 [LIGHTING & REALISM]
@@ -2808,13 +2818,15 @@ ${style.prompt}
 
 [FORBIDDEN ACTIONS] ❌
 • Do NOT enlarge or shrink the jewelry
+• Do NOT shorten long necklaces to make them chokers
+• Do NOT compress the chain/bead spacing
 • Do NOT simplify or reduce any detail
 • Do NOT add or remove beads, gems, elements
 • Do NOT change colors, materials, arrangement
 • Do NOT crop or cut any part of jewelry
 • Do NOT re-interpret the design
 
-OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally integrated onto the model.`;
+OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1 with EXACT same length, naturally integrated onto the model.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3273,23 +3285,34 @@ PRESERVE 100%:
 • Pattern & Color: All colors, hues, arrangements - no changes
 • Form & Shape: Every bead position, chain link, pendant shape
 • Size & Scale: Do NOT enlarge or shrink - keep ORIGINAL proportions
+• LENGTH: If necklace is LONG, it MUST stay LONG - do NOT shorten
+• DRAPING: Preserve exact hanging position and curvature of chain/beads
+
+[NECKLACE LENGTH - CRITICAL] ⚠️
+- LONG necklaces (below collarbone) MUST remain long
+- Do NOT compress or shorten the necklace to fit closer to neck
+- The pendant/end piece should hang at the SAME relative position as original
+- Count the beads/links - they must ALL be visible, not hidden or compressed
 
 [INTEGRATION]
 • Place jewelry naturally on model's neck/chest
-• Jewelry must follow natural draping physics
+• Jewelry draping should follow gravity naturally
+• For LONG necklaces: let them hang down properly, pendant resting on chest
 • Add realistic shadows where jewelry touches skin
 • Blend lighting naturally - jewelry should match scene lighting
 • Must look actually worn, not digitally pasted
 
 [FORBIDDEN ACTIONS] ❌
 • Do NOT enlarge or shrink the jewelry
+• Do NOT shorten long necklaces to make them chokers
+• Do NOT compress the chain/bead spacing
 • Do NOT simplify any detail
 • Do NOT add or remove elements
 • Do NOT change colors or materials
 • Do NOT crop any part of jewelry
 • Do NOT re-interpret the design
 
-OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1, naturally integrated onto the model.`;
+OUTPUT: The jewelry must be PIXEL-PERFECT identical to Input Image 1 with EXACT same length and proportions, naturally integrated onto the model.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
