@@ -786,6 +786,32 @@
                                     <div id="visualAnalysisContent" class="grid grid-cols-2 gap-2 text-[10px]"></div>
                                 </div>
 
+                                <!-- Barkod ve Model Kodu - Hızlı Kopyalama -->
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="p-2 bg-slate-800/50 rounded-lg border border-slate-700">
+                                        <label class="text-[10px] text-slate-400 mb-1 block">
+                                            <i class="fa-solid fa-barcode mr-1"></i>Barkod
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" id="seoBarcode" class="flex-1 bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs font-mono" readonly>
+                                            <button onclick="copySEO('barcode')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs" title="Kopyala">
+                                                <i class="fa-solid fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bg-slate-800/50 rounded-lg border border-slate-700">
+                                        <label class="text-[10px] text-slate-400 mb-1 block">
+                                            <i class="fa-solid fa-tag mr-1"></i>Model Kodu
+                                        </label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="text" id="seoModelCode" class="flex-1 bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs font-mono" readonly>
+                                            <button onclick="copySEO('modelCode')" class="p-1.5 bg-emerald-600 hover:bg-emerald-500 rounded text-xs" title="Kopyala">
+                                                <i class="fa-solid fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Başlık Önerileri -->
                                 <div>
                                     <label class="text-xs text-slate-400 flex justify-between mb-1">
@@ -1295,6 +1321,8 @@ Görsel analizinden çıkardığın renk ve tasarım bilgileri → MUTLAKA başl
         "style": "Minimal/Bohem/Vintage/Statement",
         "chainType": "İnce zincir/Boncuklu/Örgü vb."
     },
+    "barcode": "8680XXXXXXXXX (13 haneli benzersiz barkod - 8680 ile başla, rastgele 9 rakam ekle)",
+    "modelCode": "KLY-RG-001 (Ürün tipi kısaltması + renk kodu + 3 haneli numara)",
     "title": "Görsel analizinden çıkan özellikler + arama kelimeleri (99 karakter)",
     "altTitles": ["3 farklı kelime sıralaması ile alternatif başlıklar"],
     "category": "Takı > Kolye / Yüzük / Bileklik > Alt kategori",
@@ -1304,6 +1332,11 @@ Görsel analizinden çıkardığın renk ve tasarım bilgileri → MUTLAKA başl
     "longTail": ["5 adet 4-6 kelimelik arama sorgusu"],
     "hashtags": "#trendyol #kolye #gümüş #takı #moda"
 }
+
+MODEL KODU FORMATI:
+- Kolye → KLY, Yüzük → YZK, Bileklik → BLK, Küpe → KPE, Set → SET, Halhal → HLH
+- Renk: RG (Rose Gold), GMS (Gümüş), ALT (Altın), ANT (Antik)
+- Örnek: KLY-RG-847, YZK-GMS-213, BLK-ALT-456
 
 SADECE JSON döndür, başka bir şey yazma!`
                                 },
@@ -1356,6 +1389,10 @@ SADECE JSON döndür, başka bir şey yazma!`
                             }
                         });
                     }
+
+                    // 0.5 Barkod ve Model Kodu
+                    document.getElementById('seoBarcode').value = seoData.barcode || '';
+                    document.getElementById('seoModelCode').value = seoData.modelCode || '';
 
                     // 1. Ana Başlık
                     document.getElementById('seoTitle').value = seoData.title || '';
@@ -1463,6 +1500,8 @@ SADECE JSON döndür, başka bir şey yazma!`
             else if (type === 'category') text = document.getElementById('seoCategory').value;
             else if (type === 'hashtags') text = state.seo.hashtags || '';
             else if (type === 'triggers') text = state.seo.triggerWords?.join(', ') || '';
+            else if (type === 'barcode') text = document.getElementById('seoBarcode').value;
+            else if (type === 'modelCode') text = document.getElementById('seoModelCode').value;
 
             navigator.clipboard.writeText(text).then(() => {
                 showToast('Kopyalandı!', 'success');
@@ -1480,6 +1519,9 @@ SADECE JSON döndür, başka bir şey yazma!`
             const allText = `📦 TRENDYOL ÜRÜN SEO BİLGİLERİ
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+🔢 BARKOD: ${seo.barcode || '-'}
+🏷️ MODEL KODU: ${seo.modelCode || '-'}
+
 📌 BAŞLIK (${(seo.title || '').length}/99 karakter):
 ${seo.title}
 
@@ -1488,9 +1530,6 @@ ${(seo.altTitles || []).map((t, i) => `${i + 1}. ${t}`).join('\n')}
 
 📂 KATEGORİ:
 ${seo.category || '-'}
-
-🏷️ TRENDYOL ÖZELLİK ALANLARI:
-${Object.entries(seo.attributes || {}).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
 📄 TEKNİK AÇIKLAMA:
 ${seo.description}
