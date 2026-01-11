@@ -778,6 +778,14 @@
                             </div>
 
                             <div id="seoResults" class="hidden space-y-4">
+                                <!-- Görsel Analiz Sonuçları -->
+                                <div id="visualAnalysisSection" class="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                                    <label class="text-xs text-purple-400 mb-2 block font-semibold">
+                                        <i class="fa-solid fa-eye mr-1"></i>AI Görsel Analizi
+                                    </label>
+                                    <div id="visualAnalysisContent" class="grid grid-cols-2 gap-2 text-[10px]"></div>
+                                </div>
+
                                 <!-- Başlık Önerileri -->
                                 <div>
                                     <label class="text-xs text-slate-400 flex justify-between mb-1">
@@ -1238,20 +1246,56 @@ Her ürünün sonuna "Trend Şık Zarif Moda Yeni Sezon" KOYMA!
 Sadece 2-3 stil kelimesi yeterli, abartma!
 
 ===== GÖREV =====
-1. Görseli analiz et - ürün türü, malzeme, taş, stil belirle
+1. Görseli DETAYLİ analiz et (aşağıdaki rehberi kullan)
 2. Kullanıcının verdiği teknik bilgileri (renk, kaplama, malzeme) BAŞLIĞA DAHİL ET
 3. Başlığı yüksek arama hacimli kelimeler + ürün özellikleri ile oluştur
 4. 99 karakteri DOLDUR ama geçme
+
+===== GÖRSEL ANALİZ REHBERİ (DİKKATLİ İNCELE!) =====
+
+🎨 RENK ANALİZİ:
+- Metal rengi: Altın sarısı, rose gold (pembe altın), gümüş gri, antik bronz, bakır
+- Taş renkleri: Şeffaf/beyaz, mavi, yeşil, kırmızı, siyah, mor, turkuaz, pembe
+- Boncuk/inci renkleri: Beyaz inci, siyah inci, krem, çok renkli
+- Genel ton: Sıcak (altın tonları) veya soğuk (gümüş tonları)
+
+💎 TASARIM ANALİZİ:
+- Şekil/Motif: Çiçek, yaprak, kalp, yıldız, ay, geometrik, damla, kelebek, kuş, hayvan, harf/isim, sonsuzluk, haç, nazar, fatma eli, fil, baykuş
+- Doku: Pürüzsüz parlak, mat, dokulu, örgü, zincir, hasır
+- Stil: Minimal/sade, statement/gösterişli, bohem/etnik, vintage/antik, modern/geometrik, romantik, gotik
+
+📏 YAPI ANALİZİ:
+- Zincir tipi: İnce zincir, kalın zincir, boncuklu, örgü, yılan zincir, top zincir
+- Pendant/Uç: Tek taş, çoklu taş, figür, plaka, madalyon
+- Boyut hissi: Minimal/küçük, orta, büyük/statement
+
+🔍 MALZEME TAHMİNİ (görünüme göre):
+- Parlak sarı metal → Altın veya altın kaplama
+- Parlak beyaz metal → Gümüş veya çelik
+- Pembe/rose tonlu metal → Rose gold
+- Mat/kararmış metal → Antik, oksitli
+- Parlak kesimli taşlar → Zirkon, kristal
+- Doğal görünümlü taşlar → Doğal taş (turkuaz, akik, oniks vb.)
+- Yuvarlak parlak boncuklar → İnci veya boncuk
 
 ===== ÖNEMLİ: ÜRÜN ÖZELLİKLERİ BAŞLIĞA GİRER =====
 Kullanıcı "925 ayar gümüş, rose gold kaplama, zirkon taş" verdiyse:
 BAŞLIK: "Kadın 925 Ayar Gümüş Kolye Rose Gold Kaplama Zirkon Taş Minimal Şık"
 
-Renk, kaplama, kalite, malzeme → MUTLAKA başlıkta olmalı!
+Görsel analizinden çıkardığın renk ve tasarım bilgileri → MUTLAKA başlıkta olmalı!
 
 ===== JSON ÇIKTISI =====
 {
-    "title": "Ürün özellikleri + arama kelimeleri içeren 99 karakterlik başlık",
+    "visualAnalysis": {
+        "productType": "Kolye/Yüzük/Bileklik/Küpe/Set",
+        "metalColor": "Altın/Gümüş/Rose Gold/Antik",
+        "stoneType": "Zirkon/İnci/Doğal Taş/Yok",
+        "stoneColor": "Şeffaf/Mavi/Yeşil/Siyah vb.",
+        "designMotif": "Çiçek/Kalp/Yaprak/Geometrik vb.",
+        "style": "Minimal/Bohem/Vintage/Statement",
+        "chainType": "İnce zincir/Boncuklu/Örgü vb."
+    },
+    "title": "Görsel analizinden çıkan özellikler + arama kelimeleri (99 karakter)",
     "altTitles": ["3 farklı kelime sıralaması ile alternatif başlıklar"],
     "category": "Takı > Kolye / Yüzük / Bileklik > Alt kategori",
     "description": "Teknik açıklama - ürün özellikleri maddeler halinde",
@@ -1288,6 +1332,30 @@ SADECE JSON döndür, başka bir şey yazma!`
                     state.seo = seoData;
 
                     // === UI GÜNCELLE ===
+
+                    // 0. Görsel Analiz Sonuçları
+                    const vaContainer = document.getElementById('visualAnalysisContent');
+                    vaContainer.innerHTML = '';
+                    if (seoData.visualAnalysis) {
+                        const va = seoData.visualAnalysis;
+                        const analysisLabels = {
+                            productType: '📦 Ürün Tipi',
+                            metalColor: '🎨 Metal Rengi',
+                            stoneType: '💎 Taş Tipi',
+                            stoneColor: '🔮 Taş Rengi',
+                            designMotif: '✨ Tasarım',
+                            style: '🏷️ Stil',
+                            chainType: '⛓️ Zincir'
+                        };
+                        Object.entries(va).forEach(([key, value]) => {
+                            if (value && value !== 'Yok' && value !== '-') {
+                                const div = document.createElement('div');
+                                div.className = 'bg-purple-500/10 rounded px-2 py-1';
+                                div.innerHTML = `<span class="text-purple-300">${analysisLabels[key] || key}:</span> <span class="text-white">${value}</span>`;
+                                vaContainer.appendChild(div);
+                            }
+                        });
+                    }
 
                     // 1. Ana Başlık
                     document.getElementById('seoTitle').value = seoData.title || '';
