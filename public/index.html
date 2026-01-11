@@ -124,6 +124,28 @@
             cursor: pointer;
         }
 
+        .accordion-header {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .accordion-header:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 2000px;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.open .accordion-icon {
+            transform: rotate(180deg);
+        }
+
         .cropper-container { max-height: 400px; }
     </style>
 </head>
@@ -177,497 +199,396 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
                 <!-- Left Panel: Upload & Settings -->
-                <div class="lg:col-span-5 xl:col-span-4 space-y-3 md:space-y-4">
+                <div class="lg:col-span-5 xl:col-span-4 space-y-3">
 
-                    <!-- Mode Selector -->
+                    <!-- ====== ANA KONTROLLER (Her Zaman Görünür) ====== -->
                     <div class="glass rounded-2xl p-4">
-                        <h3 class="font-semibold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-toggle-on text-cyan-400"></i>
-                            Çalışma Modu
-                        </h3>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="setWorkMode('mannequin')" id="modeMannequin" class="mode-btn active p-2 sm:p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all">
-                                <i class="fa-solid fa-person-dress text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2"></i>
-                                <p class="text-[10px] sm:text-xs font-medium">Manken</p>
-                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Takı mankende</p>
-                            </button>
-                            <button onclick="setWorkMode('flatlay')" id="modeFlatlay" class="mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
-                                <i class="fa-solid fa-table-cells text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2"></i>
-                                <p class="text-[10px] sm:text-xs font-medium">Düz Zemin</p>
-                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Model ekler</p>
-                            </button>
-                            <button onclick="setWorkMode('product')" id="modeProduct" class="mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500">
-                                <i class="fa-solid fa-gem text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2"></i>
-                                <p class="text-[10px] sm:text-xs font-medium">Sadece Ürün</p>
-                                <p class="text-[8px] sm:text-[9px] text-slate-400 hidden sm:block">Model yok</p>
-                            </button>
+                        <!-- Mode + Upload Kompakt -->
+                        <div class="flex gap-3 mb-4">
+                            <!-- Mode Buttons -->
+                            <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
+                                <button onclick="setWorkMode('mannequin')" id="modeMannequin" class="mode-btn active px-3 py-2 rounded-md text-[10px] font-medium transition-all" title="Manken fotoğrafı">
+                                    <i class="fa-solid fa-person-dress text-cyan-400"></i>
+                                </button>
+                                <button onclick="setWorkMode('flatlay')" id="modeFlatlay" class="mode-btn px-3 py-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" title="Düz zemin">
+                                    <i class="fa-solid fa-table-cells"></i>
+                                </button>
+                                <button onclick="setWorkMode('product')" id="modeProduct" class="mode-btn px-3 py-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" title="Sadece ürün">
+                                    <i class="fa-solid fa-gem"></i>
+                                </button>
+                            </div>
+                            <div class="flex-1 text-right">
+                                <span id="currentModeText" class="text-xs text-slate-400">Manken Modu</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Upload Area -->
-                    <div class="glass rounded-2xl p-4 md:p-5">
-                        <h3 class="font-semibold mb-3 md:mb-4 flex items-center gap-2 text-sm md:text-base">
-                            <i class="fa-solid fa-cloud-arrow-up text-orange-400"></i>
-                            Ürün Yükle
-                        </h3>
+                        <!-- Upload Area Kompakt -->
                         <div id="dropZone" onclick="document.getElementById('fileInput').click()"
-                             class="border-2 border-dashed border-slate-600 rounded-xl p-4 sm:p-6 md:p-8 text-center cursor-pointer hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
+                             class="border-2 border-dashed border-slate-600 rounded-xl p-4 text-center cursor-pointer hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
                             <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleUpload(event)">
-                            <div id="uploadPrompt">
-                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 mb-3"></i>
-                                <p class="text-sm font-medium">Sürükle & Bırak veya Tıkla</p>
-                                <p class="text-xs text-slate-500 mt-1">PNG, JPG, WEBP</p>
+                            <div id="uploadPrompt" class="flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-500"></i>
+                                <div class="text-left">
+                                    <p class="text-sm font-medium">Ürün Yükle</p>
+                                    <p class="text-[10px] text-slate-500">PNG, JPG, WEBP</p>
+                                </div>
                             </div>
                             <div id="uploadPreviewContainer" class="hidden">
-                                <img id="uploadPreview" class="max-h-40 mx-auto rounded-lg">
-                                <p id="fileName" class="mt-2 text-xs text-slate-400"></p>
+                                <img id="uploadPreview" class="max-h-32 mx-auto rounded-lg">
+                                <p id="fileName" class="mt-2 text-[10px] text-slate-400"></p>
                             </div>
+                        </div>
+
+                        <!-- Generate Buttons -->
+                        <div class="flex gap-2 mt-4">
+                            <button onclick="previewJewelryPlacement()" id="previewBtn" class="flex-1 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 font-medium transition-all text-sm">
+                                <i class="fa-solid fa-eye mr-1"></i>Önizle
+                            </button>
+                            <button onclick="generateImage()" id="generateBtn" class="flex-[2] py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 font-bold transition-all glow-purple">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Oluştur
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Model Profiles - JEWELRY CATEGORY BASED -->
-                    <div class="glass rounded-2xl p-4 md:p-5 border border-purple-500/30">
-                        <h3 class="font-semibold mb-3 flex items-center gap-2 text-sm md:text-base">
-                            <i class="fa-solid fa-user text-purple-400"></i>
-                            Takı Tipi & Model
-                            <span class="status-badge active ml-auto text-[9px] md:text-[10px]">AI OPTİMİZE</span>
-                        </h3>
+                    <!-- ====== ACCORDION AYARLAR ====== -->
+                    <div class="space-y-2">
 
-                        <!-- Jewelry Category Tabs -->
-                        <div class="flex gap-1 mb-3 bg-slate-800/50 p-1 rounded-lg">
-                            <button onclick="selectJewelryCategory('general')" class="jewelry-cat-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-cat="general">
-                                <i class="fa-solid fa-shapes mr-1"></i>Genel
-                            </button>
-                            <button onclick="selectJewelryCategory('minimal')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="minimal">
-                                <i class="fa-solid fa-minus mr-1"></i>Minimal
-                            </button>
-                            <button onclick="selectJewelryCategory('statement')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="statement">
-                                <i class="fa-solid fa-gem mr-1"></i>Statement
-                            </button>
-                            <button onclick="selectJewelryCategory('pearl')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="pearl">
-                                <i class="fa-solid fa-circle mr-1"></i>İnci
-                            </button>
-                        </div>
-
-                        <!-- Category Description -->
-                        <p id="categoryDesc" class="text-[10px] text-slate-400 mb-2 px-1">
-                            Standart takı çekimleri için genel modeller
-                        </p>
-
-                        <!-- Model Cards Container -->
-                        <div class="grid grid-cols-2 gap-2" id="modelProfilesContainer">
-                            <!-- General Models -->
-                            <div onclick="selectModelProfile('neck_model')" class="model-card selected p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="neck_model" data-category="general">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-rose-200 to-rose-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-circle-user text-rose-700 text-sm"></i>
+                        <!-- Accordion 1: Model & Stil -->
+                        <div class="glass rounded-xl overflow-hidden">
+                            <div class="accordion-header p-3 flex items-center justify-between" onclick="toggleAccordion(this)">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user text-purple-400"></i>
+                                    <span class="font-medium text-sm">Model & Stil</span>
+                                    <span class="text-[9px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">AI</span>
                                 </div>
-                                <p class="text-[11px] font-medium text-center">Kolye</p>
-                                <p class="text-[9px] text-slate-500 text-center">Boyun & Dekolte</p>
+                                <i class="fa-solid fa-chevron-down accordion-icon text-slate-400 text-xs"></i>
                             </div>
-                            <div onclick="selectModelProfile('hand_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="hand_model" data-category="general">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-hand text-amber-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">El</p>
-                                <p class="text-[9px] text-slate-500 text-center">Yüzük & Bileklik</p>
-                            </div>
-                            <div onclick="selectModelProfile('set_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="set_model" data-category="general">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-violet-200 to-violet-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-users text-violet-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Set</p>
-                                <p class="text-[9px] text-slate-500 text-center">Kolye + Küpe</p>
-                            </div>
-                            <div onclick="selectModelProfile('boho_model')" class="model-card p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-purple-500/50 transition-all" data-model="boho_model" data-category="general">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-orange-200 to-amber-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-sun text-orange-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Bohem</p>
-                                <p class="text-[9px] text-slate-500 text-center">Doğal & Yazlık</p>
-                            </div>
-                            <!-- Minimal Models (hidden by default) -->
-                            <div onclick="selectModelProfile('minimal_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-sky-500/50 transition-all" data-model="minimal_neck" data-category="minimal">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-minus text-sky-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Minimal Kolye</p>
-                                <p class="text-[9px] text-slate-500 text-center">İnce zincir, küçük pendant</p>
-                            </div>
-                            <div onclick="selectModelProfile('minimal_hand')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-sky-500/50 transition-all" data-model="minimal_hand" data-category="minimal">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-ring text-sky-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Minimal Yüzük</p>
-                                <p class="text-[9px] text-slate-500 text-center">İnce band, küçük taş</p>
-                            </div>
-                            <!-- Statement Models (hidden by default) -->
-                            <div onclick="selectModelProfile('statement_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-fuchsia-500/50 transition-all" data-model="statement_neck" data-category="statement">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-fuchsia-200 to-fuchsia-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-gem text-fuchsia-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Statement Kolye</p>
-                                <p class="text-[9px] text-slate-500 text-center">Büyük, gösterişli</p>
-                            </div>
-                            <div onclick="selectModelProfile('statement_ear')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-fuchsia-500/50 transition-all" data-model="statement_ear" data-category="statement">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-fuchsia-200 to-fuchsia-300 flex items-center justify-center">
-                                    <i class="fa-solid fa-star text-fuchsia-700 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">Statement Küpe</p>
-                                <p class="text-[9px] text-slate-500 text-center">Sarkık, büyük küpe</p>
-                            </div>
-                            <!-- Pearl Models (hidden by default) -->
-                            <div onclick="selectModelProfile('pearl_neck')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-400/50 transition-all" data-model="pearl_neck" data-category="pearl">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-circle text-slate-600 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">İnci Kolye</p>
-                                <p class="text-[9px] text-slate-500 text-center">Yumuşak ışık, parlaklık</p>
-                            </div>
-                            <div onclick="selectModelProfile('pearl_ear')" class="model-card hidden p-2.5 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-400/50 transition-all" data-model="pearl_ear" data-category="pearl">
-                                <div class="w-9 h-9 mx-auto mb-1.5 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                    <i class="fa-solid fa-circle text-slate-600 text-sm"></i>
-                                </div>
-                                <p class="text-[11px] font-medium text-center">İnci Küpe</p>
-                                <p class="text-[9px] text-slate-500 text-center">İnci parlaklığı optimizasyonu</p>
-                            </div>
-                        </div>
-
-                        <!-- Model Profile Info -->
-                        <div id="modelProfileInfo" class="mt-3 p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                            <p class="text-[10px] text-purple-300" id="modelProfileDesc">
-                                <i class="fa-solid fa-info-circle mr-1"></i>
-                                Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Style Presets -->
-                    <div class="glass rounded-2xl p-5">
-                        <h3 class="font-semibold mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-palette text-blue-400"></i>
-                            Stil Preset'leri
-                        </h3>
-                        <div class="grid grid-cols-3 gap-3" id="stylePresets">
-                            <div onclick="selectStyle('studio')" class="style-card selected p-3 rounded-xl border border-slate-700 text-center" data-style="studio">
-                                <div class="w-full h-12 bg-gradient-to-b from-gray-100 to-gray-200 rounded-lg mb-2"></div>
-                                <p class="text-xs font-medium">Studio</p>
-                                <p class="text-[9px] text-slate-500">Pandora Style</p>
-                            </div>
-                            <div onclick="selectStyle('boho')" class="style-card p-3 rounded-xl border border-slate-700 text-center" data-style="boho">
-                                <div class="w-full h-12 bg-gradient-to-br from-amber-100 to-orange-200 rounded-lg mb-2"></div>
-                                <p class="text-xs font-medium">Boho</p>
-                                <p class="text-[9px] text-slate-500">Milka Style</p>
-                            </div>
-                            <div onclick="selectStyle('luxury')" class="style-card p-3 rounded-xl border border-slate-700 text-center" data-style="luxury">
-                                <div class="w-full h-12 bg-gradient-to-br from-slate-900 to-slate-700 rounded-lg mb-2"></div>
-                                <p class="text-xs font-medium">Luxury</p>
-                                <p class="text-[9px] text-slate-500">Cartier Style</p>
-                            </div>
-                        </div>
-
-                        <!-- POZ SEÇİMİ -->
-                        <div class="mt-4 pt-4 border-t border-slate-700">
-                            <h4 class="text-xs font-semibold mb-3 flex items-center gap-2">
-                                <i class="fa-solid fa-camera-rotate text-purple-400"></i>
-                                Ürün Pozu
-                                <span class="text-[9px] text-slate-500 font-normal">(Model açısı)</span>
-                            </h4>
-                            <div class="grid grid-cols-3 gap-2" id="posePresets">
-                                <div onclick="selectPose('front')" class="pose-card selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="front">
-                                    <i class="fa-solid fa-user text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Önden</p>
-                                </div>
-                                <div onclick="selectPose('right')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="right">
-                                    <i class="fa-solid fa-arrow-right text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Sağ Profil</p>
-                                </div>
-                                <div onclick="selectPose('left')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="left">
-                                    <i class="fa-solid fa-arrow-left text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Sol Profil</p>
-                                </div>
-                                <div onclick="selectPose('down')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="down">
-                                    <i class="fa-solid fa-arrow-down text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Aşağı Bakış</p>
-                                </div>
-                                <div onclick="selectPose('closeup')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="closeup">
-                                    <i class="fa-solid fa-magnifying-glass-plus text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Yakın Çekim</p>
-                                </div>
-                                <div onclick="selectPose('surface')" class="pose-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer hover:border-purple-500" data-pose="surface">
-                                    <i class="fa-solid fa-square text-lg text-slate-400 mb-1"></i>
-                                    <p class="text-[10px]">Düz Yüzey</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Outfit & Scene Matching - NEW -->
-                    <div class="glass rounded-2xl p-4 md:p-5 border border-pink-500/30">
-                        <h3 class="font-semibold mb-3 flex items-center gap-2 text-sm md:text-base">
-                            <i class="fa-solid fa-shirt text-pink-400"></i>
-                            Kıyafet & Sahne
-                            <span class="text-[9px] md:text-[10px] px-2 py-0.5 bg-pink-500/20 text-pink-400 rounded-full ml-auto">YENİ</span>
-                        </h3>
-                        <p class="text-[10px] text-slate-400 mb-3">
-                            <i class="fa-solid fa-magic-wand-sparkles mr-1"></i>
-                            Takıya uyumlu kıyafet ve sahne - takı değişmez!
-                        </p>
-
-                        <!-- Auto-Suggest Toggle -->
-                        <div class="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg mb-3">
-                            <span class="text-[11px] text-slate-300">
-                                <i class="fa-solid fa-robot mr-1 text-pink-400"></i>
-                                AI Otomatik Öneri
-                            </span>
-                            <button onclick="toggleAutoOutfit()" id="autoOutfitBtn" class="w-10 h-5 rounded-full bg-slate-600 relative transition-all">
-                                <div id="autoOutfitDot" class="w-4 h-4 rounded-full bg-slate-400 absolute top-0.5 left-0.5 transition-all"></div>
-                            </button>
-                        </div>
-
-                        <!-- Manual Selection (shown when auto is off) -->
-                        <div id="manualOutfitSection">
-                            <!-- Outfit Selection -->
-                            <div class="mb-3">
-                                <label class="text-[10px] text-slate-400 mb-2 block">
-                                    <i class="fa-solid fa-shirt mr-1"></i>Kıyafet Stili
-                                </label>
-                                <div class="grid grid-cols-4 gap-1.5" id="outfitPresets">
-                                    <div onclick="selectOutfit('black_vneck')" class="outfit-card selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="black_vneck">
-                                        <div class="w-full h-8 bg-gradient-to-b from-slate-900 to-black rounded mb-1"></div>
-                                        <p class="text-[9px]">Siyah V-Yaka</p>
-                                    </div>
-                                    <div onclick="selectOutfit('white_off')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="white_off">
-                                        <div class="w-full h-8 bg-gradient-to-b from-white to-slate-100 rounded mb-1"></div>
-                                        <p class="text-[9px]">Beyaz Straplez</p>
-                                    </div>
-                                    <div onclick="selectOutfit('cream_silk')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="cream_silk">
-                                        <div class="w-full h-8 bg-gradient-to-b from-amber-50 to-amber-100 rounded mb-1"></div>
-                                        <p class="text-[9px]">Krem İpek</p>
-                                    </div>
-                                    <div onclick="selectOutfit('burgundy')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="burgundy">
-                                        <div class="w-full h-8 bg-gradient-to-b from-rose-900 to-rose-950 rounded mb-1"></div>
-                                        <p class="text-[9px]">Bordo</p>
-                                    </div>
-                                    <div onclick="selectOutfit('navy')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="navy">
-                                        <div class="w-full h-8 bg-gradient-to-b from-blue-900 to-blue-950 rounded mb-1"></div>
-                                        <p class="text-[9px]">Lacivert</p>
-                                    </div>
-                                    <div onclick="selectOutfit('nude')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="nude">
-                                        <div class="w-full h-8 bg-gradient-to-b from-orange-100 to-orange-200 rounded mb-1"></div>
-                                        <p class="text-[9px]">Ten Rengi</p>
-                                    </div>
-                                    <div onclick="selectOutfit('forest')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="forest">
-                                        <div class="w-full h-8 bg-gradient-to-b from-emerald-800 to-emerald-900 rounded mb-1"></div>
-                                        <p class="text-[9px]">Koyu Yeşil</p>
-                                    </div>
-                                    <div onclick="selectOutfit('none')" class="outfit-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="none">
-                                        <div class="w-full h-8 bg-gradient-to-b from-rose-200 to-rose-300 rounded mb-1 flex items-center justify-center">
-                                            <i class="fa-solid fa-xmark text-rose-600 text-xs"></i>
+                            <div class="accordion-content">
+                                <div class="p-4 pt-0 space-y-4">
+                                    <!-- Takı Kategorisi -->
+                                    <div>
+                                        <label class="text-[10px] text-slate-400 mb-2 block">Takı Tipi</label>
+                                        <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
+                                            <button onclick="selectJewelryCategory('general')" class="jewelry-cat-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-cat="general">Genel</button>
+                                            <button onclick="selectJewelryCategory('minimal')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="minimal">Minimal</button>
+                                            <button onclick="selectJewelryCategory('statement')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="statement">Statement</button>
+                                            <button onclick="selectJewelryCategory('pearl')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="pearl">İnci</button>
                                         </div>
-                                        <p class="text-[9px]">Yok (Cilt)</p>
+                                    </div>
+
+                                    <!-- Model Profilleri -->
+                                    <div>
+                                        <label class="text-[10px] text-slate-400 mb-2 block">Model Profili</label>
+                                        <div class="grid grid-cols-4 gap-1.5" id="modelProfilesContainer">
+                                            <div onclick="selectModelProfile('neck_model')" class="model-card selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="neck_model" data-category="general">
+                                                <i class="fa-solid fa-circle-user text-rose-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Kolye</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('hand_model')" class="model-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="hand_model" data-category="general">
+                                                <i class="fa-solid fa-hand text-amber-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">El</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('set_model')" class="model-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="set_model" data-category="general">
+                                                <i class="fa-solid fa-users text-violet-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Set</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('boho_model')" class="model-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="boho_model" data-category="general">
+                                                <i class="fa-solid fa-sun text-orange-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Bohem</p>
+                                            </div>
+                                            <!-- Minimal -->
+                                            <div onclick="selectModelProfile('minimal_neck')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="minimal_neck" data-category="minimal">
+                                                <i class="fa-solid fa-minus text-sky-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Kolye</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('minimal_hand')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="minimal_hand" data-category="minimal">
+                                                <i class="fa-solid fa-ring text-sky-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Yüzük</p>
+                                            </div>
+                                            <!-- Statement -->
+                                            <div onclick="selectModelProfile('statement_neck')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="statement_neck" data-category="statement">
+                                                <i class="fa-solid fa-gem text-fuchsia-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Kolye</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('statement_ear')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="statement_ear" data-category="statement">
+                                                <i class="fa-solid fa-star text-fuchsia-400 text-sm mb-1"></i>
+                                                <p class="text-[9px]">Küpe</p>
+                                            </div>
+                                            <!-- Pearl -->
+                                            <div onclick="selectModelProfile('pearl_neck')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="pearl_neck" data-category="pearl">
+                                                <i class="fa-solid fa-circle text-slate-300 text-sm mb-1"></i>
+                                                <p class="text-[9px]">İnci Kolye</p>
+                                            </div>
+                                            <div onclick="selectModelProfile('pearl_ear')" class="model-card hidden p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-model="pearl_ear" data-category="pearl">
+                                                <i class="fa-solid fa-circle text-slate-300 text-sm mb-1"></i>
+                                                <p class="text-[9px]">İnci Küpe</p>
+                                            </div>
+                                        </div>
+                                        <p id="categoryDesc" class="text-[9px] text-slate-500 mt-1">Standart takı çekimleri için genel modeller</p>
+                                    </div>
+
+                                    <!-- Stil Presetleri -->
+                                    <div>
+                                        <label class="text-[10px] text-slate-400 mb-2 block">Çekim Stili</label>
+                                        <div class="grid grid-cols-3 gap-1.5" id="stylePresets">
+                                            <div onclick="selectStyle('studio')" class="style-card selected p-2 rounded-lg border border-slate-700 text-center" data-style="studio">
+                                                <div class="w-full h-6 bg-gradient-to-b from-gray-100 to-gray-200 rounded mb-1"></div>
+                                                <p class="text-[9px]">Studio</p>
+                                            </div>
+                                            <div onclick="selectStyle('boho')" class="style-card p-2 rounded-lg border border-slate-700 text-center" data-style="boho">
+                                                <div class="w-full h-6 bg-gradient-to-br from-amber-100 to-orange-200 rounded mb-1"></div>
+                                                <p class="text-[9px]">Boho</p>
+                                            </div>
+                                            <div onclick="selectStyle('luxury')" class="style-card p-2 rounded-lg border border-slate-700 text-center" data-style="luxury">
+                                                <div class="w-full h-6 bg-gradient-to-br from-slate-900 to-slate-700 rounded mb-1"></div>
+                                                <p class="text-[9px]">Luxury</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Poz Seçimi -->
+                                    <div>
+                                        <label class="text-[10px] text-slate-400 mb-2 block">Poz / Açı</label>
+                                        <div class="grid grid-cols-6 gap-1" id="posePresets">
+                                            <div onclick="selectPose('front')" class="pose-card selected p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="front">
+                                                <i class="fa-solid fa-user text-xs text-slate-400"></i>
+                                            </div>
+                                            <div onclick="selectPose('right')" class="pose-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="right">
+                                                <i class="fa-solid fa-arrow-right text-xs text-slate-400"></i>
+                                            </div>
+                                            <div onclick="selectPose('left')" class="pose-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="left">
+                                                <i class="fa-solid fa-arrow-left text-xs text-slate-400"></i>
+                                            </div>
+                                            <div onclick="selectPose('down')" class="pose-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="down">
+                                                <i class="fa-solid fa-arrow-down text-xs text-slate-400"></i>
+                                            </div>
+                                            <div onclick="selectPose('closeup')" class="pose-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="closeup">
+                                                <i class="fa-solid fa-magnifying-glass-plus text-xs text-slate-400"></i>
+                                            </div>
+                                            <div onclick="selectPose('surface')" class="pose-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-pose="surface">
+                                                <i class="fa-solid fa-square text-xs text-slate-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="modelProfileInfo" class="p-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                                        <p class="text-[9px] text-purple-300" id="modelProfileDesc">
+                                            <i class="fa-solid fa-info-circle mr-1"></i>
+                                            Kolye Odaklı: Gerçekçi cilt dokusu, doğal kusurlar.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Scene Selection -->
-                            <div>
-                                <label class="text-[10px] text-slate-400 mb-2 block">
-                                    <i class="fa-solid fa-image mr-1"></i>Sahne / Atmosfer
-                                </label>
-                                <div class="grid grid-cols-4 gap-1.5" id="scenePresets">
-                                    <div onclick="selectScene('studio_clean')" class="scene-card selected p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="studio_clean">
-                                        <i class="fa-solid fa-lightbulb text-slate-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Stüdyo</p>
+                        <!-- Accordion 2: Kıyafet & Sahne -->
+                        <div class="glass rounded-xl overflow-hidden">
+                            <div class="accordion-header p-3 flex items-center justify-between" onclick="toggleAccordion(this)">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-shirt text-pink-400"></i>
+                                    <span class="font-medium text-sm">Kıyafet & Sahne</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down accordion-icon text-slate-400 text-xs"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 pt-0 space-y-3">
+                                    <!-- Auto Toggle -->
+                                    <div class="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg">
+                                        <span class="text-[10px] text-slate-300">
+                                            <i class="fa-solid fa-robot mr-1 text-pink-400"></i>AI Otomatik
+                                        </span>
+                                        <button onclick="toggleAutoOutfit()" id="autoOutfitBtn" class="w-9 h-5 rounded-full bg-slate-600 relative transition-all">
+                                            <div id="autoOutfitDot" class="w-4 h-4 rounded-full bg-slate-400 absolute top-0.5 left-0.5 transition-all"></div>
+                                        </button>
                                     </div>
-                                    <div onclick="selectScene('romantic')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="romantic">
-                                        <i class="fa-solid fa-heart text-pink-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Romantik</p>
+
+                                    <div id="manualOutfitSection">
+                                        <!-- Kıyafet -->
+                                        <div class="mb-3">
+                                            <label class="text-[10px] text-slate-400 mb-1.5 block">Kıyafet</label>
+                                            <div class="grid grid-cols-4 gap-1" id="outfitPresets">
+                                                <div onclick="selectOutfit('black_vneck')" class="outfit-card selected p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="black_vneck">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-slate-900 to-black rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Siyah</p>
+                                                </div>
+                                                <div onclick="selectOutfit('white_off')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="white_off">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-white to-slate-100 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Beyaz</p>
+                                                </div>
+                                                <div onclick="selectOutfit('cream_silk')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="cream_silk">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-amber-50 to-amber-100 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Krem</p>
+                                                </div>
+                                                <div onclick="selectOutfit('burgundy')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="burgundy">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-rose-900 to-rose-950 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Bordo</p>
+                                                </div>
+                                                <div onclick="selectOutfit('navy')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="navy">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-blue-900 to-blue-950 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Lacivert</p>
+                                                </div>
+                                                <div onclick="selectOutfit('nude')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="nude">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-orange-100 to-orange-200 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Ten</p>
+                                                </div>
+                                                <div onclick="selectOutfit('forest')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="forest">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-emerald-800 to-emerald-900 rounded mb-0.5"></div>
+                                                    <p class="text-[8px]">Yeşil</p>
+                                                </div>
+                                                <div onclick="selectOutfit('none')" class="outfit-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-outfit="none">
+                                                    <div class="w-full h-5 bg-gradient-to-b from-rose-200 to-rose-300 rounded mb-0.5 flex items-center justify-center">
+                                                        <i class="fa-solid fa-xmark text-rose-600 text-[8px]"></i>
+                                                    </div>
+                                                    <p class="text-[8px]">Yok</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sahne -->
+                                        <div>
+                                            <label class="text-[10px] text-slate-400 mb-1.5 block">Sahne</label>
+                                            <div class="grid grid-cols-4 gap-1" id="scenePresets">
+                                                <div onclick="selectScene('studio_clean')" class="scene-card selected p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="studio_clean">
+                                                    <i class="fa-solid fa-lightbulb text-slate-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Stüdyo</p>
+                                                </div>
+                                                <div onclick="selectScene('romantic')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="romantic">
+                                                    <i class="fa-solid fa-heart text-pink-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Romantik</p>
+                                                </div>
+                                                <div onclick="selectScene('luxury_dark')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="luxury_dark">
+                                                    <i class="fa-solid fa-gem text-purple-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Lüks</p>
+                                                </div>
+                                                <div onclick="selectScene('golden_hour')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="golden_hour">
+                                                    <i class="fa-solid fa-sun text-amber-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Golden</p>
+                                                </div>
+                                                <div onclick="selectScene('minimalist')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="minimalist">
+                                                    <i class="fa-solid fa-minus text-slate-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Minimal</p>
+                                                </div>
+                                                <div onclick="selectScene('editorial')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="editorial">
+                                                    <i class="fa-solid fa-camera text-blue-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Editorial</p>
+                                                </div>
+                                                <div onclick="selectScene('nature')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="nature">
+                                                    <i class="fa-solid fa-leaf text-green-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Doğal</p>
+                                                </div>
+                                                <div onclick="selectScene('festive')" class="scene-card p-1.5 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="festive">
+                                                    <i class="fa-solid fa-sparkles text-yellow-400 text-[10px]"></i>
+                                                    <p class="text-[8px]">Gece</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div onclick="selectScene('luxury_dark')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="luxury_dark">
-                                        <i class="fa-solid fa-gem text-purple-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Lüks Dark</p>
-                                    </div>
-                                    <div onclick="selectScene('golden_hour')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="golden_hour">
-                                        <i class="fa-solid fa-sun text-amber-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Golden Hour</p>
-                                    </div>
-                                    <div onclick="selectScene('minimalist')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="minimalist">
-                                        <i class="fa-solid fa-minus text-slate-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Minimal</p>
-                                    </div>
-                                    <div onclick="selectScene('editorial')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="editorial">
-                                        <i class="fa-solid fa-camera text-blue-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Editorial</p>
-                                    </div>
-                                    <div onclick="selectScene('nature')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="nature">
-                                        <i class="fa-solid fa-leaf text-green-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Doğal</p>
-                                    </div>
-                                    <div onclick="selectScene('festive')" class="scene-card p-2 rounded-lg border border-slate-700 text-center cursor-pointer" data-scene="festive">
-                                        <i class="fa-solid fa-sparkles text-yellow-400 text-sm mb-1"></i>
-                                        <p class="text-[9px]">Şık Gece</p>
+
+                                    <div id="autoOutfitResult" class="hidden">
+                                        <div class="p-2 bg-pink-500/10 border border-pink-500/20 rounded-lg">
+                                            <p class="text-[9px] text-pink-300">
+                                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
+                                                AI takıyı analiz edip en uygun kombinasyonu seçecek
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Auto Suggestion Result (shown when auto is on) -->
-                        <div id="autoOutfitResult" class="hidden">
-                            <div class="p-3 bg-pink-500/10 border border-pink-500/20 rounded-lg">
-                                <p class="text-[10px] text-pink-300 mb-2">
-                                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
-                                    AI takıyı analiz edip en uygun kombinasyonu seçecek
-                                </p>
-                                <div class="flex gap-2">
-                                    <div class="flex-1 p-2 bg-slate-800/50 rounded text-center">
-                                        <p class="text-[9px] text-slate-500">Kıyafet</p>
-                                        <p id="autoOutfitName" class="text-[11px] text-white">Otomatik</p>
+                        <!-- Accordion 3: Model Şablonu -->
+                        <div class="glass rounded-xl overflow-hidden">
+                            <div class="accordion-header p-3 flex items-center justify-between" onclick="toggleAccordion(this)">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user-plus text-cyan-400"></i>
+                                    <span class="font-medium text-sm">Model Şablonu</span>
+                                    <span class="text-[9px] text-slate-500">Opsiyonel</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down accordion-icon text-slate-400 text-xs"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 pt-0 space-y-3">
+                                    <div id="templateDropZone" class="border-2 border-dashed border-slate-600 rounded-lg p-3 text-center hover:border-cyan-500 transition-colors cursor-pointer">
+                                        <input type="file" id="templateInput" class="hidden" accept="image/*">
+                                        <div id="templatePlaceholder" class="flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-image text-xl text-slate-500"></i>
+                                            <div class="text-left">
+                                                <p class="text-xs text-slate-400">Model şablonu yükle</p>
+                                                <p class="text-[9px] text-slate-500">Takısız boyun fotoğrafı</p>
+                                            </div>
+                                        </div>
+                                        <div id="templatePreview" class="hidden">
+                                            <img id="templateImage" class="max-h-20 mx-auto rounded-lg">
+                                            <p id="templateName" class="text-[10px] text-cyan-400 mt-1"></p>
+                                        </div>
                                     </div>
-                                    <div class="flex-1 p-2 bg-slate-800/50 rounded text-center">
-                                        <p class="text-[9px] text-slate-500">Sahne</p>
-                                        <p id="autoSceneName" class="text-[11px] text-white">Otomatik</p>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 flex justify-between">
+                                                <span>Dikey (Y)</span><span id="yOffsetValue" class="text-cyan-400">50%</span>
+                                            </label>
+                                            <input type="range" id="yOffsetSlider" min="20" max="80" value="50" class="w-full" onchange="updatePositionValue('y')">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 flex justify-between">
+                                                <span>Yatay (X)</span><span id="xOffsetValue" class="text-cyan-400">50%</span>
+                                            </label>
+                                            <input type="range" id="xOffsetSlider" min="20" max="80" value="50" class="w-full" onchange="updatePositionValue('x')">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 flex justify-between">
+                                                <span>Boyut</span><span id="scaleValue" class="text-cyan-400">60%</span>
+                                            </label>
+                                            <input type="range" id="scaleSlider" min="20" max="100" value="60" class="w-full" onchange="updatePositionValue('scale')">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 flex justify-between">
+                                                <span>Döndür</span><span id="rotationValue" class="text-purple-400">0°</span>
+                                            </label>
+                                            <input type="range" id="rotationSlider" min="-180" max="180" value="0" class="w-full" onchange="updatePositionValue('rotation')">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Model Template Selection -->
-                    <div class="glass rounded-2xl p-4 md:p-5 border border-cyan-500/30">
-                        <h3 class="font-semibold mb-2 md:mb-3 flex items-center gap-2 text-sm md:text-base">
-                            <i class="fa-solid fa-user-plus text-cyan-400"></i>
-                            Model Şablonu
-                            <span class="text-[9px] md:text-[10px] px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full ml-auto">YENİ</span>
-                        </h3>
-                        <p class="text-[11px] md:text-xs text-slate-400 mb-2 md:mb-3">Takının monte edileceği model şablonunu yükleyin veya seçin</p>
+                        <!-- Accordion 4: Akıllı Prompt -->
+                        <div class="glass rounded-xl overflow-hidden">
+                            <div class="accordion-header open p-3 flex items-center justify-between" onclick="toggleAccordion(this)">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-brain text-indigo-400"></i>
+                                    <span class="font-medium text-sm">Akıllı Prompt</span>
+                                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">AI</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down accordion-icon text-slate-400 text-xs"></i>
+                            </div>
+                            <div class="accordion-content open">
+                                <div class="p-4 pt-0">
+                                    <textarea id="smartPromptInput"
+                                        placeholder="Örnek: kıyafet mor olsun, yakın çekim, sarışın model..."
+                                        class="w-full bg-slate-800/50 border border-slate-600 rounded-lg p-2 text-sm placeholder-slate-500 focus:border-indigo-500 focus:outline-none resize-none"
+                                        rows="2"></textarea>
 
-                        <!-- Template Upload -->
-                        <div id="templateDropZone" class="border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-cyan-500 transition-colors cursor-pointer mb-3">
-                            <input type="file" id="templateInput" class="hidden" accept="image/*">
-                            <div id="templatePlaceholder">
-                                <i class="fa-solid fa-image text-2xl text-slate-500 mb-2"></i>
-                                <p class="text-xs text-slate-400">Model şablonu yükle</p>
-                                <p class="text-[10px] text-slate-500">(Takısız boyun/dekolte fotoğrafı)</p>
-                            </div>
-                            <div id="templatePreview" class="hidden">
-                                <img id="templateImage" class="max-h-24 mx-auto rounded-lg">
-                                <p id="templateName" class="text-xs text-cyan-400 mt-2"></p>
-                            </div>
-                        </div>
+                                    <div class="flex flex-wrap gap-1 mt-2">
+                                        <button onclick="addSmartPrompt('yakın çekim')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Yakın</button>
+                                        <button onclick="addSmartPrompt('uzak çekim')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Uzak</button>
+                                        <button onclick="addSmartPrompt('sağdan çekim')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Sağ</button>
+                                        <button onclick="addSmartPrompt('soldan çekim')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Sol</button>
+                                        <button onclick="addSmartPrompt('kıyafet siyah')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Siyah</button>
+                                        <button onclick="addSmartPrompt('altın saat ışığı')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Golden</button>
+                                        <button onclick="addSmartPrompt('karanlık stüdyo')" class="px-2 py-1 text-[9px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-md transition-all">Dark</button>
+                                    </div>
 
-                        <!-- Position Controls -->
-                        <div class="space-y-3 mt-3">
-                            <div>
-                                <label class="text-xs text-slate-400 flex justify-between">
-                                    <span>Dikey Pozisyon (Y)</span>
-                                    <span id="yOffsetValue" class="text-cyan-400">50%</span>
-                                </label>
-                                <input type="range" id="yOffsetSlider" min="20" max="80" value="50"
-                                       class="w-full" onchange="updatePositionValue('y')">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 flex justify-between">
-                                    <span>Yatay Pozisyon (X)</span>
-                                    <span id="xOffsetValue" class="text-cyan-400">50%</span>
-                                </label>
-                                <input type="range" id="xOffsetSlider" min="20" max="80" value="50"
-                                       class="w-full" onchange="updatePositionValue('x')">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 flex justify-between">
-                                    <span>Takı Boyutu</span>
-                                    <span id="scaleValue" class="text-cyan-400">60%</span>
-                                </label>
-                                <input type="range" id="scaleSlider" min="20" max="100" value="60"
-                                       class="w-full" onchange="updatePositionValue('scale')">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 flex justify-between">
-                                    <span><i class="fa-solid fa-rotate text-purple-400 mr-1"></i>Döndürme</span>
-                                    <span id="rotationValue" class="text-purple-400">0°</span>
-                                </label>
-                                <input type="range" id="rotationSlider" min="-180" max="180" value="0"
-                                       class="w-full" onchange="updatePositionValue('rotation')">
+                                    <p class="text-[8px] text-slate-500 mt-2">
+                                        <i class="fa-solid fa-shield-check text-green-400 mr-1"></i>
+                                        Ürün asla değişmez - sadece model, kıyafet, sahne değişir
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Quick tip -->
-                        <div class="p-2 bg-purple-500/10 border border-purple-500/20 rounded-lg mt-3">
-                            <p class="text-[10px] text-purple-400">
-                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>
-                                Şablon yükleyip takıyı manuel yerleştirin → AI sadece kenarları yumuşatır
-                            </p>
-                        </div>
                     </div>
-
-                    <!-- Akıllı Prompt Sistemi -->
-                    <div class="glass rounded-2xl p-4 border border-indigo-500/30">
-                        <h3 class="font-semibold mb-3 flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-brain text-indigo-400"></i>
-                            Akıllı Prompt
-                            <span class="text-[9px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">AI</span>
-                        </h3>
-
-                        <textarea id="smartPromptInput"
-                            placeholder="Örnek komutlar:
-• Kıyafet mor olsun
-• Ürünü biraz yaklaştır
-• Sağ taraftan çekim yap
-• Model sarışın olsun
-• Altın saat ışığında çek
-• Arka plan siyah olsun"
-                            class="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-3 text-sm placeholder-slate-500 focus:border-indigo-500 focus:outline-none resize-none"
-                            rows="3"></textarea>
-
-                        <!-- Hızlı Komutlar -->
-                        <div class="flex flex-wrap gap-1.5 mt-2">
-                            <button onclick="addSmartPrompt('yakın çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-search-plus mr-1"></i>Yakın
-                            </button>
-                            <button onclick="addSmartPrompt('uzak çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-search-minus mr-1"></i>Uzak
-                            </button>
-                            <button onclick="addSmartPrompt('sağdan çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-arrow-right mr-1"></i>Sağ
-                            </button>
-                            <button onclick="addSmartPrompt('soldan çekim')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-arrow-left mr-1"></i>Sol
-                            </button>
-                            <button onclick="addSmartPrompt('kıyafet siyah')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-shirt mr-1"></i>Siyah
-                            </button>
-                            <button onclick="addSmartPrompt('kıyafet beyaz')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-shirt mr-1"></i>Beyaz
-                            </button>
-                            <button onclick="addSmartPrompt('altın saat ışığı')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-sun mr-1"></i>Golden
-                            </button>
-                            <button onclick="addSmartPrompt('karanlık stüdyo')" class="smart-tag px-2 py-1 text-[10px] bg-slate-700/50 hover:bg-indigo-500/30 rounded-lg transition-all">
-                                <i class="fa-solid fa-moon mr-1"></i>Dark
-                            </button>
-                        </div>
-
-                        <p class="text-[9px] text-slate-500 mt-2">
-                            <i class="fa-solid fa-shield-check text-green-400 mr-1"></i>
-                            Ürün asla değiştirilmez - sadece model, kıyafet, sahne ve açı değişir
-                        </p>
-                    </div>
-
-                    <!-- Generate Button -->
-                    <!-- Önizle + Oluştur Butonları -->
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <button onclick="previewJewelryPlacement()" id="previewBtn" class="flex-1 py-2.5 sm:py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold transition-all text-sm sm:text-base">
-                            <i class="fa-solid fa-eye mr-2"></i>
-                            Önizle
-                        </button>
-                        <button onclick="generateImage()" id="generateBtn" class="flex-[2] py-3 sm:py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 font-bold text-base sm:text-lg transition-all glow-purple">
-                            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>
-                            Oluştur
-                        </button>
-                    </div>
-                    <p class="text-[10px] text-slate-500 text-center mt-1">
-                        <i class="fa-solid fa-info-circle mr-1"></i>
-                        Akıllı prompt + presetler birlikte çalışır
                 </div>
 
                 <!-- Right Panel: Preview & SEO -->
@@ -1105,12 +1026,22 @@
             }
         };
 
+        // ========== ACCORDION TOGGLE ==========
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const isOpen = content.classList.contains('open');
+
+            // Toggle current accordion
+            header.classList.toggle('open');
+            content.classList.toggle('open');
+        }
+
         // ========== WORK MODE ==========
         function setWorkMode(mode) {
             state.workMode = mode;
 
-            const activeClass = 'mode-btn active p-2 sm:p-3 rounded-xl border-2 border-cyan-500 bg-cyan-500/10 text-center transition-all';
-            const inactiveClass = 'mode-btn p-2 sm:p-3 rounded-xl border-2 border-slate-600 bg-slate-800/30 text-center transition-all hover:border-slate-500';
+            const activeClass = 'mode-btn active px-3 py-2 rounded-md text-[10px] font-medium transition-all';
+            const inactiveClass = 'mode-btn px-3 py-2 rounded-md text-[10px] font-medium text-slate-400 transition-all';
 
             // UI güncelle
             document.getElementById('modeMannequin').className = mode === 'mannequin' ? activeClass : inactiveClass;
@@ -1119,19 +1050,23 @@
 
             // İkon renklerini güncelle
             document.querySelector('#modeMannequin i').className = mode === 'mannequin'
-                ? 'fa-solid fa-person-dress text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
-                : 'fa-solid fa-person-dress text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
+                ? 'fa-solid fa-person-dress text-cyan-400'
+                : 'fa-solid fa-person-dress text-slate-400';
 
             document.querySelector('#modeFlatlay i').className = mode === 'flatlay'
-                ? 'fa-solid fa-table-cells text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
-                : 'fa-solid fa-table-cells text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
+                ? 'fa-solid fa-table-cells text-cyan-400'
+                : 'fa-solid fa-table-cells text-slate-400';
 
             document.querySelector('#modeProduct i').className = mode === 'product'
-                ? 'fa-solid fa-gem text-xl sm:text-2xl text-cyan-400 mb-1 sm:mb-2'
-                : 'fa-solid fa-gem text-xl sm:text-2xl text-slate-400 mb-1 sm:mb-2';
+                ? 'fa-solid fa-gem text-cyan-400'
+                : 'fa-solid fa-gem text-slate-400';
 
-            const modeNames = { mannequin: 'Manken', flatlay: 'Düz Zemin', product: 'Sadece Ürün' };
-            showToast(`${modeNames[mode]} modu seçildi`, 'success');
+            // Mod text güncelle
+            const modeNames = { mannequin: 'Manken Modu', flatlay: 'Düz Zemin Modu', product: 'Sadece Ürün Modu' };
+            const modeTextEl = document.getElementById('currentModeText');
+            if (modeTextEl) modeTextEl.textContent = modeNames[mode];
+
+            showToast(`${modeNames[mode]} seçildi`, 'success');
         }
 
         // ========== MANUAL IMAGE ADJUSTMENTS ==========
