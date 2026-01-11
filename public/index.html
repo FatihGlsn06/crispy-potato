@@ -810,14 +810,6 @@
                                     <input type="text" id="seoCategory" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs" readonly>
                                 </div>
 
-                                <!-- Ürün Özellikleri -->
-                                <div>
-                                    <label class="text-xs text-slate-400 mb-1 block">
-                                        <i class="fa-solid fa-tags mr-1"></i>Ürün Özellikleri
-                                    </label>
-                                    <div id="seoAttributes" class="grid grid-cols-2 gap-2 text-xs"></div>
-                                </div>
-
                                 <!-- Teknik Açıklama -->
                                 <div>
                                     <label class="text-xs text-slate-400 flex justify-between mb-1">
@@ -1247,25 +1239,21 @@ Sadece 2-3 stil kelimesi yeterli, abartma!
 
 ===== GÖREV =====
 1. Görseli analiz et - ürün türü, malzeme, taş, stil belirle
-2. Kullanıcının verdiği teknik bilgileri ATTRIBUTES alanına yaz (başlığa DEĞİL)
-3. Başlığı SADECE yüksek arama hacimli kelimelerle oluştur
+2. Kullanıcının verdiği teknik bilgileri (renk, kaplama, malzeme) BAŞLIĞA DAHİL ET
+3. Başlığı yüksek arama hacimli kelimeler + ürün özellikleri ile oluştur
 4. 99 karakteri DOLDUR ama geçme
+
+===== ÖNEMLİ: ÜRÜN ÖZELLİKLERİ BAŞLIĞA GİRER =====
+Kullanıcı "925 ayar gümüş, rose gold kaplama, zirkon taş" verdiyse:
+BAŞLIK: "Kadın 925 Ayar Gümüş Kolye Rose Gold Kaplama Zirkon Taş Minimal Şık"
+
+Renk, kaplama, kalite, malzeme → MUTLAKA başlıkta olmalı!
 
 ===== JSON ÇIKTISI =====
 {
-    "title": "SADECE arama kelimeleri içeren 99 karakterlik başlık",
+    "title": "Ürün özellikleri + arama kelimeleri içeren 99 karakterlik başlık",
     "altTitles": ["3 farklı kelime sıralaması ile alternatif başlıklar"],
     "category": "Takı > Kolye / Yüzük / Bileklik > Alt kategori",
-    "attributes": {
-        "Materyal": "925 Ayar Gümüş",
-        "Taş Türü": "Zirkon / Yok",
-        "Renk": "Rose Gold / Gümüş / Altın",
-        "Kaplama": "Altın Kaplama / Rodyum / Yok",
-        "Zincir Uzunluğu": "45 cm + 5 cm uzatma",
-        "Cinsiyet": "Kadın",
-        "Hediye Paketi": "Evet",
-        "Ayarlanabilir": "Evet/Hayır"
-    },
     "description": "Teknik açıklama - ürün özellikleri maddeler halinde",
     "storyDescription": "✨ Duygusal açıklama - kadınlara hitap eden samimi ton",
     "keywords": ["15 adet yüksek hacimli arama kelimesi"],
@@ -1324,20 +1312,7 @@ SADECE JSON döndür, başka bir şey yazma!`
                     // 3. Kategori
                     document.getElementById('seoCategory').value = seoData.category || '';
 
-                    // 4. Ürün Özellikleri
-                    const attrsContainer = document.getElementById('seoAttributes');
-                    attrsContainer.innerHTML = '';
-                    Object.entries(seoData.attributes || {}).forEach(([key, value]) => {
-                        const div = document.createElement('div');
-                        div.className = 'bg-slate-800/50 rounded-lg px-3 py-2';
-                        div.innerHTML = `
-                            <span class="text-slate-500 text-[10px] block">${key}</span>
-                            <span class="text-white text-xs font-medium">${value}</span>
-                        `;
-                        attrsContainer.appendChild(div);
-                    });
-
-                    // 5. Teknik Açıklama
+                    // 4. Teknik Açıklama
                     document.getElementById('seoDescription').value = seoData.description || '';
                     updateCharCount('desc');
 
