@@ -3598,181 +3598,73 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
             }
             console.log('✅ Takısız model oluşturuldu');
 
-            // ===== ADIM 3: ControlNet Inpainting ile takıyı yerleştir =====
-            // Fal.ai Inpainting - mask bölgesine takıyı yerleştir
-            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Inpainting)');
-            console.log('🎯 Fal.ai Inpainting başlatılıyor...');
+            // ===== ADIM 3: Gemini Edit ile takıyı yerleştir =====
+            // Takısız model + BiRefNet çıktısı → Gemini takıyı yerleştirsin
+            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Gemini Edit)');
+            console.log('🎯 Gemini Edit başlatılıyor...');
 
-            if (!falKey) {
-                throw new Error('Fal.ai API key gerekli (Inpainting için)');
+            // Takı ve model görsellerini base64'ten çıkar
+            const modelBase64Data = modelImageBase64.split(',')[1];
+            const jewelryBase64Data = jewelryBase64.split(',')[1];
+
+            const editPrompt = `Edit this image to place the jewelry from the second image onto the model's neck.
+
+CRITICAL INSTRUCTIONS:
+1. Place the jewelry EXACTLY as shown - preserve every detail
+2. Keep the EXACT same colors (gold stays gold, silver stays silver, green stones stay green)
+3. Position naturally on the neck/chest area
+4. Blend seamlessly with realistic shadows
+5. Do NOT change the model's pose, clothing, or skin
+6. Do NOT modify the jewelry design, size ratio, or colors in any way
+
+The jewelry must look like it's actually being worn by the model.`;
+
+            const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: editPrompt },
+                            {
+                                inlineData: {
+                                    mimeType: 'image/png',
+                                    data: modelBase64Data
+                                }
+                            },
+                            { text: "This is the model photo. Now here is the jewelry to place on her:" },
+                            {
+                                inlineData: {
+                                    mimeType: 'image/png',
+                                    data: jewelryBase64Data
+                                }
+                            }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseModalities: ["IMAGE", "TEXT"],
+                        temperature: 0.2  // Düşük = daha az yaratıcılık, renkleri koru
+                    }
+                })
+            });
+
+            if (!editResponse.ok) {
+                const err = await editResponse.json().catch(() => ({}));
+                console.error('❌ Gemini Edit hatası:', err);
+                throw new Error(err.error?.message || 'Gemini Edit başarısız');
             }
 
-            try {
-                // 1. Boyun bölgesi için mask oluştur (beyaz = takı yerleşecek alan)
-                const neckMask = await createNeckRegionMask(modelImageBase64);
-                console.log('✅ Boyun bölgesi mask oluşturuldu');
+            const editData = await editResponse.json();
+            const editParts = editData.candidates?.[0]?.content?.parts || [];
 
-                // 2. Takıyı model üzerine yerleştirmek için composite görsel oluştur
-                // Bu görsel inpainting'e referans olacak
-                const compositeImage = await createCompositePreview(jewelryBase64, modelImageBase64);
-                console.log('✅ Composite önizleme oluşturuldu');
-
-                // 3. Fal.ai Inpainting API çağrısı
-                console.log('📤 Fal.ai API çağrısı yapılıyor...');
-                const inpaintResponse = await fetch('https://fal.run/fal-ai/inpaint', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Key ${falKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        image_url: compositeImage,  // Takı yerleştirilmiş composite
-                        mask_url: neckMask,         // Sadece boyun bölgesi blend edilecek
-                        prompt: "Seamless jewelry placement on model's neck, natural skin blend, soft realistic shadows, professional product photography, photorealistic, high quality",
-                        negative_prompt: "color change, wrong color, blurry, artifacts, floating, unnatural, bad blend",
-                        strength: 0.35,  // Düşük = orijinali çok koru, sadece kenarları yumuşat
-                        num_inference_steps: 30,
-                        guidance_scale: 7.5,
-                        seed: Math.floor(Math.random() * 1000000)
-                    })
-                });
-
-                console.log('📥 API yanıtı alındı, status:', inpaintResponse.status);
-
-                if (!inpaintResponse.ok) {
-                    const errText = await inpaintResponse.text();
-                    console.error('❌ Inpainting API hatası:', errText);
-                    throw new Error(`Inpainting başarısız (${inpaintResponse.status}): ${errText.substring(0, 200)}`);
+            for (const part of editParts) {
+                if (part.inlineData?.mimeType?.startsWith('image/')) {
+                    console.log('✅ Gemini Edit tamamlandı!');
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
                 }
-
-                const inpaintData = await inpaintResponse.json();
-                console.log('📦 API yanıt verisi:', JSON.stringify(inpaintData).substring(0, 500));
-
-                if (inpaintData.images?.[0]?.url) {
-                    console.log('✅ Inpainting tamamlandı!');
-                    return await fetchImageAsBase64(inpaintData.images[0].url);
-                }
-
-                // images yoksa image dene
-                if (inpaintData.image?.url) {
-                    console.log('✅ Inpainting tamamlandı (image)!');
-                    return await fetchImageAsBase64(inpaintData.image.url);
-                }
-
-                console.error('❌ Beklenmeyen API yanıtı:', inpaintData);
-                throw new Error('Inpainting görsel üretemedi - yanıt formatı beklenmedik');
-
-            } catch (inpaintError) {
-                console.error('❌ Inpainting hatası:', inpaintError);
-
-                // Fallback: Basit composite döndür (inpainting başarısız olursa)
-                console.log('⚠️ Fallback: Basit composite döndürülüyor...');
-                showLoader('Manken Modu...', '3/3 Fallback composite...');
-                return await createCompositePreview(jewelryBase64, modelImageBase64);
             }
-        }
 
-        // ========== COMPOSITE PREVIEW - Takıyı model üzerine yerleştir ==========
-        // Inpainting için input görsel oluşturur (blend edilmemiş)
-        async function createCompositePreview(jewelryBase64, modelBase64) {
-            return new Promise((resolve, reject) => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                const modelImg = new Image();
-                const jewelryImg = new Image();
-                let loadedCount = 0;
-
-                const onBothLoaded = () => {
-                    loadedCount++;
-                    if (loadedCount < 2) return;
-
-                    canvas.width = modelImg.width;
-                    canvas.height = modelImg.height;
-
-                    // Model arka plan
-                    ctx.drawImage(modelImg, 0, 0);
-
-                    // Takı boyutu ve pozisyonu
-                    const scale = 0.5;  // Model genişliğinin %50'si
-                    const targetWidth = modelImg.width * scale;
-                    const aspectRatio = jewelryImg.height / jewelryImg.width;
-                    const targetHeight = targetWidth * aspectRatio;
-
-                    // Merkez, boyun hizası (%25 yukarıdan)
-                    const x = (modelImg.width - targetWidth) / 2;
-                    const y = modelImg.height * 0.22;
-
-                    // Yumuşak gölge
-                    ctx.save();
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 4;
-                    ctx.drawImage(jewelryImg, x, y, targetWidth, targetHeight);
-                    ctx.restore();
-
-                    resolve(canvas.toDataURL('image/png', 0.9));
-                };
-
-                modelImg.onload = onBothLoaded;
-                jewelryImg.onload = onBothLoaded;
-                modelImg.onerror = () => reject(new Error('Model yüklenemedi'));
-                jewelryImg.onerror = () => reject(new Error('Takı yüklenemedi'));
-
-                modelImg.src = modelBase64;
-                jewelryImg.src = jewelryBase64;
-            });
-        }
-
-        // ========== BOYUN BÖLGESİ MASK OLUŞTUR ==========
-        // ControlNet Inpainting için mask - beyaz alan = takı yerleşecek bölge
-        async function createNeckRegionMask(modelBase64) {
-            return new Promise((resolve) => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    // Siyah arka plan (korunacak alan - değişmeyecek)
-                    ctx.fillStyle = 'black';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    // Boyun/göğüs bölgesi (beyaz - inpaint edilecek)
-                    // Görselin üst %20-50 arası = boyun ve göğüs bölgesi
-                    const neckTop = canvas.height * 0.15;     // Üstten %15
-                    const neckBottom = canvas.height * 0.55;  // Üstten %55
-                    const neckLeft = canvas.width * 0.20;     // Soldan %20
-                    const neckRight = canvas.width * 0.80;    // Soldan %80
-
-                    // Yumuşak geçiş için gradient oval
-                    const centerX = canvas.width / 2;
-                    const centerY = (neckTop + neckBottom) / 2;
-                    const radiusX = (neckRight - neckLeft) / 2;
-                    const radiusY = (neckBottom - neckTop) / 2;
-
-                    // Radial gradient - merkez beyaz, kenarlar yumuşak geçiş
-                    const gradient = ctx.createRadialGradient(
-                        centerX, centerY, 0,
-                        centerX, centerY, Math.max(radiusX, radiusY)
-                    );
-                    gradient.addColorStop(0, 'white');
-                    gradient.addColorStop(0.7, 'white');
-                    gradient.addColorStop(1, 'rgba(255,255,255,0)');
-
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    resolve(canvas.toDataURL('image/png'));
-                };
-
-                img.src = modelBase64;
-            });
+            throw new Error('Gemini Edit görsel üretemedi');
         }
 
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
