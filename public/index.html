@@ -3676,31 +3676,41 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
                     ctx.drawImage(modelImg, 0, 0);
 
                     // 2. Takı pozisyonunu hesapla
-                    const pos = state.position || { x: 50, y: 35, scale: 60, rotation: 0 };
+                    // NOT: Kullanıcı UI'dan ayarlayabilir (x, y, scale, rotation)
+                    const pos = state.position || { x: 50, y: 25, scale: 55, rotation: 0 };
 
-                    // Takı boyutu
+                    // Takı boyutu - orijinal oranı koru
                     const targetWidth = modelImg.width * (pos.scale / 100);
                     const aspectRatio = jewelryImg.height / jewelryImg.width;
                     const targetHeight = targetWidth * aspectRatio;
 
-                    // Pozisyon
+                    // Pozisyon hesaplama:
+                    // x: Yatay merkez (pos.x = 50 → tam orta)
+                    // y: Dikey pozisyon - takının ÜST kenarı boyun hizasında başlamalı
                     const x = (modelImg.width * (pos.x / 100)) - (targetWidth / 2);
-                    const y = (modelImg.height * (pos.y / 100)) - (targetHeight / 3);
+
+                    // Takının ÜST kenarı pos.y'de başlasın (boyun hizası için %20-25 ideal)
+                    const y = modelImg.height * (pos.y / 100);
 
                     // Rotation
                     const rotation = (pos.rotation || 0) * Math.PI / 180;
 
                     // 3. Yumuşak gölge
                     ctx.save();
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-                    ctx.shadowBlur = 15;
-                    ctx.shadowOffsetX = 3;
-                    ctx.shadowOffsetY = 6;
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 4;
 
-                    // 4. Takıyı çiz
-                    ctx.translate(x + targetWidth / 2, y + targetHeight / 2);
-                    ctx.rotate(rotation);
-                    ctx.drawImage(jewelryImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+                    // 4. Takıyı çiz - üst kenar y pozisyonunda başlasın
+                    if (rotation !== 0) {
+                        ctx.translate(x + targetWidth / 2, y + targetHeight / 2);
+                        ctx.rotate(rotation);
+                        ctx.drawImage(jewelryImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+                    } else {
+                        // Rotation yoksa direkt çiz (daha hızlı)
+                        ctx.drawImage(jewelryImg, x, y, targetWidth, targetHeight);
+                    }
                     ctx.restore();
 
                     resolve(canvas.toDataURL('image/png', 1.0));
