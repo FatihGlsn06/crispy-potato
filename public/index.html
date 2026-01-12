@@ -3604,94 +3604,82 @@ CRITICAL:
             }
             console.log('✅ Takısız model oluşturuldu');
 
-            // ===== ADIM 3: Gemini Edit ile orijinal takıyı yerleştir =====
-            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Orijinal)');
+            // ===== ADIM 3: Gemini 3 Edit ile orijinal takıyı yerleştir =====
+            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Gemini 3 Edit)');
+            console.log('🎨 Gemini 3 Edit başlatılıyor...');
 
-            // ÖNEMLİ: 3 GÖRSEL GÖNDERİYORUZ - Orijinal boyut referansı için
-            const placeJewelryPrompt = `You have THREE input images:
-[Input Image 1] = ORIGINAL photo showing the jewelry on a mannequin/body - USE THIS FOR SCALE REFERENCE!
-[Input Image 2] = EXTRACTED jewelry with transparent background - USE THIS FOR EXACT DETAILS
-[Input Image 3] = Generated model (no jewelry) - PLACE JEWELRY HERE
+            // Gemini 3 Edit - Conversational Inpainting
+            // BiRefNet çıktısını (orijinal takı pikselleri) modele yerleştir
+            const editPrompt = `TASK: Place the jewelry from [Image 2] onto the model in [Image 3].
 
-🚨🚨🚨 CRITICAL SCALE INSTRUCTION 🚨🚨🚨
+=== REFERENCE IMAGES ===
+[Image 1] = ORIGINAL photo - shows the jewelry worn (SIZE/SCALE reference)
+[Image 2] = EXTRACTED jewelry with transparent background (EXACT pixels to use)
+[Image 3] = Generated model without jewelry (TARGET for placement)
 
-Look at [Input Image 1] (the ORIGINAL):
-- See how LARGE the jewelry appears relative to the body/mannequin?
-- See how FAR DOWN the necklace hangs?
-- See how WIDE the pendant is compared to the neck/chest?
+=== CRITICAL: PIXEL-PERFECT TRANSFER ===
+You must TRANSFER the EXACT pixels from [Image 2] to [Image 3].
+This is NOT regeneration - this is COPY-PASTE of the jewelry pixels.
 
-THE JEWELRY ON [Input Image 3] MUST HAVE THE EXACT SAME PROPORTIONS!
+=== COLOR PRESERVATION (MOST IMPORTANT!) ===
+🚨 The jewelry in [Image 2] has these EXACT colors - PRESERVE THEM:
+• GOLD/BRASS metallic beads → Output must have GOLD/BRASS (NOT silver, NOT gray)
+• GREEN gemstones → Output must have the SAME GREEN shade
+• BROWN jasper pendant → Output must have the SAME BROWN tones
+• WARM color palette → Output must remain WARM (NOT cool/gray)
 
-[STEP-BY-STEP PROCESS]
-1. In [Input Image 1], measure: What % of the visible body does the jewelry cover vertically?
-2. In [Input Image 1], measure: What % of the neck/chest width does the jewelry span?
-3. Apply these EXACT SAME proportions to [Input Image 3]!
+=== SCALE MATCHING ===
+Look at [Image 1]: What percentage of the visible chest does the jewelry cover?
+Apply the EXACT SAME percentage to [Image 3].
 
-Example: If necklace covers 60% of visible chest in Image 1 → It MUST cover 60% of visible chest in Image 3.
+=== FORBIDDEN ===
+❌ DO NOT change jewelry colors (gold→silver is FORBIDDEN)
+❌ DO NOT alter gemstone colors
+❌ DO NOT modify pendant appearance
+❌ DO NOT shrink the jewelry
+❌ DO NOT regenerate/reimagine the jewelry
 
-[USE IMAGE 2 FOR]
-• Exact jewelry details (every bead, link, stone)
-• Colors and textures
-• Shape accuracy
+=== OUTPUT ===
+The model from [Image 3] wearing the EXACT jewelry from [Image 2] with ORIGINAL colors preserved.`;
 
-[COPY FROM ORIGINAL - Image 1]
-• SCALE and SIZE relative to body
-• How far down it hangs
-• Width relative to neck/shoulders
-• Chain drape and curvature
-
-[ABSOLUTE RULES] ⚠️
-• The pendant in output must be SAME SIZE as in original (Image 1)
-• The chain must hang to the SAME LEVEL as in original
-• Multi-layer spacing must match original
-• If anything, err on the side of LARGER
-
-[FORBIDDEN - ZERO TOLERANCE] ❌
-• NEVER shrink the jewelry compared to original
-• NEVER make pendant smaller than original
-• NEVER shorten the necklace compared to original
-• NEVER compress chain spacing
-
-OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
-
-            const placeResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
+            const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
                         parts: [
-                            { text: placeJewelryPrompt },
-                            // Image 1: ORIGINAL - boyut referansı için
+                            { text: editPrompt },
+                            // Image 1: Orijinal - boyut referansı
                             { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } },
-                            // Image 2: BiRefNet çıktısı - detay için
+                            // Image 2: BiRefNet çıktısı - KOPYALANACAK takı pikselleri
                             { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } },
-                            // Image 3: Üretilen model
+                            // Image 3: Takısız model - hedef
                             { inlineData: { mimeType: 'image/png', data: modelImageBase64.split(',')[1] } }
                         ]
                     }],
                     generationConfig: {
                         responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.1
+                        temperature: 0.1  // Düşük temperature = daha az yaratıcılık = daha az halüsinasyon
                     }
                 })
             });
 
-            if (!placeResponse.ok) {
-                const err = await placeResponse.json();
-                throw new Error(err.error?.message || 'Takı yerleştirilemedi');
+            if (!editResponse.ok) {
+                const err = await editResponse.json();
+                throw new Error(err.error?.message || 'Gemini Edit başarısız');
             }
 
-            const placeData = await placeResponse.json();
-            const placeParts = placeData.candidates?.[0]?.content?.parts || [];
+            const editData = await editResponse.json();
+            const editParts = editData.candidates?.[0]?.content?.parts || [];
 
-            for (const part of placeParts) {
+            for (const part of editParts) {
                 if (part.inlineData?.mimeType?.startsWith('image/')) {
-                    console.log('✅ Manken modu tamamlandı (Hallucination-Free)!');
+                    console.log('✅ Manken modu tamamlandı (Gemini 3 Edit)!');
                     return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
                 }
             }
 
-            throw new Error('Görsel üretilemedi - Gemini görsel döndürmedi');
+            throw new Error('Görsel üretilemedi - Gemini Edit görsel döndürmedi');
         }
 
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
