@@ -3609,24 +3609,30 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
 
             const editPrompt = `Edit this image to place the jewelry from the second image onto the model's neck.
 
-CRITICAL SIZE INSTRUCTIONS - MOST IMPORTANT:
-⚠️ PRESERVE THE EXACT SIZE AND LENGTH OF THE JEWELRY ⚠️
-- The jewelry MUST be the SAME SIZE as in the reference image
-- Do NOT shrink, resize, or scale down the jewelry
-- Do NOT make the necklace shorter or smaller
-- The pendant/stones MUST maintain their original proportions
-- If the jewelry is long in the reference, it MUST be long in the output
+⚠️ CRITICAL RULES - MUST FOLLOW ⚠️
 
-COLOR PRESERVATION:
-- Keep the EXACT same colors (gold stays gold, silver stays silver, green stones stay green)
-- Do NOT alter any color tones
+1. SIZE PRESERVATION:
+- COPY the jewelry EXACTLY as shown - same size, same length
+- Do NOT shrink, resize, or make smaller
+- The pendant must be the SAME SIZE as in the reference
 
-PLACEMENT:
-- Position naturally on the neck/chest area
+2. SYMMETRICAL PLACEMENT:
+- Place the necklace PERFECTLY CENTERED on the neck
+- Both sides must hang EVENLY - same length on left and right
+- Do NOT tilt or angle the necklace
+- The pendant must hang STRAIGHT DOWN in the center
+- Follow the natural curve of the neckline symmetrically
+
+3. COLOR PRESERVATION:
+- Keep EXACT same colors - gold stays gold, green stays green
+- Do NOT change any color tones
+
+4. NATURAL LOOK:
 - Blend seamlessly with realistic shadows
-- Do NOT change the model's pose, clothing, or skin
+- Do NOT change the model's body, pose, or clothing
+- Professional e-commerce quality
 
-The jewelry must look like it's actually being worn by the model, at its ORIGINAL FULL SIZE.`;
+The necklace must be CENTERED, SYMMETRICAL, and ORIGINAL SIZE.`;
 
             const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
