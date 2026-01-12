@@ -3047,51 +3047,52 @@ DO NOT include any jewelry on the model - leave neck completely bare.`;
             const outfit = outfitPresets[state.settings.outfit];
             const scene = scenePresets[state.settings.scene];
 
-            // Gemini'ye her iki görseli gönder - basitleştirilmiş prompt
-            const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
+            // ÖNEMLİ: 3 GÖRSEL GÖNDERİYORUZ - Orijinal boyut referansı için
+            const placeJewelryPrompt = `You have THREE input images:
+[Input Image 1] = ORIGINAL photo showing the jewelry - USE THIS FOR SCALE REFERENCE!
+[Input Image 2] = EXTRACTED jewelry with transparent background - USE THIS FOR EXACT DETAILS
+[Input Image 3] = Generated model (no jewelry) - PLACE JEWELRY HERE
 
-🚨 SCALE WARNING - READ CAREFULLY! 🚨
-AI tends to SHRINK jewelry when placing it. DO NOT DO THIS!
-The jewelry must appear at FULL SIZE - exactly as shown in Input Image 1.
+🚨🚨🚨 CRITICAL SCALE INSTRUCTION 🚨🚨🚨
 
-⚠️ CRITICAL SCALE RULE:
-In Input Image 1, measure what PERCENTAGE of the image height the jewelry covers.
-The jewelry must cover the SAME PERCENTAGE of the model's visible body.
+Look at [Input Image 1] (the ORIGINAL):
+- See how LARGE the jewelry appears in the original context?
+- See how FAR DOWN the necklace hangs?
+- See how WIDE the pendant is?
 
-Example: If the necklace spans 70% of the jewelry image height, it must span ~70% of the model's visible neck-to-chest area.
+THE JEWELRY ON [Input Image 3] MUST HAVE THE EXACT SAME PROPORTIONS!
 
-[ANALYZE INPUT IMAGE 1]
-- Total vertical spread of the necklace
-- Width of the pendant relative to the chain
-- Number of layers/rows
-- Where the pendant hangs (chest level, stomach level?)
+[STEP-BY-STEP PROCESS]
+1. In [Input Image 1], measure: What % of the visible area does the jewelry cover vertically?
+2. In [Input Image 1], measure: What % of the width does the jewelry span?
+3. Apply these EXACT SAME proportions to [Input Image 3]!
 
-[ABSOLUTE SCALE RULES] ⚠️
-1. DO NOT SHRINK THE JEWELRY - this is the #1 problem!
-2. The pendant must appear the SAME SIZE as in Input Image 1
-3. The chain must have the SAME LENGTH and drape
-4. Multi-layer spacing must be PRESERVED
-5. If anything, err on the side of LARGER, not smaller
+Example: If necklace covers 60% of visible chest in Image 1 → It MUST cover 60% of visible chest in Image 3.
 
-[COPY EXACTLY]
-• Every bead, link, stone - IDENTICAL
-• Colors, textures, materials - no changes
-• Chain spacing, pendant shape - exact copy
-• ALL layers visible with proper spacing
+[USE IMAGE 2 FOR]
+• Exact jewelry details (every bead, link, stone)
+• Colors and textures
+• Shape accuracy
 
-[PLACEMENT]
-• Place at SAME relative position as shown in jewelry image
-• Natural draping following gravity
-• Realistic shadows where jewelry touches skin
+[COPY FROM ORIGINAL - Image 1]
+• SCALE and SIZE relative to body
+• How far down it hangs
+• Width relative to neck/shoulders
+• Chain drape and curvature
+
+[ABSOLUTE RULES] ⚠️
+• The pendant in output must be SAME SIZE as in original (Image 1)
+• The chain must hang to the SAME LEVEL as in original
+• Multi-layer spacing must match original
+• If anything, err on the side of LARGER
 
 [FORBIDDEN - ZERO TOLERANCE] ❌
-• NEVER shrink the jewelry
+• NEVER shrink the jewelry compared to original
+• NEVER make pendant smaller than original
+• NEVER shorten the necklace compared to original
 • NEVER compress chain spacing
-• NEVER make pendant smaller
-• NEVER shorten the necklace length
-• NEVER merge multi-layer chains
 
-OUTPUT: Jewelry at FULL SIZE - same visual proportion as Input Image 1.`;
+OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3100,7 +3101,11 @@ OUTPUT: Jewelry at FULL SIZE - same visual proportion as Input Image 1.`;
                     contents: [{
                         parts: [
                             { text: placeJewelryPrompt },
+                            // Image 1: ORIGINAL - boyut referansı için
+                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } },
+                            // Image 2: BiRefNet çıktısı - detay için
                             { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } },
+                            // Image 3: Üretilen model
                             { inlineData: { mimeType: 'image/png', data: modelImageBase64.split(',')[1] } }
                         ]
                     }],
@@ -3545,50 +3550,52 @@ CRITICAL:
             // ===== ADIM 3: Gemini Edit ile orijinal takıyı yerleştir =====
             showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Orijinal)');
 
-            const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
+            // ÖNEMLİ: 3 GÖRSEL GÖNDERİYORUZ - Orijinal boyut referansı için
+            const placeJewelryPrompt = `You have THREE input images:
+[Input Image 1] = ORIGINAL photo showing the jewelry on a mannequin/body - USE THIS FOR SCALE REFERENCE!
+[Input Image 2] = EXTRACTED jewelry with transparent background - USE THIS FOR EXACT DETAILS
+[Input Image 3] = Generated model (no jewelry) - PLACE JEWELRY HERE
 
-🚨 SCALE WARNING - READ CAREFULLY! 🚨
-AI tends to SHRINK jewelry when placing it. DO NOT DO THIS!
-The jewelry must appear at FULL SIZE - exactly as shown in Input Image 1.
+🚨🚨🚨 CRITICAL SCALE INSTRUCTION 🚨🚨🚨
 
-⚠️ CRITICAL SCALE RULE:
-In Input Image 1, measure what PERCENTAGE of the image the jewelry covers.
-The jewelry must cover the SAME PERCENTAGE of the model's visible body.
+Look at [Input Image 1] (the ORIGINAL):
+- See how LARGE the jewelry appears relative to the body/mannequin?
+- See how FAR DOWN the necklace hangs?
+- See how WIDE the pendant is compared to the neck/chest?
 
-Example: If the necklace spans 70% of the jewelry image, it must span ~70% of the model's neck-to-chest area.
+THE JEWELRY ON [Input Image 3] MUST HAVE THE EXACT SAME PROPORTIONS!
 
-[ANALYZE INPUT IMAGE 1]
-- Total vertical spread of the necklace
-- Width of the pendant relative to the chain
-- Number of layers/rows
-- Where the pendant hangs
+[STEP-BY-STEP PROCESS]
+1. In [Input Image 1], measure: What % of the visible body does the jewelry cover vertically?
+2. In [Input Image 1], measure: What % of the neck/chest width does the jewelry span?
+3. Apply these EXACT SAME proportions to [Input Image 3]!
 
-[ABSOLUTE SCALE RULES] ⚠️
-1. DO NOT SHRINK THE JEWELRY - this is the #1 problem!
-2. The pendant must appear the SAME SIZE as in Input Image 1
-3. The chain must have the SAME LENGTH and drape
-4. Multi-layer spacing must be PRESERVED
-5. If anything, err on the side of LARGER, not smaller
+Example: If necklace covers 60% of visible chest in Image 1 → It MUST cover 60% of visible chest in Image 3.
 
-[COPY EXACTLY]
-• Every bead, link, stone - IDENTICAL
-• Colors, textures, materials - no changes
-• Chain spacing, pendant shape - exact copy
-• ALL layers visible with proper spacing
+[USE IMAGE 2 FOR]
+• Exact jewelry details (every bead, link, stone)
+• Colors and textures
+• Shape accuracy
 
-[PLACEMENT]
-• Place at SAME relative position as jewelry image
-• Natural draping following gravity
-• Realistic shadows where jewelry touches skin
+[COPY FROM ORIGINAL - Image 1]
+• SCALE and SIZE relative to body
+• How far down it hangs
+• Width relative to neck/shoulders
+• Chain drape and curvature
+
+[ABSOLUTE RULES] ⚠️
+• The pendant in output must be SAME SIZE as in original (Image 1)
+• The chain must hang to the SAME LEVEL as in original
+• Multi-layer spacing must match original
+• If anything, err on the side of LARGER
 
 [FORBIDDEN - ZERO TOLERANCE] ❌
-• NEVER shrink the jewelry
+• NEVER shrink the jewelry compared to original
+• NEVER make pendant smaller than original
+• NEVER shorten the necklace compared to original
 • NEVER compress chain spacing
-• NEVER make pendant smaller
-• NEVER shorten the necklace
-• NEVER merge multi-layer chains
 
-OUTPUT: Jewelry must appear EXACTLY as in Input Image 1 - same length, size, spread - naturally placed on model.`;
+OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3597,7 +3604,11 @@ OUTPUT: Jewelry must appear EXACTLY as in Input Image 1 - same length, size, spr
                     contents: [{
                         parts: [
                             { text: placeJewelryPrompt },
+                            // Image 1: ORIGINAL - boyut referansı için
+                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } },
+                            // Image 2: BiRefNet çıktısı - detay için
                             { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } },
+                            // Image 3: Üretilen model
                             { inlineData: { mimeType: 'image/png', data: modelImageBase64.split(',')[1] } }
                         ]
                     }],
