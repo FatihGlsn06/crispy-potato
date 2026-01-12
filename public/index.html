@@ -68,15 +68,6 @@
             background: linear-gradient(135deg, #9333ea, #7c3aed);
             color: white;
         }
-        .necklace-len-btn.active {
-            background: linear-gradient(135deg, #0891b2, #06b6d4);
-            color: white;
-        }
-        .jewelry-size-btn.active {
-            background: linear-gradient(135deg, #d946ef, #a855f7);
-            color: white;
-        }
-
         .style-card { transition: all 0.2s ease; cursor: pointer; }
         .style-card:hover { transform: scale(1.02); }
         .style-card.selected, .pose-card.selected {
@@ -282,51 +273,6 @@
                                             <button onclick="selectJewelryCategory('statement')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="statement">Statement</button>
                                             <button onclick="selectJewelryCategory('pearl')" class="jewelry-cat-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-cat="pearl">İnci</button>
                                         </div>
-                                    </div>
-
-                                    <!-- Kolye Uzunluğu -->
-                                    <div>
-                                        <label class="text-[10px] text-slate-400 mb-2 block">
-                                            <i class="fa-solid fa-ruler-vertical mr-1"></i>Kolye Uzunluğu
-                                        </label>
-                                        <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
-                                            <button onclick="selectNecklaceLength('choker')" class="necklace-len-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-len="choker">
-                                                Choker<br><span class="text-[8px] text-slate-500">35-40cm</span>
-                                            </button>
-                                            <button onclick="selectNecklaceLength('short')" class="necklace-len-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-len="short">
-                                                Kısa<br><span class="text-[8px] text-slate-500">45-50cm</span>
-                                            </button>
-                                            <button onclick="selectNecklaceLength('medium')" class="necklace-len-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-len="medium">
-                                                Orta<br><span class="text-[8px] text-slate-500">55-65cm</span>
-                                            </button>
-                                            <button onclick="selectNecklaceLength('long')" class="necklace-len-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-len="long">
-                                                Uzun<br><span class="text-[8px] text-slate-500">70cm+</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Takı Boyutu -->
-                                    <div>
-                                        <label class="text-[10px] text-slate-400 mb-2 block">
-                                            <i class="fa-solid fa-expand mr-1"></i>Takı/Pendant Boyutu
-                                        </label>
-                                        <div class="flex gap-1 bg-slate-800/50 p-1 rounded-lg">
-                                            <button onclick="selectJewelrySize('small')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="small">
-                                                Küçük<br><span class="text-[8px] text-slate-500">1-2cm</span>
-                                            </button>
-                                            <button onclick="selectJewelrySize('medium')" class="jewelry-size-btn active flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium transition-all" data-size="medium">
-                                                Orta<br><span class="text-[8px] text-slate-500">2-4cm</span>
-                                            </button>
-                                            <button onclick="selectJewelrySize('large')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="large">
-                                                Büyük<br><span class="text-[8px] text-slate-500">4-7cm</span>
-                                            </button>
-                                            <button onclick="selectJewelrySize('xlarge')" class="jewelry-size-btn flex-1 py-1.5 px-2 rounded-md text-[10px] font-medium text-slate-400 transition-all" data-size="xlarge">
-                                                XL<br><span class="text-[8px] text-slate-500">7cm+</span>
-                                            </button>
-                                        </div>
-                                        <p class="text-[9px] text-slate-500 mt-1 italic">
-                                            <i class="fa-solid fa-info-circle mr-1"></i>Takının gerçek boyutunu seçin - AI doğru ölçekte gösterecek
-                                        </p>
                                     </div>
 
                                     <!-- Model Profilleri -->
