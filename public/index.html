@@ -1018,13 +1018,13 @@
     <script>
         // ========== GEMINI MODEL CONFIG ==========
         const GEMINI_CONFIG = {
-            // Gemini 3 Flash - En yeni ve hızlı model (Ocak 2026)
-            textModel: 'gemini-3-flash-preview',      // Analiz, SEO, JSON çıktı
-            imageModel: 'gemini-3-flash-preview',     // Görsel üretim/düzenleme
+            // Gemini 3 - En yeni modeller (Ocak 2026)
+            textModel: 'gemini-3-flash-preview',           // Analiz, SEO, JSON çıktı (hızlı)
+            imageModel: 'gemini-3-pro-image-preview',      // Görsel üretim/düzenleme (Nano Banana Pro)
 
             // Fallback modeller (Gemini 3 çalışmazsa)
             fallbackTextModel: 'gemini-2.5-flash',
-            fallbackImageModel: 'gemini-2.5-flash',
+            fallbackImageModel: 'gemini-2.0-flash-exp',    // Image gen için eski model
 
             // API ayarları
             baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
