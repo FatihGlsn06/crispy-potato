@@ -3607,82 +3607,182 @@ CRITICAL:
             }
             console.log('✅ Takısız model oluşturuldu');
 
-            // ===== ADIM 3: Gemini 3 Edit ile orijinal takıyı yerleştir =====
-            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Gemini 3 Edit)');
-            console.log('🎨 Gemini 3 Edit başlatılıyor...');
+            // ===== ADIM 3: ControlNet Inpainting ile takıyı yerleştir =====
+            // BiRefNet çıktısını control image olarak kullan - kenarlar %100 korunur
+            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (ControlNet)');
+            console.log('🎯 ControlNet Inpainting başlatılıyor...');
 
-            // Gemini 3 Edit - Conversational Inpainting
-            // BiRefNet çıktısını (orijinal takı pikselleri) modele yerleştir
-            const editPrompt = `TASK: Place the jewelry from [Image 2] onto the model in [Image 3].
+            // Önce Canvas ile composite yap (base görsel)
+            const compositeResult = await compositeJewelryOnModel(jewelryBase64, modelImageBase64);
+            console.log('✅ Canvas composite tamamlandı');
 
-=== REFERENCE IMAGES ===
-[Image 1] = ORIGINAL photo - shows the jewelry worn (SIZE/SCALE reference)
-[Image 2] = EXTRACTED jewelry with transparent background (EXACT pixels to use)
-[Image 3] = Generated model without jewelry (TARGET for placement)
+            // ControlNet ile kenarları blend et (opsiyonel - Fal.ai key varsa)
+            if (falKey) {
+                try {
+                    showLoader('Manken Modu...', '3/3 Kenarlar yumuşatılıyor (ControlNet)');
 
-=== CRITICAL: PIXEL-PERFECT TRANSFER ===
-You must TRANSFER the EXACT pixels from [Image 2] to [Image 3].
-This is NOT regeneration - this is COPY-PASTE of the jewelry pixels.
+                    // Kenar mask'ı oluştur (sadece takı kenarları blend edilecek)
+                    const edgeMask = await createEdgeMask(jewelryBase64, modelImageBase64);
 
-=== COLOR PRESERVATION (MOST IMPORTANT!) ===
-🚨 The jewelry in [Image 2] has these EXACT colors - PRESERVE THEM:
-• GOLD/BRASS metallic beads → Output must have GOLD/BRASS (NOT silver, NOT gray)
-• GREEN gemstones → Output must have the SAME GREEN shade
-• BROWN jasper pendant → Output must have the SAME BROWN tones
-• WARM color palette → Output must remain WARM (NOT cool/gray)
+                    const controlNetResponse = await fetch('https://fal.run/fal-ai/fast-sdxl-controlnet-canny/inpainting', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Key ${falKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            image_url: compositeResult,
+                            mask_url: edgeMask,
+                            control_image_url: jewelryBase64,
+                            prompt: "seamless jewelry placement, natural lighting, soft shadows, professional product photography, photorealistic blend",
+                            negative_prompt: "different colors, silver instead of gold, color change, blurry, artifacts",
+                            controlnet_conditioning_scale: 0.8,  // Yüksek = kenarları daha çok koru
+                            strength: 0.3,  // Düşük = orijinali daha çok koru
+                            num_inference_steps: 25,
+                            seed: 42
+                        })
+                    });
 
-=== SCALE MATCHING ===
-Look at [Image 1]: What percentage of the visible chest does the jewelry cover?
-Apply the EXACT SAME percentage to [Image 3].
-
-=== FORBIDDEN ===
-❌ DO NOT change jewelry colors (gold→silver is FORBIDDEN)
-❌ DO NOT alter gemstone colors
-❌ DO NOT modify pendant appearance
-❌ DO NOT shrink the jewelry
-❌ DO NOT regenerate/reimagine the jewelry
-
-=== OUTPUT ===
-The model from [Image 3] wearing the EXACT jewelry from [Image 2] with ORIGINAL colors preserved.`;
-
-            const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: editPrompt },
-                            // Image 1: Orijinal - boyut referansı
-                            { inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } },
-                            // Image 2: BiRefNet çıktısı - KOPYALANACAK takı pikselleri
-                            { inlineData: { mimeType: 'image/png', data: jewelryBase64.split(',')[1] } },
-                            // Image 3: Takısız model - hedef
-                            { inlineData: { mimeType: 'image/png', data: modelImageBase64.split(',')[1] } }
-                        ]
-                    }],
-                    generationConfig: {
-                        responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.1  // Düşük temperature = daha az yaratıcılık = daha az halüsinasyon
+                    if (controlNetResponse.ok) {
+                        const controlNetData = await controlNetResponse.json();
+                        if (controlNetData.images?.[0]?.url) {
+                            console.log('✅ ControlNet blend tamamlandı!');
+                            return await fetchImageAsBase64(controlNetData.images[0].url);
+                        }
                     }
-                })
-            });
-
-            if (!editResponse.ok) {
-                const err = await editResponse.json();
-                throw new Error(err.error?.message || 'Gemini Edit başarısız');
-            }
-
-            const editData = await editResponse.json();
-            const editParts = editData.candidates?.[0]?.content?.parts || [];
-
-            for (const part of editParts) {
-                if (part.inlineData?.mimeType?.startsWith('image/')) {
-                    console.log('✅ Manken modu tamamlandı (Gemini 3 Edit)!');
-                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                    console.log('⚠️ ControlNet atlandı, Canvas composite döndürülüyor');
+                } catch (e) {
+                    console.log('⚠️ ControlNet hatası:', e.message);
                 }
             }
 
-            throw new Error('Görsel üretilemedi - Gemini Edit görsel döndürmedi');
+            // ControlNet başarısız veya key yoksa Canvas composite döndür
+            console.log('✅ Manken modu tamamlandı (Canvas Composite)!');
+            return compositeResult;
+        }
+
+        // ========== CANVAS COMPOSITE - TAKILAYI MODEL ÜZERİNE YERLEŞTİR ==========
+        // BiRefNet çıktısını kullanır, AI yok, %100 orijinal takı korunur
+        async function compositeJewelryOnModel(jewelryBase64, modelBase64) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                const modelImg = new Image();
+                const jewelryImg = new Image();
+
+                let loadedCount = 0;
+
+                const onBothLoaded = () => {
+                    loadedCount++;
+                    if (loadedCount < 2) return;
+
+                    // Canvas boyutu = model boyutu
+                    canvas.width = modelImg.width;
+                    canvas.height = modelImg.height;
+
+                    // 1. Model görselini çiz (arka plan)
+                    ctx.drawImage(modelImg, 0, 0);
+
+                    // 2. Takı pozisyonunu hesapla
+                    const pos = state.position || { x: 50, y: 35, scale: 60, rotation: 0 };
+
+                    // Takı boyutu
+                    const targetWidth = modelImg.width * (pos.scale / 100);
+                    const aspectRatio = jewelryImg.height / jewelryImg.width;
+                    const targetHeight = targetWidth * aspectRatio;
+
+                    // Pozisyon
+                    const x = (modelImg.width * (pos.x / 100)) - (targetWidth / 2);
+                    const y = (modelImg.height * (pos.y / 100)) - (targetHeight / 3);
+
+                    // Rotation
+                    const rotation = (pos.rotation || 0) * Math.PI / 180;
+
+                    // 3. Yumuşak gölge
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 3;
+                    ctx.shadowOffsetY = 6;
+
+                    // 4. Takıyı çiz
+                    ctx.translate(x + targetWidth / 2, y + targetHeight / 2);
+                    ctx.rotate(rotation);
+                    ctx.drawImage(jewelryImg, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
+                    ctx.restore();
+
+                    resolve(canvas.toDataURL('image/png', 1.0));
+                };
+
+                modelImg.onload = onBothLoaded;
+                jewelryImg.onload = onBothLoaded;
+                modelImg.onerror = () => reject(new Error('Model yüklenemedi'));
+                jewelryImg.onerror = () => reject(new Error('Takı yüklenemedi'));
+
+                modelImg.src = modelBase64;
+                jewelryImg.src = jewelryBase64;
+            });
+        }
+
+        // ========== KENAR MASK'I OLUŞTUR ==========
+        // Sadece takının kenar bölgesini mask'lar (blend için)
+        async function createEdgeMask(jewelryBase64, modelBase64) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const modelImg = new Image();
+                const jewelryImg = new Image();
+
+                let loaded = 0;
+                const onLoad = () => {
+                    loaded++;
+                    if (loaded < 2) return;
+
+                    canvas.width = modelImg.width;
+                    canvas.height = modelImg.height;
+
+                    // Siyah arka plan (korunacak alan)
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    // Takı pozisyonu
+                    const pos = state.position || { x: 50, y: 35, scale: 60, rotation: 0 };
+                    const targetWidth = modelImg.width * (pos.scale / 100);
+                    const aspectRatio = jewelryImg.height / jewelryImg.width;
+                    const targetHeight = targetWidth * aspectRatio;
+                    const x = (modelImg.width * (pos.x / 100)) - (targetWidth / 2);
+                    const y = (modelImg.height * (pos.y / 100)) - (targetHeight / 3);
+
+                    // Sadece kenar bölgesi beyaz (blend edilecek)
+                    // Feather effect için gradient
+                    const edgeWidth = 20; // Kenar genişliği (piksel)
+
+                    ctx.save();
+                    ctx.translate(x + targetWidth / 2, y + targetHeight / 2);
+
+                    // Dış kenar (beyaz - blend edilecek)
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, targetWidth / 2 + edgeWidth, targetHeight / 2 + edgeWidth, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // İç alan (siyah - korunacak)
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, targetWidth / 2 - edgeWidth, targetHeight / 2 - edgeWidth, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+
+                    resolve(canvas.toDataURL('image/png'));
+                };
+
+                modelImg.onload = onLoad;
+                jewelryImg.onload = onLoad;
+                modelImg.src = modelBase64;
+                jewelryImg.src = jewelryBase64;
+            });
         }
 
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
