@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- Trendyol Pro Studio v18.2 - SEO PRO+ Edition -->
+<!-- Trendyol Pro Studio v19.0 - SEO PRO+ Edition -->
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trendyol Pro Studio v18.2 - SEO PRO+</title>
+    <title>Trendyol Pro Studio v19.0 - SEO PRO+</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -159,7 +159,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-sm sm:text-lg">Trendyol Pro Studio</h1>
-                    <p class="text-[9px] sm:text-[10px] text-slate-400">v18.2 SEO PRO+ Edition</p>
+                    <p class="text-[9px] sm:text-[10px] text-slate-400">v19.0 SEO PRO+ Edition</p>
                 </div>
             </div>
 
@@ -1016,6 +1016,69 @@
     </div>
 
     <script>
+        // ========== GEMINI MODEL CONFIG ==========
+        const GEMINI_CONFIG = {
+            // Gemini 3 Flash - En yeni ve hızlı model (Ocak 2026)
+            textModel: 'gemini-3-flash-preview',      // Analiz, SEO, JSON çıktı
+            imageModel: 'gemini-3-flash-preview',     // Görsel üretim/düzenleme
+
+            // Fallback modeller (Gemini 3 çalışmazsa)
+            fallbackTextModel: 'gemini-2.5-flash',
+            fallbackImageModel: 'gemini-2.5-flash',
+
+            // API ayarları
+            baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+            maxRetries: 3,
+            retryDelayMs: 1000
+        };
+
+        // Retry mekanizması ile API çağrısı
+        async function callGeminiAPI(model, body, apiKey, retries = GEMINI_CONFIG.maxRetries) {
+            const url = `${GEMINI_CONFIG.baseUrl}/${model}:generateContent?key=${apiKey}`;
+
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (response.ok) {
+                        return await response.json();
+                    }
+
+                    // 429 (rate limit) veya 5xx hatalarında retry
+                    if (response.status === 429 || response.status >= 500) {
+                        if (attempt < retries) {
+                            const delay = GEMINI_CONFIG.retryDelayMs * Math.pow(2, attempt - 1);
+                            console.log(`⏳ API hatası (${response.status}), ${delay}ms sonra tekrar deneniyor... (${attempt}/${retries})`);
+                            await new Promise(r => setTimeout(r, delay));
+                            continue;
+                        }
+                    }
+
+                    // Model bulunamadı - fallback'e geç
+                    if (response.status === 404) {
+                        const fallbackModel = model.includes('image')
+                            ? GEMINI_CONFIG.fallbackImageModel
+                            : GEMINI_CONFIG.fallbackTextModel;
+                        console.log(`⚠️ ${model} bulunamadı, ${fallbackModel} deneniyor...`);
+                        return callGeminiAPI(fallbackModel, body, apiKey, 1);
+                    }
+
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `API hatası: ${response.status}`);
+
+                } catch (error) {
+                    if (attempt === retries) throw error;
+                    const delay = GEMINI_CONFIG.retryDelayMs * Math.pow(2, attempt - 1);
+                    console.log(`⏳ Hata: ${error.message}, ${delay}ms sonra tekrar... (${attempt}/${retries})`);
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
+        }
+
         // ========== STATE ==========
         let state = {
             originalImage: null,
@@ -1200,14 +1263,11 @@
                 : '';
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                {
-                                    text: `SEN BİR TRENDYOL SEO UZMANSIN.
+                const seoRequestBody = {
+                    contents: [{
+                        parts: [
+                            {
+                                text: `SEN BİR TRENDYOL SEO UZMANSIN.
 
 ===== TRENDYOL ÜRÜN YAPISI (ÇOK ÖNEMLİ!) =====
 Trendyol'da ürün listelerken 3 farklı alan var:
@@ -1341,17 +1401,14 @@ MODEL KODU FORMATI:
 - Örnek: KLY-RG-847, YZK-GMS-213, BLK-ALT-456
 
 SADECE JSON döndür, başka bir şey yazma!`
-                                },
-                                ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
-                            ]
-                        }],
-                        generationConfig: { temperature: 0.3 }
-                    })
-                });
+                            },
+                            ...(state.originalBase64 ? [{ inlineData: { mimeType: 'image/jpeg', data: state.originalBase64.split(',')[1] } }] : [])
+                        ]
+                    }],
+                    generationConfig: { temperature: 0.3 }
+                };
 
-                if (!response.ok) throw new Error('SEO oluşturulamadı');
-
-                const data = await response.json();
+                const data = await callGeminiAPI(GEMINI_CONFIG.textModel, seoRequestBody, geminiKey);
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
                 // JSON parse - markdown code block'u da yakala
@@ -2410,7 +2467,7 @@ Return ONLY this JSON:
 }`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+                const response = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.textModel}:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2899,7 +2956,7 @@ ABSOLUTELY DO NOT:
 
 The jewelry placement is FINAL. Only enhance the blending and overall image quality.`;
 
-                const blendResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+                const blendResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -3000,7 +3057,7 @@ ${hasAngleInstruction ? 'Use the CAMERA ANGLE from USER CUSTOM INSTRUCTIONS' : '
 CRITICAL: Generate ENOUGH visible body area for the jewelry in [Input Image 1] to fit naturally.
 DO NOT include any jewelry on the model - leave neck completely bare.`;
 
-            const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const modelResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3094,7 +3151,7 @@ Example: If necklace covers 60% of visible chest in Image 1 → It MUST cover 60
 
 OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
 
-            const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const placeResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3211,7 +3268,7 @@ DO NOT include any jewelry or objects - just the empty background/surface.
 
 OUTPUT: Clean, professional background only.`;
 
-            const bgResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const bgResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3281,7 +3338,7 @@ PRESERVE 100%:
 
 OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally placed on the background.`;
 
-            const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const placeResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3508,7 +3565,7 @@ CRITICAL:
 - DO NOT include any jewelry - leave neck completely bare
 - The framing must accommodate the ACTUAL size of the jewelry in Input Image 2`;
 
-            const modelResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const modelResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3597,7 +3654,7 @@ Example: If necklace covers 60% of visible chest in Image 1 → It MUST cover 60
 
 OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
 
-            const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
+            const placeResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3640,7 +3697,7 @@ OUTPUT: Jewelry on model at EXACT SAME SCALE as seen in [Input Image 1].`;
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
         async function generateWithGeminiImageGen(apiKey, prompt) {
             // Gemini 2.5 Flash ile görsel üretim
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`, {
+            const response = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -3758,7 +3815,7 @@ SADECE JSON DÖNDÜR (başka hiçbir şey yazma):
 NOT: Tipik bir kolye için y=35-50 arası, scale=40-70 arası olur.`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
+                const response = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.textModel}:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -3918,8 +3975,8 @@ JSON formatında yanıt ver:
 SADECE JSON döndür.`;
 
             try {
-                // gemini-2.5-flash - en yeni ve hızlı model
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                // Gemini 3 Flash - en yeni ve hızlı model (Ocak 2026)
+                const response = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.textModel}:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
