@@ -1254,7 +1254,7 @@
                 : '';
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2464,7 +2464,7 @@ Return ONLY this JSON:
 }`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -3097,56 +3097,48 @@ DO NOT include any jewelry on the model - leave neck completely bare.`;
             // Gemini'ye her iki görseli gönder - basitleştirilmiş prompt
             const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
 
-⚠️ CRITICAL: ANALYZE THE JEWELRY IMAGE FIRST!
-Look at Input Image 1 carefully:
-- How LONG is the necklace? (Does it hang to chest? To stomach?)
-- How WIDE is the pendant/centerpiece?
-- Is it multi-layer (multiple chains)?
-- What is the total VERTICAL SPREAD of the piece?
+🚨 SCALE WARNING - READ CAREFULLY! 🚨
+AI tends to SHRINK jewelry when placing it. DO NOT DO THIS!
+The jewelry must appear at FULL SIZE - exactly as shown in Input Image 1.
 
-The jewelry image shows EXACTLY how big and long this necklace is.
-Your job is to place it on the model at the SAME relative size and length.
+⚠️ CRITICAL SCALE RULE:
+In Input Image 1, measure what PERCENTAGE of the image height the jewelry covers.
+The jewelry must cover the SAME PERCENTAGE of the model's visible body.
 
-[ABSOLUTE RULES - NO EXCEPTIONS] ⚠️
-1. PRESERVE EXACT SIZE: The jewelry must appear the SAME size as in Input Image 1
-2. PRESERVE EXACT LENGTH: If the necklace hangs to mid-chest in the image, it must hang to mid-chest on the model
-3. PRESERVE EXACT SPREAD: If it's a wide/long necklace, show full chest area to fit it
-4. DO NOT COMPRESS: Never make a long necklace look shorter
-5. DO NOT RESIZE: Never shrink or enlarge the jewelry
+Example: If the necklace spans 70% of the jewelry image height, it must span ~70% of the model's visible neck-to-chest area.
 
-[PRESERVATION - COPY EXACTLY]
-• Every bead, link, stone must be IDENTICAL to Input Image 1
+[ANALYZE INPUT IMAGE 1]
+- Total vertical spread of the necklace
+- Width of the pendant relative to the chain
+- Number of layers/rows
+- Where the pendant hangs (chest level, stomach level?)
+
+[ABSOLUTE SCALE RULES] ⚠️
+1. DO NOT SHRINK THE JEWELRY - this is the #1 problem!
+2. The pendant must appear the SAME SIZE as in Input Image 1
+3. The chain must have the SAME LENGTH and drape
+4. Multi-layer spacing must be PRESERVED
+5. If anything, err on the side of LARGER, not smaller
+
+[COPY EXACTLY]
+• Every bead, link, stone - IDENTICAL
 • Colors, textures, materials - no changes
 • Chain spacing, pendant shape - exact copy
-• If multi-layer: ALL layers must be visible with proper spacing
+• ALL layers visible with proper spacing
 
-[PLACEMENT LOGIC]
-• Analyze the jewelry's proportions in Input Image 1
-• The necklace should hang at the SAME relative position on the model
-• Long necklace = pendant at chest/stomach level
-• Short necklace = pendant near collarbone
-• Multi-layer = each row visible and spaced correctly
-
-[MODEL & SCENE]
-${profile.desc}
-${outfit?.prompt || 'Elegant clothing'}
-${scene?.prompt || 'Professional studio'}
-${style.prompt}
-
-[INTEGRATION]
+[PLACEMENT]
+• Place at SAME relative position as shown in jewelry image
 • Natural draping following gravity
 • Realistic shadows where jewelry touches skin
-• Blend lighting naturally
-• Must look actually worn, not pasted
 
-[FORBIDDEN] ❌
-• Do NOT shorten the necklace
-• Do NOT compress the chain spacing
-• Do NOT resize the pendant
-• Do NOT merge multi-layer chains
-• Do NOT crop any part of jewelry
+[FORBIDDEN - ZERO TOLERANCE] ❌
+• NEVER shrink the jewelry
+• NEVER compress chain spacing
+• NEVER make pendant smaller
+• NEVER shorten the necklace length
+• NEVER merge multi-layer chains
 
-OUTPUT: The jewelry must appear EXACTLY as it does in Input Image 1 - same length, same size, same spread - naturally placed on the model.`;
+OUTPUT: Jewelry at FULL SIZE - same visual proportion as Input Image 1.`;
 
             const placeResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${geminiKey}`, {
                 method: 'POST',
@@ -3595,41 +3587,46 @@ CRITICAL:
 
             const placeJewelryPrompt = `[TASK] Place the jewelry from [Input Image 1] onto the model in [Input Image 2].
 
-⚠️ CRITICAL: LOOK AT THE JEWELRY IMAGE FIRST!
-Analyze Input Image 1:
-- How LONG is this necklace?
-- How WIDE is the pendant?
-- Is it multi-layer?
-- What is the total VERTICAL SPREAD?
+🚨 SCALE WARNING - READ CAREFULLY! 🚨
+AI tends to SHRINK jewelry when placing it. DO NOT DO THIS!
+The jewelry must appear at FULL SIZE - exactly as shown in Input Image 1.
 
-The jewelry image shows EXACTLY how this necklace should look when worn.
-Your job is to place it on the model at the SAME size and length.
+⚠️ CRITICAL SCALE RULE:
+In Input Image 1, measure what PERCENTAGE of the image the jewelry covers.
+The jewelry must cover the SAME PERCENTAGE of the model's visible body.
 
-[ABSOLUTE RULES] ⚠️
-1. PRESERVE EXACT SIZE: Same size as in Input Image 1
-2. PRESERVE EXACT LENGTH: Same hanging position
-3. PRESERVE EXACT SPREAD: Same vertical coverage
-4. DO NOT COMPRESS: Never shorten the necklace
-5. DO NOT RESIZE: Never shrink or enlarge
+Example: If the necklace spans 70% of the jewelry image, it must span ~70% of the model's neck-to-chest area.
 
-[COPY EXACTLY FROM INPUT IMAGE 1]
+[ANALYZE INPUT IMAGE 1]
+- Total vertical spread of the necklace
+- Width of the pendant relative to the chain
+- Number of layers/rows
+- Where the pendant hangs
+
+[ABSOLUTE SCALE RULES] ⚠️
+1. DO NOT SHRINK THE JEWELRY - this is the #1 problem!
+2. The pendant must appear the SAME SIZE as in Input Image 1
+3. The chain must have the SAME LENGTH and drape
+4. Multi-layer spacing must be PRESERVED
+5. If anything, err on the side of LARGER, not smaller
+
+[COPY EXACTLY]
 • Every bead, link, stone - IDENTICAL
-• All colors, textures, materials
-• Chain spacing, pendant shape
-• If multi-layer: ALL layers visible with proper spacing
+• Colors, textures, materials - no changes
+• Chain spacing, pendant shape - exact copy
+• ALL layers visible with proper spacing
 
 [PLACEMENT]
-• Analyze how the jewelry hangs in Input Image 1
-• Place at SAME relative position on the model
+• Place at SAME relative position as jewelry image
 • Natural draping following gravity
 • Realistic shadows where jewelry touches skin
 
-[FORBIDDEN] ❌
-• Do NOT shorten the necklace
-• Do NOT compress chain spacing
-• Do NOT resize pendant
-• Do NOT merge layers
-• Do NOT crop jewelry
+[FORBIDDEN - ZERO TOLERANCE] ❌
+• NEVER shrink the jewelry
+• NEVER compress chain spacing
+• NEVER make pendant smaller
+• NEVER shorten the necklace
+• NEVER merge multi-layer chains
 
 OUTPUT: Jewelry must appear EXACTLY as in Input Image 1 - same length, size, spread - naturally placed on model.`;
 
@@ -3790,7 +3787,7 @@ SADECE JSON DÖNDÜR (başka hiçbir şey yazma):
 NOT: Tipik bir kolye için y=35-50 arası, scale=40-70 arası olur.`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -3950,8 +3947,8 @@ JSON formatında yanıt ver:
 SADECE JSON döndür.`;
 
             try {
-                // gemini-2.0-flash - en yeni ve hızlı model
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                // gemini-2.5-flash - en yeni ve hızlı model
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
