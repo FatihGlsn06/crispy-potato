@@ -3490,8 +3490,82 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
 
             const jewelryBase64 = await fetchImageAsBase64(transparentJewelryUrl);
 
-            // ===== ADIM 2: Gemini ile model oluştur (takısız, orijinal poza benzer) =====
-            showLoader('Manken Modu...', '2/3 Model oluşturuluyor');
+            // ===== ADIM 1.5: Takıyı analiz et - boyut ve alan ihtiyacı =====
+            showLoader('Manken Modu...', '2/4 Takı analiz ediliyor');
+            console.log('🔍 Takı analiz ediliyor...');
+
+            const jewelryAnalysisPrompt = `Analyze this jewelry image and provide specifications for model generation.
+
+Return ONLY a JSON object with these fields:
+{
+  "type": "necklace/earring/bracelet/ring",
+  "length": "choker/short/medium/long/very_long",
+  "verticalSpace": "small/medium/large/very_large",
+  "width": "narrow/medium/wide",
+  "hasLargePendant": true/false,
+  "recommendedNeckline": "high/medium/low/deep_v",
+  "recommendedFraming": "close_up/medium/wide",
+  "description": "brief description"
+}
+
+IMPORTANT:
+- "very_long" = necklace hangs below chest, needs lots of vertical space
+- "long" = hangs to mid-chest
+- "medium" = sits at collarbone level
+- "short/choker" = sits at neck
+
+Return ONLY the JSON, no other text.`;
+
+            const jewelryBase64Data = jewelryBase64.split(',')[1];
+            let jewelryAnalysis = {
+                type: 'necklace',
+                length: 'medium',
+                verticalSpace: 'medium',
+                width: 'medium',
+                hasLargePendant: false,
+                recommendedNeckline: 'medium',
+                recommendedFraming: 'medium',
+                description: 'standard necklace'
+            };
+
+            try {
+                const analysisResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.textModel}:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: jewelryAnalysisPrompt },
+                                {
+                                    inlineData: {
+                                        mimeType: 'image/png',
+                                        data: jewelryBase64Data
+                                    }
+                                }
+                            ]
+                        }],
+                        generationConfig: {
+                            temperature: 0.1
+                        }
+                    })
+                });
+
+                if (analysisResponse.ok) {
+                    const analysisData = await analysisResponse.json();
+                    const analysisText = analysisData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    // JSON'u parse et
+                    const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        jewelryAnalysis = { ...jewelryAnalysis, ...JSON.parse(jsonMatch[0]) };
+                    }
+                }
+                console.log('✅ Takı analizi:', jewelryAnalysis);
+            } catch (e) {
+                console.log('⚠️ Takı analizi başarısız, varsayılan kullanılıyor:', e.message);
+            }
+
+            // ===== ADIM 2: Gemini ile model oluştur (TAKIYA UYGUN) =====
+            showLoader('Manken Modu...', '3/4 Model oluşturuluyor');
 
             const outfitSceneInstructions = getOutfitScenePrompt();
             const smartPromptInstructions = getSmartPromptInstructions();
@@ -3517,17 +3591,34 @@ OUTPUT: The product must be PIXEL-PERFECT identical to Input Image 1, naturally 
             const isPortrait = aspectRatio < 1;
             const isLandscape = aspectRatio > 1;
 
-            // Model oluştur - KESINLIKLE TAKISIZ
+            // Takı analizine göre model frame ayarları
+            const frameSettings = {
+                'very_long': { neckline: 'deep V-neck showing full chest area', frame: 'wide shot from above eyebrows to below chest', space: 'MAXIMUM vertical space for very long necklace' },
+                'long': { neckline: 'low V-neck', frame: 'medium-wide shot showing full chest', space: 'large vertical space for long necklace' },
+                'medium': { neckline: 'medium V-neck', frame: 'medium shot showing neck and upper chest', space: 'medium vertical space' },
+                'short': { neckline: 'modest neckline', frame: 'closer shot focused on neck area', space: 'standard space for short necklace' },
+                'choker': { neckline: 'can be higher neckline', frame: 'close-up on neck', space: 'minimal space needed' }
+            };
+            const frameSetting = frameSettings[jewelryAnalysis.length] || frameSettings.medium;
+
+            // Model oluştur - TAKIYA UYGUN FRAME
             const modelPrompt = `Generate a professional model photo for jewelry product photography.
 
-🚨🚨🚨 ABSOLUTELY NO JEWELRY 🚨🚨🚨
-The model must NOT wear ANY jewelry:
-- NO necklaces
-- NO earrings
-- NO bracelets
-- NO rings
-- COMPLETELY BARE neck and chest area
-- The jewelry will be added LATER via digital editing
+⚠️ CRITICAL: THIS MODEL WILL WEAR A ${jewelryAnalysis.length.toUpperCase()} NECKLACE ⚠️
+The jewelry is: ${jewelryAnalysis.description || 'a necklace'}
+Required space: ${frameSetting.space}
+
+🚨 ABSOLUTELY NO JEWELRY ON THE MODEL 🚨
+- NO necklaces, earrings, bracelets, rings
+- COMPLETELY BARE neck and chest
+- Jewelry will be added digitally LATER
+
+📐 FRAME REQUIREMENTS FOR ${jewelryAnalysis.length.toUpperCase()} JEWELRY:
+- Neckline: ${frameSetting.neckline}
+- Framing: ${frameSetting.frame}
+- The image MUST have enough vertical space for the jewelry
+${jewelryAnalysis.hasLargePendant ? '- Extra space needed for LARGE PENDANT' : ''}
+${jewelryAnalysis.verticalSpace === 'very_large' ? '- VERY LARGE vertical space required - show more of the torso' : ''}
 
 IMAGE SPECS:
 - Dimensions: ${state.originalWidth || 1024}x${state.originalHeight || 1024}
@@ -3542,12 +3633,12 @@ MODEL:
 - Professional studio lighting
 - BARE neck - no accessories
 
-🚫 MODESTY RULES:
-- CONSERVATIVE clothing only - NO low-cut, NO deep V-neck, NO cleavage
-- High neckline or modest V-neck
-- Family-friendly, department store catalog style
+CLOTHING:
+- ${frameSetting.neckline} to accommodate the jewelry
+- Family-friendly, e-commerce catalog style
+- Dark solid colors preferred (black, navy) for contrast
 
-FACE: Natural headless crop (from above eyebrows) or face turned away.
+FACE: Crop from above eyebrows or face turned away.
 
 POSE: ${hasAngleInstruction ? 'Use angle from USER INSTRUCTIONS' : (pose?.prompt || 'Front facing, clear neck view')}
 
@@ -3600,7 +3691,7 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
 
             // ===== ADIM 3: Gemini Edit ile takıyı yerleştir =====
             // Takısız model + BiRefNet çıktısı → Gemini takıyı yerleştirsin
-            showLoader('Manken Modu...', '3/3 Takı yerleştiriliyor (Gemini Edit)');
+            showLoader('Manken Modu...', '4/4 Takı yerleştiriliyor (Gemini Edit)');
             console.log('🎯 Gemini Edit başlatılıyor...');
 
             // Takı ve model görsellerini base64'ten çıkar
