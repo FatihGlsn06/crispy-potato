@@ -3609,15 +3609,24 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
 
             const editPrompt = `Edit this image to place the jewelry from the second image onto the model's neck.
 
-CRITICAL INSTRUCTIONS:
-1. Place the jewelry EXACTLY as shown - preserve every detail
-2. Keep the EXACT same colors (gold stays gold, silver stays silver, green stones stay green)
-3. Position naturally on the neck/chest area
-4. Blend seamlessly with realistic shadows
-5. Do NOT change the model's pose, clothing, or skin
-6. Do NOT modify the jewelry design, size ratio, or colors in any way
+CRITICAL SIZE INSTRUCTIONS - MOST IMPORTANT:
+⚠️ PRESERVE THE EXACT SIZE AND LENGTH OF THE JEWELRY ⚠️
+- The jewelry MUST be the SAME SIZE as in the reference image
+- Do NOT shrink, resize, or scale down the jewelry
+- Do NOT make the necklace shorter or smaller
+- The pendant/stones MUST maintain their original proportions
+- If the jewelry is long in the reference, it MUST be long in the output
 
-The jewelry must look like it's actually being worn by the model.`;
+COLOR PRESERVATION:
+- Keep the EXACT same colors (gold stays gold, silver stays silver, green stones stay green)
+- Do NOT alter any color tones
+
+PLACEMENT:
+- Position naturally on the neck/chest area
+- Blend seamlessly with realistic shadows
+- Do NOT change the model's pose, clothing, or skin
+
+The jewelry must look like it's actually being worn by the model, at its ORIGINAL FULL SIZE.`;
 
             const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
