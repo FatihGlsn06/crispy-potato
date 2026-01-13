@@ -3764,15 +3764,53 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                         'short': 0.35,
                         'choker': 0.30
                     };
-                    const scale = sizeMap[jewelryAnalysis?.length] || 0.50;
+                    let scale = sizeMap[jewelryAnalysis?.length] || 0.50;
 
-                    const targetWidth = modelImg.width * scale;
+                    // Takının aspect ratio'sunu hesapla
+                    const jewelryAspectRatio = jewelryImg.width / jewelryImg.height;
+
+                    // Çok geniş takılar için (genişlik > yükseklik) scale'i azalt
+                    if (jewelryAspectRatio > 1.2) {
+                        // Geniş kolye - canvas'a sığması için scale küçült
+                        const maxWidthRatio = 0.85; // Canvas genişliğinin max %85'i
+                        const neededScale = (modelImg.width * maxWidthRatio) / jewelryImg.width;
+                        const currentWidth = modelImg.width * scale;
+
+                        // Eğer mevcut genişlik canvas'ı aşıyorsa, küçült
+                        if (currentWidth > modelImg.width * maxWidthRatio) {
+                            scale = maxWidthRatio * (jewelryImg.height / jewelryImg.width);
+                            console.log(`⚠️ Geniş kolye tespit edildi, scale ayarlandı: ${scale.toFixed(2)}`);
+                        }
+                    }
+
+                    let targetWidth = modelImg.width * scale;
                     const aspectRatio = jewelryImg.height / jewelryImg.width;
-                    const targetHeight = targetWidth * aspectRatio;
+                    let targetHeight = targetWidth * aspectRatio;
 
-                    // Pozisyon - merkez, boyun hizası
+                    // SON KONTROL: Canvas sınırlarını aşmasın
+                    const padding = 20; // Kenarlardan minimum boşluk
+                    const maxWidth = modelImg.width - (padding * 2);
+                    const maxHeight = modelImg.height * 0.75; // Max yükseklik
+
+                    if (targetWidth > maxWidth) {
+                        const reductionRatio = maxWidth / targetWidth;
+                        targetWidth = maxWidth;
+                        targetHeight = targetHeight * reductionRatio;
+                        console.log(`⚠️ Genişlik sınırı aşıldı, küçültüldü: ${targetWidth.toFixed(0)}px`);
+                    }
+
+                    if (targetHeight > maxHeight) {
+                        const reductionRatio = maxHeight / targetHeight;
+                        targetHeight = maxHeight;
+                        targetWidth = targetWidth * reductionRatio;
+                        console.log(`⚠️ Yükseklik sınırı aşıldı, küçültüldü: ${targetHeight.toFixed(0)}px`);
+                    }
+
+                    // Pozisyon - merkez, göğüs hizası (kolye boyunda değil göğüste otursun)
                     const x = (modelImg.width - targetWidth) / 2;
-                    const y = modelImg.height * 0.18;  // Üstten %18
+                    const y = modelImg.height * 0.22;  // Üstten %22 - daha aşağıda
+
+                    console.log(`📐 Takı boyutları: ${targetWidth.toFixed(0)}x${targetHeight.toFixed(0)}px, pozisyon: (${x.toFixed(0)}, ${y.toFixed(0)})`);
 
                     // Yumuşak gölge
                     ctx.save();
@@ -3817,7 +3855,7 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                     ctx.fillStyle = 'black';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                    // Takı pozisyonu (composite ile aynı)
+                    // Takı pozisyonu (composite ile AYNI MANTIK)
                     const sizeMap = {
                         'very_long': 0.65,
                         'long': 0.55,
@@ -3825,14 +3863,41 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                         'short': 0.35,
                         'choker': 0.30
                     };
-                    const scale = sizeMap[jewelryAnalysis?.length] || 0.50;
+                    let scale = sizeMap[jewelryAnalysis?.length] || 0.50;
 
-                    const targetWidth = modelImg.width * scale;
+                    // Geniş takılar için scale ayarla (composite ile aynı)
+                    const jewelryAspectRatio = jewelryImg.width / jewelryImg.height;
+                    if (jewelryAspectRatio > 1.2) {
+                        const maxWidthRatio = 0.85;
+                        const currentWidth = modelImg.width * scale;
+                        if (currentWidth > modelImg.width * maxWidthRatio) {
+                            scale = maxWidthRatio * (jewelryImg.height / jewelryImg.width);
+                        }
+                    }
+
+                    let targetWidth = modelImg.width * scale;
                     const aspectRatio = jewelryImg.height / jewelryImg.width;
-                    const targetHeight = targetWidth * aspectRatio;
+                    let targetHeight = targetWidth * aspectRatio;
+
+                    // Canvas sınır kontrolü (composite ile aynı)
+                    const padding = 20;
+                    const maxWidth = modelImg.width - (padding * 2);
+                    const maxHeight = modelImg.height * 0.75;
+
+                    if (targetWidth > maxWidth) {
+                        const reductionRatio = maxWidth / targetWidth;
+                        targetWidth = maxWidth;
+                        targetHeight = targetHeight * reductionRatio;
+                    }
+
+                    if (targetHeight > maxHeight) {
+                        const reductionRatio = maxHeight / targetHeight;
+                        targetHeight = maxHeight;
+                        targetWidth = targetWidth * reductionRatio;
+                    }
 
                     const x = (modelImg.width - targetWidth) / 2;
-                    const y = modelImg.height * 0.18;
+                    const y = modelImg.height * 0.22;  // Composite ile aynı
 
                     // Takının alpha kanalını kullanarak gerçek şeklini al
                     const tempCanvas = document.createElement('canvas');
