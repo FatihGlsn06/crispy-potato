@@ -3638,7 +3638,7 @@ CLOTHING:
 - Family-friendly, e-commerce catalog style
 - Dark solid colors preferred (black, navy) for contrast
 
-FACE: Crop from above eyebrows or face turned away.
+FACE: Show the model's face naturally - chin to forehead visible. Can look slightly away from camera or have subtle smile. Do NOT crop the head awkwardly.
 
 POSE: ${hasAngleInstruction ? 'Use angle from USER INSTRUCTIONS' : (pose?.prompt || 'Front facing, clear neck view')}
 
@@ -3698,32 +3698,32 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
             const modelBase64Data = modelImageBase64.split(',')[1];
             const jewelryBase64Data = jewelryBase64.split(',')[1];
 
-            const editPrompt = `Edit this image to place the jewelry from the second image onto the model's neck.
+            const editPrompt = `Place the jewelry from the second image onto the model in the first image.
 
-⚠️ CRITICAL RULES - MUST FOLLOW ⚠️
+🚨🚨🚨 ABSOLUTE RULE - NEVER SHRINK THE JEWELRY 🚨🚨🚨
+- The jewelry MUST remain its EXACT ORIGINAL SIZE from the reference
+- NEVER make it smaller, shorter, or resize it in any way
+- If it seems too big, that's CORRECT - do NOT shrink it
+- COPY EVERY PIXEL of the jewelry exactly as shown
+- The length must be IDENTICAL to the reference image
 
-1. SIZE PRESERVATION:
-- COPY the jewelry EXACTLY as shown - same size, same length
-- Do NOT shrink, resize, or make smaller
-- The pendant must be the SAME SIZE as in the reference
+📐 PLACEMENT RULES:
+- CENTER the necklace perfectly on the neck
+- Both sides must hang symmetrically
+- Pendant hangs straight down in the middle
+- Natural draping following the neckline curve
 
-2. SYMMETRICAL PLACEMENT:
-- Place the necklace PERFECTLY CENTERED on the neck
-- Both sides must hang EVENLY - same length on left and right
-- Do NOT tilt or angle the necklace
-- The pendant must hang STRAIGHT DOWN in the center
-- Follow the natural curve of the neckline symmetrically
+🎨 COLOR RULES:
+- EXACT same colors - no changes whatsoever
+- Gold stays gold, silver stays silver, stones keep their colors
 
-3. COLOR PRESERVATION:
-- Keep EXACT same colors - gold stays gold, green stays green
-- Do NOT change any color tones
+⚠️ DO NOT:
+- Shrink or resize the jewelry (MOST IMPORTANT)
+- Change any colors
+- Tilt or angle asymmetrically
+- Modify the model's body or clothing
 
-4. NATURAL LOOK:
-- Blend seamlessly with realistic shadows
-- Do NOT change the model's body, pose, or clothing
-- Professional e-commerce quality
-
-The necklace must be CENTERED, SYMMETRICAL, and ORIGINAL SIZE.`;
+The jewelry is ${jewelryAnalysis.length} length - it MUST appear this size in the output.`;
 
             const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
