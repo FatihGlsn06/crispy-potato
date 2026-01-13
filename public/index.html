@@ -3689,88 +3689,98 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
             }
             console.log('✅ Takısız model oluşturuldu');
 
-            // ===== ADIM 3: Gemini Edit ile takıyı yerleştir =====
-            // Takısız model + BiRefNet çıktısı → Gemini takıyı yerleştirsin
-            showLoader('Manken Modu...', '4/4 Takı yerleştiriliyor (Gemini Edit)');
-            console.log('🎯 Gemini Edit başlatılıyor...');
+            // ===== ADIM 3: FLUX.2 Edit ile takıyı yerleştir =====
+            // Multi-reference compositing: Model (@1) + Takı (@2) = Sonuç
+            showLoader('Manken Modu...', '4/4 Takı yerleştiriliyor (FLUX.2 Edit)');
+            console.log('🎯 FLUX.2 Edit başlatılıyor...');
 
-            // Takı ve model görsellerini base64'ten çıkar
-            const modelBase64Data = modelImageBase64.split(',')[1];
-            const jewelryBase64Data = jewelryBase64.split(',')[1];
+            // FLUX.2 Edit prompt - @1 = model, @2 = takı
+            const fluxEditPrompt = `Composite the jewelry from @2 onto the model from @1.
 
-            const editPrompt = `TASK: Transfer the EXACT jewelry from Image 2 onto the model in Image 1.
+CRITICAL INSTRUCTIONS:
+- Place the EXACT jewelry from @2 onto the neck of the model from @1
+- The jewelry must be PIXEL-PERFECT copy from @2 - no changes to design, size, or colors
+- Keep the jewelry at its ORIGINAL SIZE from @2 - do NOT shrink or resize
+- Position the jewelry centered and symmetrical on the neck
+- Natural shadows and lighting blend
+- The model's body, pose, and clothing from @1 must remain unchanged
 
-🚨 CRITICAL: PIXEL-PERFECT TRANSFER 🚨
-You must TRANSFER the jewelry, NOT regenerate it.
-- Use the EXACT jewelry from Image 2 - every bead, every stone, every detail
-- DO NOT create a new/similar jewelry - use the ORIGINAL
-- DO NOT interpret or reimagine - just TRANSFER
-- The jewelry in output must be IDENTICAL to Image 2
+This is a ${jewelryAnalysis.length} ${jewelryAnalysis.type}. Place it exactly as shown in @2.`;
 
-📏 SIZE: ABSOLUTELY NO CHANGES
-- SAME size as Image 2 - not smaller, not bigger
-- SAME length - if it's long, keep it long
-- SAME proportions - pendant size, bead count, everything
-- If it doesn't fit perfectly, that's OK - do NOT shrink to fit
-
-🎨 COLORS: ZERO TOLERANCE FOR CHANGES
-- IDENTICAL colors from Image 2
-- Every gold part stays gold
-- Every green stone stays green
-- Every bead keeps its exact color
-
-📍 PLACEMENT:
-- Centered on neck, symmetrical
-- Natural drape following neckline
-
-This is a ${jewelryAnalysis.length} ${jewelryAnalysis.type}. TRANSFER it exactly as shown.`;
-
-            const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
+            console.log('📤 FLUX.2 API çağrısı yapılıyor...');
+            const fluxResponse = await fetch('https://fal.run/fal-ai/flux-2/edit', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Authorization': `Key ${falKey}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: editPrompt },
-                            {
-                                inlineData: {
-                                    mimeType: 'image/png',
-                                    data: modelBase64Data
-                                }
-                            },
-                            { text: "This is the model photo. Now here is the jewelry to place on her:" },
-                            {
-                                inlineData: {
-                                    mimeType: 'image/png',
-                                    data: jewelryBase64Data
-                                }
-                            }
-                        ]
-                    }],
-                    generationConfig: {
-                        responseModalities: ["IMAGE", "TEXT"],
-                        temperature: 0.2  // Düşük = daha az yaratıcılık, renkleri koru
-                    }
+                    prompt: fluxEditPrompt,
+                    image_urls: [modelImageBase64, jewelryBase64],  // @1 = model, @2 = takı
+                    guidance_scale: 3.5,
+                    num_inference_steps: 28,
+                    output_format: 'png'
                 })
             });
 
-            if (!editResponse.ok) {
-                const err = await editResponse.json().catch(() => ({}));
-                console.error('❌ Gemini Edit hatası:', err);
-                throw new Error(err.error?.message || 'Gemini Edit başarısız');
-            }
+            console.log('📥 FLUX.2 yanıtı:', fluxResponse.status);
 
-            const editData = await editResponse.json();
-            const editParts = editData.candidates?.[0]?.content?.parts || [];
+            if (!fluxResponse.ok) {
+                const errText = await fluxResponse.text();
+                console.error('❌ FLUX.2 Edit hatası:', errText);
 
-            for (const part of editParts) {
-                if (part.inlineData?.mimeType?.startsWith('image/')) {
-                    console.log('✅ Gemini Edit tamamlandı!');
-                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                // Fallback: Gemini Edit'e geç
+                console.log('⚠️ Fallback: Gemini Edit deneniyor...');
+                showLoader('Manken Modu...', '4/4 Fallback (Gemini Edit)');
+
+                const modelBase64Data = modelImageBase64.split(',')[1];
+                const jewelryBase64Data = jewelryBase64.split(',')[1];
+
+                const geminiResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: `Place the jewelry from the second image onto the model. Keep EXACT size and colors. This is a ${jewelryAnalysis.length} necklace.` },
+                                { inlineData: { mimeType: 'image/png', data: modelBase64Data } },
+                                { text: "Jewelry to place:" },
+                                { inlineData: { mimeType: 'image/png', data: jewelryBase64Data } }
+                            ]
+                        }],
+                        generationConfig: { responseModalities: ["IMAGE", "TEXT"], temperature: 0.2 }
+                    })
+                });
+
+                if (geminiResponse.ok) {
+                    const geminiData = await geminiResponse.json();
+                    const parts = geminiData.candidates?.[0]?.content?.parts || [];
+                    for (const part of parts) {
+                        if (part.inlineData?.mimeType?.startsWith('image/')) {
+                            console.log('✅ Fallback Gemini Edit tamamlandı!');
+                            return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                        }
+                    }
                 }
+                throw new Error('FLUX.2 ve Gemini Edit başarısız');
             }
 
-            throw new Error('Gemini Edit görsel üretemedi');
+            const fluxData = await fluxResponse.json();
+            console.log('📦 FLUX.2 yanıt verisi:', JSON.stringify(fluxData).substring(0, 300));
+
+            // FLUX.2 yanıt formatı: { images: [{ url, content_type }] }
+            if (fluxData.images?.[0]?.url) {
+                console.log('✅ FLUX.2 Edit tamamlandı!');
+                return await fetchImageAsBase64(fluxData.images[0].url);
+            }
+
+            // Alternatif format
+            if (fluxData.image?.url) {
+                console.log('✅ FLUX.2 Edit tamamlandı (image)!');
+                return await fetchImageAsBase64(fluxData.image.url);
+            }
+
+            throw new Error('FLUX.2 Edit görsel üretemedi');
         }
 
         // ========== GEMINI IMAGE GENERATION (IMAGEN) ==========
