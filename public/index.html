@@ -3698,32 +3698,32 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
             const modelBase64Data = modelImageBase64.split(',')[1];
             const jewelryBase64Data = jewelryBase64.split(',')[1];
 
-            const editPrompt = `Place the jewelry from the second image onto the model in the first image.
+            const editPrompt = `TASK: Transfer the EXACT jewelry from Image 2 onto the model in Image 1.
 
-🚨🚨🚨 ABSOLUTE RULE - NEVER SHRINK THE JEWELRY 🚨🚨🚨
-- The jewelry MUST remain its EXACT ORIGINAL SIZE from the reference
-- NEVER make it smaller, shorter, or resize it in any way
-- If it seems too big, that's CORRECT - do NOT shrink it
-- COPY EVERY PIXEL of the jewelry exactly as shown
-- The length must be IDENTICAL to the reference image
+🚨 CRITICAL: PIXEL-PERFECT TRANSFER 🚨
+You must TRANSFER the jewelry, NOT regenerate it.
+- Use the EXACT jewelry from Image 2 - every bead, every stone, every detail
+- DO NOT create a new/similar jewelry - use the ORIGINAL
+- DO NOT interpret or reimagine - just TRANSFER
+- The jewelry in output must be IDENTICAL to Image 2
 
-📐 PLACEMENT RULES:
-- CENTER the necklace perfectly on the neck
-- Both sides must hang symmetrically
-- Pendant hangs straight down in the middle
-- Natural draping following the neckline curve
+📏 SIZE: ABSOLUTELY NO CHANGES
+- SAME size as Image 2 - not smaller, not bigger
+- SAME length - if it's long, keep it long
+- SAME proportions - pendant size, bead count, everything
+- If it doesn't fit perfectly, that's OK - do NOT shrink to fit
 
-🎨 COLOR RULES:
-- EXACT same colors - no changes whatsoever
-- Gold stays gold, silver stays silver, stones keep their colors
+🎨 COLORS: ZERO TOLERANCE FOR CHANGES
+- IDENTICAL colors from Image 2
+- Every gold part stays gold
+- Every green stone stays green
+- Every bead keeps its exact color
 
-⚠️ DO NOT:
-- Shrink or resize the jewelry (MOST IMPORTANT)
-- Change any colors
-- Tilt or angle asymmetrically
-- Modify the model's body or clothing
+📍 PLACEMENT:
+- Centered on neck, symmetrical
+- Natural drape following neckline
 
-The jewelry is ${jewelryAnalysis.length} length - it MUST appear this size in the output.`;
+This is a ${jewelryAnalysis.length} ${jewelryAnalysis.type}. TRANSFER it exactly as shown.`;
 
             const editResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
                 method: 'POST',
