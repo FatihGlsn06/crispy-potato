@@ -3689,31 +3689,29 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
             console.log('🎯 FLUX.2 Edit başlatılıyor...');
 
             // FLUX.2 Edit prompt - @1 = model, @2 = takı
-            const fluxEditPrompt = `Overlay the jewelry from @2 onto the model from @1.
+            const fluxEditPrompt = `Seamlessly composite the jewelry from @2 onto the model from @1, making it look like the model is actually wearing the jewelry.
 
-🚨 SCALE 1:1 - ABSOLUTELY NO RESIZING 🚨
-- The jewelry from @2 must keep its EXACT ORIGINAL SIZE
-- DO NOT shrink the jewelry to fit - if it's big, keep it big
-- DO NOT resize, scale down, or make smaller in ANY way
-- The jewelry length and proportions must be IDENTICAL to @2
+SIZE RULE:
+- Keep @2 jewelry at its ORIGINAL SIZE - do not shrink
+
+NATURAL BLEND - VERY IMPORTANT:
+- The jewelry must look NATURALLY WORN, not pasted on
+- Soft realistic shadows under the jewelry matching @1 lighting
+- The jewelry should follow the natural curve of the neck/chest
+- Smooth edge blending - no harsh cutout edges
+- Match the lighting and color temperature of @1
+- The jewelry should have depth and dimension, not look flat
 
 PLACEMENT:
-- Place @2 jewelry centered on @1 model's neck
-- Symmetrical positioning
-- Natural drape following neckline
+- Centered on neck, symmetrical
+- Natural drape following the body contours
+- The chain/beads should curve naturally around the neck
 
-PRESERVE FROM @2:
-- Exact size (NEVER shrink)
-- Exact colors (gold, green stones, etc.)
-- Exact design details
-- Exact length
+PRESERVE:
+- @2: exact colors, design, size
+- @1: model, clothing, background, lighting
 
-PRESERVE FROM @1:
-- Model's body and pose
-- Clothing
-- Background
-
-This ${jewelryAnalysis.length} ${jewelryAnalysis.type} must appear at FULL ORIGINAL SIZE.`;
+Make it photorealistic - the jewelry should look like it belongs there.`;
 
             console.log('📤 FLUX.2 API çağrısı yapılıyor...');
             const fluxResponse = await fetch('https://fal.run/fal-ai/flux-2/edit', {
@@ -3725,7 +3723,7 @@ This ${jewelryAnalysis.length} ${jewelryAnalysis.type} must appear at FULL ORIGI
                 body: JSON.stringify({
                     prompt: fluxEditPrompt,
                     image_urls: [modelImageBase64, jewelryBase64],  // @1 = model, @2 = takı
-                    guidance_scale: 4.0,  // Biraz daha yüksek - prompt'a daha sadık
+                    guidance_scale: 3.0,  // Düşük = daha yumuşak blend, doğal geçiş
                     num_inference_steps: 30,
                     output_format: 'png'
                 })
