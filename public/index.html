@@ -3591,64 +3591,58 @@ Return ONLY the JSON, no other text.`;
             const isPortrait = aspectRatio < 1;
             const isLandscape = aspectRatio > 1;
 
-            // Takı analizine göre model frame ayarları
+            // Takı analizine göre model frame ayarları - HER ZAMAN GENİŞ ALAN
             const frameSettings = {
-                'very_long': { neckline: 'deep V-neck showing full chest area', frame: 'wide shot from above eyebrows to below chest', space: 'MAXIMUM vertical space for very long necklace' },
-                'long': { neckline: 'low V-neck', frame: 'medium-wide shot showing full chest', space: 'large vertical space for long necklace' },
-                'medium': { neckline: 'medium V-neck', frame: 'medium shot showing neck and upper chest', space: 'medium vertical space' },
-                'short': { neckline: 'modest neckline', frame: 'closer shot focused on neck area', space: 'standard space for short necklace' },
-                'choker': { neckline: 'can be higher neckline', frame: 'close-up on neck', space: 'minimal space needed' }
+                'very_long': { neckline: 'very deep V-neck or open chest', frame: 'full torso shot - from chin to waist', space: 'MAXIMUM vertical space - the necklace is VERY LONG' },
+                'long': { neckline: 'deep V-neck showing chest', frame: 'wide shot - chin to below chest', space: 'VERY LARGE vertical space for long necklace' },
+                'medium': { neckline: 'medium-low V-neck', frame: 'medium-wide shot - full neck and chest visible', space: 'LARGE vertical space' },
+                'short': { neckline: 'V-neck', frame: 'medium shot with full neck area', space: 'medium vertical space' },
+                'choker': { neckline: 'open neckline', frame: 'neck and upper chest visible', space: 'standard space' }
             };
-            const frameSetting = frameSettings[jewelryAnalysis.length] || frameSettings.medium;
+            const frameSetting = frameSettings[jewelryAnalysis.length] || frameSettings.long; // Default: long (geniş)
 
-            // Model oluştur - TAKIYA UYGUN FRAME
+            // Model oluştur - TAKIYA UYGUN GENİŞ FRAME
             const modelPrompt = `Generate a professional model photo for jewelry product photography.
 
-⚠️ CRITICAL: THIS MODEL WILL WEAR A ${jewelryAnalysis.length.toUpperCase()} NECKLACE ⚠️
+🚨🚨🚨 CRITICAL: VERY WIDE FRAME REQUIRED 🚨🚨🚨
+This model will wear a ${jewelryAnalysis.length.toUpperCase()} necklace that needs LOTS of space.
 The jewelry is: ${jewelryAnalysis.description || 'a necklace'}
-Required space: ${frameSetting.space}
+
+📐 FRAME REQUIREMENTS - MOST IMPORTANT:
+- Show from CHIN to WAIST (full torso)
+- ${frameSetting.frame}
+- ${frameSetting.space}
+- The chest area must be FULLY VISIBLE
+- Leave MAXIMUM empty space on neck/chest for jewelry
+- Do NOT crop tight - we need ROOM for the necklace
 
 🚨 ABSOLUTELY NO JEWELRY ON THE MODEL 🚨
-- NO necklaces, earrings, bracelets, rings
 - COMPLETELY BARE neck and chest
+- NO necklaces, earrings, or any accessories
 - Jewelry will be added digitally LATER
 
-📐 FRAME REQUIREMENTS FOR ${jewelryAnalysis.length.toUpperCase()} JEWELRY:
-- Neckline: ${frameSetting.neckline}
-- Framing: ${frameSetting.frame}
-- The image MUST have enough vertical space for the jewelry
-${jewelryAnalysis.hasLargePendant ? '- Extra space needed for LARGE PENDANT' : ''}
-${jewelryAnalysis.verticalSpace === 'very_large' ? '- VERY LARGE vertical space required - show more of the torso' : ''}
+CLOTHING:
+- ${frameSetting.neckline} - VERY OPEN neckline to show skin
+- Black or dark solid color for contrast
+- The neckline must NOT cover where jewelry will sit
 
 IMAGE SPECS:
 - Dimensions: ${state.originalWidth || 1024}x${state.originalHeight || 1024}
-- Aspect: ${isPortrait ? 'PORTRAIT' : isLandscape ? 'LANDSCAPE' : 'SQUARE'}
+- Aspect: ${isPortrait ? 'PORTRAIT (tall)' : isLandscape ? 'LANDSCAPE' : 'SQUARE'}
 
-${smartPromptInstructions ? `USER INSTRUCTIONS (PRIORITY):\n${smartPromptInstructions}\n` : ''}
+${smartPromptInstructions ? `USER INSTRUCTIONS:\n${smartPromptInstructions}\n` : ''}
 
 MODEL:
 - ${profile.desc}
 - ${outfitSceneInstructions}
 - ${style.prompt}
 - Professional studio lighting
-- BARE neck - no accessories
 
-CLOTHING:
-- ${frameSetting.neckline} to accommodate the jewelry
-- Family-friendly, e-commerce catalog style
-- Dark solid colors preferred (black, navy) for contrast
+FACE: Show face naturally - chin to forehead. Can look away or subtle smile.
 
-FACE: Show the model's face naturally - chin to forehead visible. Can look slightly away from camera or have subtle smile. Do NOT crop the head awkwardly.
+POSE: ${hasAngleInstruction ? 'Use angle from USER INSTRUCTIONS' : 'Front facing, shoulders visible, clear neck/chest view'}
 
-POSE: ${hasAngleInstruction ? 'Use angle from USER INSTRUCTIONS' : (pose?.prompt || 'Front facing, clear neck view')}
-
-⛔ FORBIDDEN - ZERO TOLERANCE:
-- ANY jewelry whatsoever
-- ANY necklace or chain
-- ANY accessories on neck/chest
-- The neck MUST be completely bare
-
-OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry overlay.`;
+OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis.length} necklace overlay.`;
 
             // NOT: Takı ve orijinal görselleri GÖNDERMİYORUZ - AI kopyalamasın!
             const modelResponse = await fetch(`${GEMINI_CONFIG.baseUrl}/${GEMINI_CONFIG.imageModel}:generateContent?key=${geminiKey}`, {
@@ -3695,17 +3689,31 @@ OUTPUT: Professional model photo with COMPLETELY BARE neck, ready for jewelry ov
             console.log('🎯 FLUX.2 Edit başlatılıyor...');
 
             // FLUX.2 Edit prompt - @1 = model, @2 = takı
-            const fluxEditPrompt = `Composite the jewelry from @2 onto the model from @1.
+            const fluxEditPrompt = `Overlay the jewelry from @2 onto the model from @1.
 
-CRITICAL INSTRUCTIONS:
-- Place the EXACT jewelry from @2 onto the neck of the model from @1
-- The jewelry must be PIXEL-PERFECT copy from @2 - no changes to design, size, or colors
-- Keep the jewelry at its ORIGINAL SIZE from @2 - do NOT shrink or resize
-- Position the jewelry centered and symmetrical on the neck
-- Natural shadows and lighting blend
-- The model's body, pose, and clothing from @1 must remain unchanged
+🚨 SCALE 1:1 - ABSOLUTELY NO RESIZING 🚨
+- The jewelry from @2 must keep its EXACT ORIGINAL SIZE
+- DO NOT shrink the jewelry to fit - if it's big, keep it big
+- DO NOT resize, scale down, or make smaller in ANY way
+- The jewelry length and proportions must be IDENTICAL to @2
 
-This is a ${jewelryAnalysis.length} ${jewelryAnalysis.type}. Place it exactly as shown in @2.`;
+PLACEMENT:
+- Place @2 jewelry centered on @1 model's neck
+- Symmetrical positioning
+- Natural drape following neckline
+
+PRESERVE FROM @2:
+- Exact size (NEVER shrink)
+- Exact colors (gold, green stones, etc.)
+- Exact design details
+- Exact length
+
+PRESERVE FROM @1:
+- Model's body and pose
+- Clothing
+- Background
+
+This ${jewelryAnalysis.length} ${jewelryAnalysis.type} must appear at FULL ORIGINAL SIZE.`;
 
             console.log('📤 FLUX.2 API çağrısı yapılıyor...');
             const fluxResponse = await fetch('https://fal.run/fal-ai/flux-2/edit', {
@@ -3717,8 +3725,8 @@ This is a ${jewelryAnalysis.length} ${jewelryAnalysis.type}. Place it exactly as
                 body: JSON.stringify({
                     prompt: fluxEditPrompt,
                     image_urls: [modelImageBase64, jewelryBase64],  // @1 = model, @2 = takı
-                    guidance_scale: 3.5,
-                    num_inference_steps: 28,
+                    guidance_scale: 4.0,  // Biraz daha yüksek - prompt'a daha sadık
+                    num_inference_steps: 30,
                     output_format: 'png'
                 })
             });
