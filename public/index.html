@@ -3702,8 +3702,8 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                 const edgeMask = await createEdgeOnlyMask(jewelryBase64, modelImageBase64, jewelryAnalysis);
                 console.log('✅ Kenar mask oluşturuldu');
 
-                // Inpainting ile sadece kenarları yumuşat
-                const inpaintResponse = await fetch('https://fal.run/fal-ai/inpaint', {
+                // FLUX inpainting ile sadece kenarları yumuşat (daha kaliteli sonuç)
+                const inpaintResponse = await fetch('https://fal.run/fal-ai/flux-lora/inpainting', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Key ${falKey}`,
@@ -3712,11 +3712,11 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                     body: JSON.stringify({
                         image_url: canvasComposite,
                         mask_url: edgeMask,
-                        prompt: "Seamless natural blend, soft shadows, smooth edge transition, photorealistic jewelry on skin, natural lighting",
-                        negative_prompt: "harsh edges, cutout look, floating, unnatural, pasted",
-                        strength: 0.4,  // Düşük = sadece hafif yumuşatma
-                        num_inference_steps: 25,
-                        guidance_scale: 7.0
+                        prompt: "Seamless natural jewelry placement on skin, soft realistic shadows, smooth edge transition where jewelry meets skin, photorealistic luxury jewelry, natural studio lighting, professional product photography",
+                        strength: 0.35,  // Düşük = sadece hafif yumuşatma, takıya dokunma
+                        num_inference_steps: 28,
+                        guidance_scale: 7.5,
+                        output_format: "png"
                     })
                 });
 
@@ -3797,7 +3797,7 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
             });
         }
 
-        // ========== KENAR MASK - Sadece takının dış kenarları ==========
+        // ========== KENAR MASK - Takının alpha şekline göre kenar oluştur ==========
         async function createEdgeOnlyMask(jewelryBase64, modelBase64, jewelryAnalysis) {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
@@ -3834,16 +3834,60 @@ OUTPUT: Wide frame model photo with BARE neck/chest, ready for ${jewelryAnalysis
                     const x = (modelImg.width - targetWidth) / 2;
                     const y = modelImg.height * 0.18;
 
-                    // Sadece KENAR bölgesi beyaz (inpaint edilecek)
-                    const edgeWidth = 15; // Kenar genişliği piksel
+                    // Takının alpha kanalını kullanarak gerçek şeklini al
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = Math.round(targetWidth);
+                    tempCanvas.height = Math.round(targetHeight);
 
-                    // Dış kenar (beyaz)
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(x - edgeWidth, y - edgeWidth, targetWidth + edgeWidth * 2, targetHeight + edgeWidth * 2);
+                    // Takıyı scaled boyutta çiz
+                    tempCtx.drawImage(jewelryImg, 0, 0, targetWidth, targetHeight);
+                    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+                    const data = imageData.data;
 
-                    // İç alan (siyah - korunacak, takı burada)
-                    ctx.fillStyle = 'black';
-                    ctx.fillRect(x + edgeWidth, y + edgeWidth, targetWidth - edgeWidth * 2, targetHeight - edgeWidth * 2);
+                    // DIŞ KENAR: Takının genişletilmiş versiyonunu beyaz çiz (blur ile)
+                    ctx.save();
+                    ctx.filter = 'blur(12px)';  // Yumuşak kenar
+                    ctx.globalAlpha = 1.0;
+
+                    // Beyaz silhouette - takı şeklinin dışı
+                    const edgeCanvas = document.createElement('canvas');
+                    const edgeCtx = edgeCanvas.getContext('2d');
+                    edgeCanvas.width = tempCanvas.width;
+                    edgeCanvas.height = tempCanvas.height;
+
+                    // Alpha > 20 olan pikselleri beyaz yap
+                    const edgeData = edgeCtx.createImageData(tempCanvas.width, tempCanvas.height);
+                    for (let i = 0; i < data.length; i += 4) {
+                        const alpha = data[i + 3];
+                        if (alpha > 20) {
+                            edgeData.data[i] = 255;     // R
+                            edgeData.data[i + 1] = 255; // G
+                            edgeData.data[i + 2] = 255; // B
+                            edgeData.data[i + 3] = 255; // A
+                        }
+                    }
+                    edgeCtx.putImageData(edgeData, 0, 0);
+
+                    // Blur ile genişletilmiş beyaz kenar çiz
+                    ctx.drawImage(edgeCanvas, x, y, targetWidth, targetHeight);
+                    ctx.restore();
+
+                    // İÇ ALAN: Takının gerçek şeklini siyah çiz (korunacak)
+                    // Daha küçük (erozyon efekti) çizerek sadece kenarları bırak
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-out';
+
+                    // İç alanı temizle - takının %90'ı korunacak
+                    const innerScale = 0.92;  // %92'si korunacak, %8 kenar
+                    const innerWidth = targetWidth * innerScale;
+                    const innerHeight = targetHeight * innerScale;
+                    const innerX = x + (targetWidth - innerWidth) / 2;
+                    const innerY = y + (targetHeight - innerHeight) / 2;
+
+                    // Aynı alpha shape'i daha küçük çiz
+                    ctx.drawImage(edgeCanvas, innerX, innerY, innerWidth, innerHeight);
+                    ctx.restore();
 
                     resolve(canvas.toDataURL('image/png'));
                 };
