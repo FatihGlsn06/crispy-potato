@@ -368,6 +368,103 @@
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
+        /* ALARM ANİMASYONLARI */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #ef4444, 0 0 10px #ef4444; }
+            50% { box-shadow: 0 0 20px #ef4444, 0 0 40px #ef4444, 0 0 60px #ef4444; }
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-critical.alarm-active {
+            animation: pulse 0.5s ease-in-out infinite, glow 1s ease-in-out infinite;
+        }
+
+        .stat-card.critical.alarm-active {
+            animation: shake 0.5s ease-in-out, glow 1s ease-in-out infinite;
+        }
+
+        .stat-card.critical.alarm-active .stat-value {
+            animation: blink 0.5s ease-in-out infinite;
+            color: #ff0000;
+            font-size: 2.5rem;
+        }
+
+        .stat-card.critical.alarm-active .stat-icon {
+            animation: shake 0.3s ease-in-out infinite;
+        }
+
+        .badge-critical.alarm-active {
+            animation: blink 0.5s ease-in-out infinite;
+        }
+
+        /* Alarm Overlay */
+        .alarm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(239, 68, 68, 0.1);
+            z-index: 999;
+            pointer-events: none;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        .alarm-overlay.active {
+            display: block;
+        }
+
+        /* Alarm Kapatma Butonu */
+        .alarm-stop-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            display: none;
+            animation: pulse 0.5s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .alarm-stop-btn.active {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alarm-stop-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .form-row {
@@ -652,6 +749,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Alarm Overlay -->
+    <div class="alarm-overlay" id="alarmOverlay"></div>
+
+    <!-- Alarm Stop Butonu -->
+    <button class="alarm-stop-btn" id="alarmStopBtn" onclick="alarmKapat()">
+        🔕 Alarmı Kapat
+    </button>
 
     <script src="app.js"></script>
 </body>

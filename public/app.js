@@ -4,6 +4,106 @@
  */
 
 // ============================================
+// ALARM SİSTEMİ
+// ============================================
+
+let alarmSesiAktif = false;
+let audioContext = null;
+let alarmInterval = null;
+
+// Alarm sesi çal (Web Audio API)
+function alarmSesiCal() {
+    if (alarmSesiAktif) return;
+
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        alarmSesiAktif = true;
+
+        function beep() {
+            if (!alarmSesiAktif) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800; // Hz
+            oscillator.type = 'square';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // İlk beep
+        beep();
+
+        // Tekrarlayan beep
+        alarmInterval = setInterval(() => {
+            if (alarmSesiAktif) {
+                beep();
+            }
+        }, 1000);
+
+    } catch (e) {
+        console.log('Ses çalınamadı:', e);
+    }
+}
+
+// Alarmı kapat
+function alarmKapat() {
+    alarmSesiAktif = false;
+
+    if (alarmInterval) {
+        clearInterval(alarmInterval);
+        alarmInterval = null;
+    }
+
+    if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+    }
+
+    // Animasyonları kaldır
+    document.querySelectorAll('.alarm-active').forEach(el => {
+        el.classList.remove('alarm-active');
+    });
+
+    // Overlay ve butonu gizle
+    document.getElementById('alarmOverlay').classList.remove('active');
+    document.getElementById('alarmStopBtn').classList.remove('active');
+}
+
+// Alarm başlat (animasyon + ses)
+function alarmBaslat(kritikSayisi) {
+    // Animasyonları aktifle
+    document.getElementById('criticalAlert').classList.add('alarm-active');
+    document.querySelectorAll('.stat-card.critical').forEach(el => {
+        el.classList.add('alarm-active');
+    });
+    document.querySelectorAll('.badge-critical').forEach(el => {
+        el.classList.add('alarm-active');
+    });
+
+    // Overlay ve butonu göster
+    document.getElementById('alarmOverlay').classList.add('active');
+    document.getElementById('alarmStopBtn').classList.add('active');
+
+    // Ses çal
+    alarmSesiCal();
+
+    // 10 saniye sonra otomatik kapat (opsiyonel)
+    setTimeout(() => {
+        if (alarmSesiAktif) {
+            alarmKapat();
+        }
+    }, 10000);
+}
+
+// ============================================
 // VERİ YÖNETİMİ (localStorage)
 // ============================================
 
@@ -351,8 +451,12 @@ function kritikUyariGoster(kritikler) {
         document.getElementById('criticalMessage').textContent =
             `${kritikler.length} sipariş hem stok yetersiz hem de forecast üstünde!`;
         alert.classList.remove('hidden');
+
+        // 🚨 ALARM SİSTEMİNİ AKTİFLE
+        alarmBaslat(kritikler.length);
     } else {
         alert.classList.add('hidden');
+        alarmKapat();
     }
 }
 
