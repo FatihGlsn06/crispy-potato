@@ -524,6 +524,9 @@
                 <button class="btn btn-secondary" onclick="dışaAktar()">
                     📤 Dışa Aktar
                 </button>
+                <button class="btn btn-secondary" onclick="mailModalAc()">
+                    📧 Mail Gönder
+                </button>
                 <button class="btn btn-primary" onclick="analizCalistir()">
                     🔄 Analiz Et
                 </button>
@@ -746,6 +749,48 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="modalKapat('forecastModal')">İptal</button>
                 <button class="btn btn-primary" onclick="forecastKaydet()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mail Modal -->
+    <div class="modal-overlay" id="mailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📧 Rapor Mail Gönder</h3>
+                <button class="close-btn" onclick="modalKapat('mailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Alıcı Mail Adresi</label>
+                    <input type="email" id="mailAlici" placeholder="ornek@sirket.com">
+                    <small style="color: rgba(255,255,255,0.5); margin-top: 5px; display: block;">
+                        Birden fazla alıcı için virgülle ayırın
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label>Gönderilecek İçerik</label>
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Kritik Durumlar:</span>
+                            <strong id="mailKritikSayisi" style="color: #ef4444;">0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Spike Tespitleri:</span>
+                            <strong id="mailSpikeSayisi" style="color: #f59e0b;">0</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Stok Yetersiz:</span>
+                            <strong id="mailStokSayisi" style="color: #f59e0b;">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="modalKapat('mailModal')">İptal</button>
+                <button class="btn btn-primary" onclick="mailGonder()" id="mailGonderBtn">
+                    📧 Gönder
+                </button>
             </div>
         </div>
     </div>

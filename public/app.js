@@ -104,6 +104,81 @@ function alarmBaslat(kritikSayisi) {
 }
 
 // ============================================
+// MAİL SİSTEMİ
+// ============================================
+
+function mailModalAc() {
+    const analiz = veriYukle(STORAGE_KEYS.ANALIZ);
+
+    if (!analiz || !analiz.tumAnalizler || analiz.tumAnalizler.length === 0) {
+        alert('Önce analiz yapmalısınız!');
+        return;
+    }
+
+    // Sayıları güncelle
+    document.getElementById('mailKritikSayisi').textContent = analiz.kritikler?.length || 0;
+    document.getElementById('mailSpikeSayisi').textContent = analiz.spikeler?.length || 0;
+    document.getElementById('mailStokSayisi').textContent = analiz.stokYetersiz?.length || 0;
+
+    document.getElementById('mailModal').classList.add('active');
+}
+
+async function mailGonder() {
+    const alicilar = document.getElementById('mailAlici').value;
+
+    if (!alicilar || !alicilar.includes('@')) {
+        alert('Geçerli bir mail adresi girin!');
+        return;
+    }
+
+    const analiz = veriYukle(STORAGE_KEYS.ANALIZ);
+    const btn = document.getElementById('mailGonderBtn');
+
+    // Butonu disable et
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Gönderiliyor...';
+
+    try {
+        const response = await fetch('/api/mail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                kritikler: analiz.kritikler || [],
+                spikeler: analiz.spikeler || [],
+                stokYetersiz: analiz.stokYetersiz || [],
+                ozet: analiz.ozet || {
+                    toplam: analiz.tumAnalizler?.length || 0,
+                    kritik: analiz.kritikler?.length || 0,
+                    spike: analiz.spikeler?.length || 0,
+                    stokYetersiz: analiz.stokYetersiz?.length || 0
+                },
+                alicilar: alicilar
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.demo) {
+                alert('✅ Demo Mod\n\nMail önizlemesi oluşturuldu.\nGerçek gönderim için Vercel\'de RESEND_API_KEY tanımlayın.');
+            } else {
+                alert('✅ Mail başarıyla gönderildi!\n\nAlıcı: ' + alicilar);
+            }
+            modalKapat('mailModal');
+        } else {
+            alert('❌ Mail gönderilemedi!\n\n' + (result.error || 'Bilinmeyen hata'));
+        }
+
+    } catch (error) {
+        console.error('Mail hatası:', error);
+        alert('❌ Bağlantı hatası!\n\nAPI\'ye erişilemiyor.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '📧 Gönder';
+    }
+}
+
+// ============================================
 // VERİ YÖNETİMİ (localStorage)
 // ============================================
 
