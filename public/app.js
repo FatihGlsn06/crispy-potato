@@ -107,11 +107,11 @@ function alarmBaslat(kritikSayisi) {
 // MAİL SİSTEMİ (EmailJS)
 // ============================================
 
-// EmailJS Yapılandırması - Bu değerleri EmailJS'den al!
+// EmailJS Yapılandırması
 const EMAILJS_CONFIG = {
-    PUBLIC_KEY: 'YOUR_PUBLIC_KEY',      // EmailJS > Account > API Keys
-    SERVICE_ID: 'YOUR_SERVICE_ID',      // EmailJS > Email Services
-    TEMPLATE_ID: 'YOUR_TEMPLATE_ID'     // EmailJS > Email Templates
+    PUBLIC_KEY: 'CbEclI6x-qlz5MQRa',
+    SERVICE_ID: 'service_atxk0qq',
+    TEMPLATE_ID: 'template_m7zlv2c'
 };
 
 // EmailJS'i başlat
