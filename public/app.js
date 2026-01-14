@@ -104,8 +104,23 @@ function alarmBaslat(kritikSayisi) {
 }
 
 // ============================================
-// MAİL SİSTEMİ
+// MAİL SİSTEMİ (EmailJS)
 // ============================================
+
+// EmailJS Yapılandırması - Bu değerleri EmailJS'den al!
+const EMAILJS_CONFIG = {
+    PUBLIC_KEY: 'YOUR_PUBLIC_KEY',      // EmailJS > Account > API Keys
+    SERVICE_ID: 'YOUR_SERVICE_ID',      // EmailJS > Email Services
+    TEMPLATE_ID: 'YOUR_TEMPLATE_ID'     // EmailJS > Email Templates
+};
+
+// EmailJS'i başlat
+function initEmailJS() {
+    if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+        emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+        console.log('EmailJS hazır');
+    }
+}
 
 function mailModalAc() {
     const analiz = veriYukle(STORAGE_KEYS.ANALIZ);
@@ -138,40 +153,84 @@ async function mailGonder() {
     btn.disabled = true;
     btn.innerHTML = '⏳ Gönderiliyor...';
 
+    // Kritik ve spike detaylarını hazırla
+    let kritikDetay = '';
+    if (analiz.kritikler && analiz.kritikler.length > 0) {
+        kritikDetay = analiz.kritikler.map(k =>
+            `• ${k.musteri} - ${k.urunKodu}: ${k.miktar} adet (${Math.abs(k.stokFark || 0)} eksik)`
+        ).join('\n');
+    }
+
+    let spikeDetay = '';
+    if (analiz.spikeler && analiz.spikeler.length > 0) {
+        spikeDetay = analiz.spikeler.map(s =>
+            `• ${s.musteri} - ${s.urunKodu}: ${s.miktar} adet (FC: ${s.fcAylik}, %${s.fcOran})`
+        ).join('\n');
+    }
+
+    const detay = `KRİTİK DURUMLAR:\n${kritikDetay || 'Yok'}\n\nSPIKE TESPİTLERİ:\n${spikeDetay || 'Yok'}`;
+
     try {
-        const response = await fetch('/api/mail', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                kritikler: analiz.kritikler || [],
-                spikeler: analiz.spikeler || [],
-                stokYetersiz: analiz.stokYetersiz || [],
-                ozet: analiz.ozet || {
-                    toplam: analiz.tumAnalizler?.length || 0,
-                    kritik: analiz.kritikler?.length || 0,
-                    spike: analiz.spikeler?.length || 0,
-                    stokYetersiz: analiz.stokYetersiz?.length || 0
-                },
-                alicilar: alicilar
-            })
-        });
+        // EmailJS yapılandırılmış mı kontrol et
+        if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+            // EmailJS yapılandırılmamış - Resend API kullan
+            const response = await fetch('/api/mail', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    kritikler: analiz.kritikler || [],
+                    spikeler: analiz.spikeler || [],
+                    stokYetersiz: analiz.stokYetersiz || [],
+                    ozet: analiz.ozet || {
+                        toplam: analiz.tumAnalizler?.length || 0,
+                        kritik: analiz.kritikler?.length || 0,
+                        spike: analiz.spikeler?.length || 0,
+                        stokYetersiz: analiz.stokYetersiz?.length || 0
+                    },
+                    alicilar: alicilar
+                })
+            });
 
-        const result = await response.json();
+            const result = await response.json();
 
-        if (result.success) {
-            if (result.demo) {
-                alert('✅ Demo Mod\n\nMail önizlemesi oluşturuldu.\nGerçek gönderim için Vercel\'de RESEND_API_KEY tanımlayın.');
+            if (result.success) {
+                alert('✅ Mail gönderildi!\n\nAlıcı: ' + alicilar);
+                modalKapat('mailModal');
             } else {
-                alert('✅ Mail başarıyla gönderildi!\n\nAlıcı: ' + alicilar);
+                throw new Error(result.error || 'Mail gönderilemedi');
             }
-            modalKapat('mailModal');
         } else {
-            alert('❌ Mail gönderilemedi!\n\n' + (result.error || 'Bilinmeyen hata'));
+            // EmailJS kullan - herkese mail gönderebilir!
+            const templateParams = {
+                to_email: alicilar,
+                tarih: new Date().toLocaleDateString('tr-TR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                toplam: analiz.tumAnalizler?.length || 0,
+                kritik_sayi: analiz.kritikler?.length || 0,
+                spike_sayi: analiz.spikeler?.length || 0,
+                stok_yetersiz: analiz.stokYetersiz?.length || 0,
+                detay: detay
+            };
+
+            await emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID,
+                EMAILJS_CONFIG.TEMPLATE_ID,
+                templateParams
+            );
+
+            alert('✅ Mail başarıyla gönderildi!\n\nAlıcı: ' + alicilar);
+            modalKapat('mailModal');
         }
 
     } catch (error) {
         console.error('Mail hatası:', error);
-        alert('❌ Bağlantı hatası!\n\nAPI\'ye erişilemiyor.');
+        alert('❌ Mail gönderilemedi!\n\n' + error.message);
     } finally {
         btn.disabled = false;
         btn.innerHTML = '📧 Gönder';
@@ -813,6 +872,9 @@ function dışaAktar() {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // EmailJS'i başlat
+    initEmailJS();
+
     tablolariGuncelle();
 
     // Varolan analizi yükle
