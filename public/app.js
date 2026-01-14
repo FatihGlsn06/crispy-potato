@@ -202,7 +202,7 @@ async function mailGonder() {
         } else {
             // EmailJS kullan - herkese mail gönderebilir!
             const templateParams = {
-                to_email: alicilar,
+                email: alicilar,
                 tarih: new Date().toLocaleDateString('tr-TR', {
                     weekday: 'long',
                     year: 'numeric',
